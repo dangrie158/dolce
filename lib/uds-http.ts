@@ -10,6 +10,7 @@ const SPACE = " ";
 
 const utf8_encoder = new TextEncoder(); // default 'utf-8', see: https://encoding.spec.whatwg.org/#interface-textdecoder
 const ascii_decoder = new TextDecoder("ascii");
+const encoded_crlf = utf8_encoder.encode(CRLF);
 
 /**
  * resets a stream reader so it is no longer in `disturbed` state even if we already read from the stream.
@@ -20,16 +21,17 @@ function reset_stream(input: ReadableStreamDefaultReader<Uint8Array>): ReadableS
     return stdstreams.readableStreamFromReader(stdstreams.readerFromStreamReader(input));
 }
 
-async function encode_search_params(data: URLSearchParams): Promise<Uint8Array> {
-    let encoded_form_data: string[] = [];
+function encode_search_params(data: URLSearchParams): Uint8Array {
+    const encoded_form_data: string[] = [];
     data.forEach((value, key) => {
         encoded_form_data.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
     });
     return utf8_encoder.encode(encoded_form_data.join("="));
 }
 
-async function encode_form_data(data: FormData): Promise<Uint8Array> {
+async function encode_form_data(data: FormData): Promise<[string, Uint8Array]> {
     const boundary = `-----Boundary_${crypto.randomUUID()}`;
+    const encoded_boundary = utf8_encoder.encode(boundary);
     const body_buffer = new stdio.Buffer();
     await data.forEach(async (value, key) => {
         if (typeof value === "string") {
@@ -43,16 +45,18 @@ async function encode_form_data(data: FormData): Promise<Uint8Array> {
             let part_header = `${boundary}${CRLF}`;
             part_header += `Content-Disposition: form-data; name="${key}"${CRLF}`;
             part_header += `Content-Type: "${value.type}"${CRLF}`;
-            const encoded_crlf = utf8_encoder.encode(CRLF);
             const encoded_part_header = utf8_encoder.encode(part_header);
             body_buffer.grow(encoded_part_header.length + value.size + encoded_crlf.length);
             await body_buffer.write(encoded_part_header);
             await body_buffer.write(new Uint8Array(await value.arrayBuffer()));
             await body_buffer.write(encoded_crlf);
         }
+        body_buffer.grow(encoded_boundary.length + encoded_crlf.length);
+        await body_buffer.write(encoded_boundary);
+        await body_buffer.write(encoded_crlf);
     });
-    return stdstreams.readAll(body_buffer);
-};
+    return [boundary, await stdstreams.readAll(body_buffer)];
+}
 
 async function encode_body(body: BodyInit): Promise<[string, Uint8Array]> {
     if (typeof body === "string") {
@@ -60,9 +64,10 @@ async function encode_body(body: BodyInit): Promise<[string, Uint8Array]> {
     } else if (body instanceof ReadableStream) {
         return ["", await stdstreams.readAll(stdstreams.readerFromStreamReader(body.getReader()))];
     } else if (body instanceof FormData) {
-        return ["multipart/form-data", await encode_form_data(body)];
+        const [boundary, encoded_body] = await encode_form_data(body);
+        return [`multipart/form-data; boundary=${boundary}`, encoded_body];
     } else if (body instanceof URLSearchParams) {
-        return ["multipart/x-www-form-urlencoded", await encode_search_params(body)];
+        return ["multipart/x-www-form-urlencoded", encode_search_params(body)];
     } else if (body instanceof Blob) {
         return [body.type, new Uint8Array(await body.arrayBuffer())];
     } else if (body instanceof ArrayBuffer) {
@@ -93,8 +98,6 @@ export class UnixHttpSocket {
         });
     }
 
-
-
     public async fetch(path: `/${string}`, options: RequestInit) {
         // merge default and userprovided headers with user-provided values taking precendence.
         // note that we have no guarantee of header field order, however in practice it does not matter
@@ -107,10 +110,10 @@ export class UnixHttpSocket {
         }
 
         // encode the body and set headers if we have any information about the content type
-        let encoded_body: Uint8Array, content_type: string;
+        let request_body = new Uint8Array(0), content_type: string;
         if (options.body) {
-            [content_type, encoded_body] = await encode_body(options.body);
-            request_headers.set("Content-Length", encoded_body.length.toString(10));
+            [content_type, request_body] = await encode_body(options.body);
+            request_headers.set("Content-Length", request_body.length.toString(10));
             // only set the content type if it is not already set by the user
             if (content_type !== "" && !request_headers.has("Content-Type")) {
                 request_headers.set("Content-Type", content_type);
@@ -118,14 +121,22 @@ export class UnixHttpSocket {
         }
 
         // build the request text
-        let request_body = `${options.method} ${path} HTTP/1.1${CRLF}`;
+        let request_header_string = `${options.method} ${path} HTTP/1.1${CRLF}`;
         request_headers.forEach((value, key) => {
-            request_body += `${key}: ${value}${CRLF}`;
+            request_header_string += `${key}: ${value}${CRLF}`;
         });
-        request_body += CRLF;
+        request_header_string += CRLF;
+
+        const request_header = utf8_encoder.encode(request_header_string);
+        const request_data = new stdio.Buffer();
+        request_data.grow(request_header.length + request_body.length + encoded_crlf.length);
+        await request_data.write(request_header);
+        await request_data.write(request_body);
+        await request_data.write(utf8_encoder.encode(CRLF));
 
         const connection = await this.get_connection();
-        await connection.write(utf8_encoder.encode(request_body));
+        await connection.write(request_data.bytes());
+
         const response = await this.read_response(connection);
         return response;
     }
@@ -164,7 +175,6 @@ export class UnixHttpSocket {
         }
 
         let response_stream = reset_stream(line_stream.getReader());
-
         if (headers.get("Transfer-Encoding") === "chunked") {
             response_stream = response_stream.pipeThrough(new DechunkingTransferStream());
         }
@@ -223,8 +233,9 @@ class DechunkingTransferStream implements TransformStream<Uint8Array, Uint8Array
                 return;
             }
 
-            // read the chunk
-            this.current_chunk_data!.set(data, this.current_chunk_position);
+            // read the chunk. the final CRLF is not part of the chunk data
+            const data_view = data.subarray(0, this.current_chunk_length - this.current_chunk_position);
+            this.current_chunk_data!.set(data_view, this.current_chunk_position);
             this.current_chunk_position += data.length;
             if (this.current_chunk_position >= this.current_chunk_length) {
                 this.current_chunk_length = undefined;
