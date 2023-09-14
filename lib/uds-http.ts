@@ -125,14 +125,15 @@ export class UnixHttpSocket {
         request_headers.forEach((value, key) => {
             request_header_string += `${key}: ${value}${CRLF}`;
         });
-        request_header_string += CRLF;
 
         const request_header = utf8_encoder.encode(request_header_string);
+        const request_size = request_header.length + encoded_crlf.length + request_body.length + encoded_crlf.length;
         const request_data = new stdio.Buffer();
-        request_data.grow(request_header.length + request_body.length + encoded_crlf.length);
+        request_data.grow(request_size);
         await request_data.write(request_header);
+        await request_data.write(encoded_crlf);
         await request_data.write(request_body);
-        await request_data.write(utf8_encoder.encode(CRLF));
+        await request_data.write(encoded_crlf);
 
         const connection = await this.get_connection();
         await connection.write(request_data.bytes());
@@ -143,7 +144,7 @@ export class UnixHttpSocket {
 
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
         const http_stream = stdstreams.readableStreamFromReader(new stdio.BufReader(connection));
-        const line_stream = http_stream.pipeThrough(new stdstreams.DelimiterStream(utf8_encoder.encode(CRLF), { disposition: "suffix" }));
+        const line_stream = http_stream.pipeThrough(new stdstreams.DelimiterStream(encoded_crlf, { disposition: "suffix" }));
 
         let status = -1, status_text = "";
         const headers = new Headers();
