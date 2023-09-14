@@ -1,5 +1,5 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run --unstable --allow-read=/var/run/docker.sock --allow-write=/var/run/docker.sock --watch main.ts"
   }
 }

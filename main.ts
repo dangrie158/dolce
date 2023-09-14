@@ -1,8 +1,8 @@
-export function add(a: number, b: number): number {
-  return a + b;
-}
+import { DockerApi } from "./lib/docker-api.ts";
 
-// Learn more at https://deno.land/manual/examples/module_metadata#concepts
-if (import.meta.main) {
-  console.log("Add 2 + 3 =", add(2, 3));
-}
+
+const response = await new DockerApi().get_images();
+console.log(response);
+// console.log(await response.text());
+console.log(await response.json());
+console.log("done");
