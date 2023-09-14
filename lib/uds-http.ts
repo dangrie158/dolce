@@ -8,8 +8,6 @@ const CRLF = "\r\n";
 const HEADER_DELIMITER = ": ";
 const SPACE = " ";
 
-type HTTPHeaders = Record<string, string>;
-
 const utf8_encoder = new TextEncoder(); // default 'utf-8', see: https://encoding.spec.whatwg.org/#interface-textdecoder
 const ascii_decoder = new TextDecoder("ascii");
 
@@ -22,16 +20,67 @@ function reset_stream(input: ReadableStreamDefaultReader<Uint8Array>): ReadableS
     return stdstreams.readableStreamFromReader(stdstreams.readerFromStreamReader(input));
 }
 
+async function encode_search_params(data: URLSearchParams): Promise<Uint8Array> {
+    let encoded_form_data: string[] = [];
+    data.forEach((value, key) => {
+        encoded_form_data.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+    });
+    return utf8_encoder.encode(encoded_form_data.join("="));
+}
+
+async function encode_form_data(data: FormData): Promise<Uint8Array> {
+    const boundary = `-----Boundary_${crypto.randomUUID()}`;
+    const body_buffer = new stdio.Buffer();
+    await data.forEach(async (value, key) => {
+        if (typeof value === "string") {
+            let part = `${boundary}${CRLF}`;
+            part += `Content-Disposition: form-data; name="${key}"${CRLF}`;
+            part += `${value}${CRLF}`;
+            const encoded_part = utf8_encoder.encode(part);
+            body_buffer.grow(encoded_part.length);
+            await body_buffer.write(encoded_part);
+        } else {
+            let part_header = `${boundary}${CRLF}`;
+            part_header += `Content-Disposition: form-data; name="${key}"${CRLF}`;
+            part_header += `Content-Type: "${value.type}"${CRLF}`;
+            const encoded_crlf = utf8_encoder.encode(CRLF);
+            const encoded_part_header = utf8_encoder.encode(part_header);
+            body_buffer.grow(encoded_part_header.length + value.size + encoded_crlf.length);
+            await body_buffer.write(encoded_part_header);
+            await body_buffer.write(new Uint8Array(await value.arrayBuffer()));
+            await body_buffer.write(encoded_crlf);
+        }
+    });
+    return stdstreams.readAll(body_buffer);
+};
+
+async function encode_body(body: BodyInit): Promise<[string, Uint8Array]> {
+    if (typeof body === "string") {
+        return ["", utf8_encoder.encode(body)];
+    } else if (body instanceof ReadableStream) {
+        return ["", await stdstreams.readAll(stdstreams.readerFromStreamReader(body.getReader()))];
+    } else if (body instanceof FormData) {
+        return ["multipart/form-data", await encode_form_data(body)];
+    } else if (body instanceof URLSearchParams) {
+        return ["multipart/x-www-form-urlencoded", await encode_search_params(body)];
+    } else if (body instanceof Blob) {
+        return [body.type, new Uint8Array(await body.arrayBuffer())];
+    } else if (body instanceof ArrayBuffer) {
+        return ["", new Uint8Array(body)];
+    }
+    throw new Error(`Don't know how to encode body of type ${body.constructor.name}`);
+}
+
 /**
  * Represents a HTTP connection to a server over a (local) Unix Socket (AF_UNIX).
  * the `fetch` method represents a interface inspired by the `fetch` method in the WebPlatform
  */
 export class UnixHttpSocket {
-    private static DEFAULT_HEADERS = {
+    private static DEFAULT_HEADERS = new Headers({
         "Host": "localhost", // localhost ist the default host for UDS connections as it doesn't matter
         "User-Agent": UA_STRING,
         "Connection": "close" // keep the api much simpler by not allowing connection reuse
-    };
+    });
 
     constructor(
         private socket_path: string
@@ -44,19 +93,34 @@ export class UnixHttpSocket {
         });
     }
 
+
+
     public async fetch(path: `/${string}`, options: RequestInit) {
         // merge default and userprovided headers with user-provided values taking precendence.
         // note that we have no guarantee of header field order, however in practice it does not matter
         // see: https://www.rfc-editor.org/rfc/rfc9110.html
-        const request_headers = {
-            ...UnixHttpSocket.DEFAULT_HEADERS,
-            ...options.headers
-        };
+        const request_headers = new Headers();
+        UnixHttpSocket.DEFAULT_HEADERS.forEach((value, key) => request_headers.set(key, value));
+        new Headers(options.headers)?.forEach((value, key) => request_headers.set(key, value));
+        if (options.body) {
+            request_headers.set("Content-Length", options.body.toString());
+        }
+
+        // encode the body and set headers if we have any information about the content type
+        let encoded_body: Uint8Array, content_type: string;
+        if (options.body) {
+            [content_type, encoded_body] = await encode_body(options.body);
+            request_headers.set("Content-Length", encoded_body.length.toString(10));
+            // only set the content type if it is not already set by the user
+            if (content_type !== "" && !request_headers.has("Content-Type")) {
+                request_headers.set("Content-Type", content_type);
+            }
+        }
 
         // build the request text
         let request_body = `${options.method} ${path} HTTP/1.1${CRLF}`;
-        Object.entries(request_headers).map(([field_name, field_content]) => {
-            request_body += `${field_name}: ${field_content}${CRLF}`;
+        request_headers.forEach((value, key) => {
+            request_body += `${key}: ${value}${CRLF}`;
         });
         request_body += CRLF;
 
@@ -68,10 +132,10 @@ export class UnixHttpSocket {
 
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
         const http_stream = stdstreams.readableStreamFromReader(new stdio.BufReader(connection));
-        const line_stream = http_stream.pipeThrough(new stdstreams.DelimiterStream(utf8_encoder.encode(CRLF)));
+        const line_stream = http_stream.pipeThrough(new stdstreams.DelimiterStream(utf8_encoder.encode(CRLF), { disposition: "suffix" }));
 
         let status = -1, status_text = "";
-        const headers: HTTPHeaders = {};
+        const headers = new Headers();
         let response_part: "status" | "head" | "body" = "status";
 
         reader:
@@ -82,28 +146,28 @@ export class UnixHttpSocket {
             switch (response_part) {
                 case "status": {
                     const [_, status_code_string, ...reason_phrase_parts] = decoded_response_line.split(SPACE);
-                    status_text = reason_phrase_parts.join(SPACE);
+                    status_text = reason_phrase_parts.join(SPACE).trim();
                     status = Number.parseInt(status_code_string, 10);
                     response_part = "head";
                     break;
                 }
                 case "head": {
-                    if (response_line.length === 0) {
+                    if (decoded_response_line.trim().length === 0) {
                         response_part = "body";
                         break reader;
                     }
                     const [field_name, ...field_content] = decoded_response_line.split(HEADER_DELIMITER);
-                    headers[field_name] = field_content.join(HEADER_DELIMITER);
+                    headers.set(field_name, field_content.join(HEADER_DELIMITER));
                     break;
                 }
             }
         }
 
         let response_stream = reset_stream(line_stream.getReader());
-        if (headers["Transfer-Encoding"] === "chunked") {
+
+        if (headers.get("Transfer-Encoding") === "chunked") {
             response_stream = response_stream.pipeThrough(new DechunkingTransferStream());
         }
-
         return new Response(response_stream, { status, statusText: status_text, headers });
     }
 }
@@ -118,18 +182,18 @@ class DechunkingTransferStream implements TransformStream<Uint8Array, Uint8Array
     public readonly writable: WritableStream<Uint8Array>;
 
     constructor() {
-        const unpacker = new DechunkingTransferStream.Unchunker();
+        const unchunker = new DechunkingTransferStream.Unchunker();
 
         this.readable = new ReadableStream({
             start(controller) {
-                unpacker.on_chunk = chunk => controller.enqueue(chunk);
-                unpacker.on_close = () => controller.close();
+                unchunker.on_chunk = chunk => controller.enqueue(chunk);
+                unchunker.on_close = () => controller.close();
             }
         });
 
         this.writable = new WritableStream({
             write(uint8Array) {
-                unpacker.addBinaryData(uint8Array);
+                unchunker.addBinaryData(uint8Array);
             }
         });
     }
@@ -145,10 +209,12 @@ class DechunkingTransferStream implements TransformStream<Uint8Array, Uint8Array
         addBinaryData(data: Uint8Array) {
             // we're not currently decoing a chunk, start a new one
             if (this.current_chunk_length === undefined) {
-                // find first index of a linefeed
-                this.current_chunk_length = Number.parseInt(String.fromCharCode(...data), 16);
+                const data_length_string = String.fromCharCode(...data).trim();
+                if (data_length_string.length == 0) {
+                    return;
+                }
+                this.current_chunk_length = Number.parseInt(data_length_string, 16);
                 this.current_chunk_data = new Uint8Array(this.current_chunk_length);
-
                 if (this.current_chunk_length === 0) {
                     // a zero-length chunk indicates the end of the stream
                     this.on_close?.();
@@ -160,11 +226,10 @@ class DechunkingTransferStream implements TransformStream<Uint8Array, Uint8Array
             // read the chunk
             this.current_chunk_data!.set(data, this.current_chunk_position);
             this.current_chunk_position += data.length;
-
-            if (this.current_chunk_position == this.current_chunk_length) {
-                this.on_chunk?.(this.current_chunk_data!);
+            if (this.current_chunk_position >= this.current_chunk_length) {
                 this.current_chunk_length = undefined;
                 this.current_chunk_position = 0;
+                this.on_chunk?.(this.current_chunk_data!);
             }
         }
     };
