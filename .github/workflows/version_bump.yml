@@ -42,6 +42,6 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          branch: "v${{ env.NEW_VERSION }}"
+          branch: "releases/v${{ env.NEW_VERSION }}"
           title: "Bump Version to v${{ env.NEW_VERSION }}"
           body: "This is an automated PR to release Version v${{ env.NEW_VERSION }}"
