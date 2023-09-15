@@ -5,7 +5,7 @@ WORKDIR /dolce
 
 # Cache the dependencies as a layer
 COPY deps.ts .
-RUN deno cache module.ts
+RUN deno cache deps.ts
 
 COPY . .
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
