@@ -1,7 +1,7 @@
 
 import { stdio, stdstreams } from "../deps.ts";
 
-const UA_VERSION = "0.0.1";
+const UA_VERSION = "0.0.2";
 const UA_STRING = `Dolce Container Monitor v${UA_VERSION}`;
 
 const CRLF = "\r\n";

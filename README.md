@@ -2,4 +2,4 @@
 
 ## Docker Live Container Events
 
-Current Version: v0.0.1
+Current Version: v0.0.2
