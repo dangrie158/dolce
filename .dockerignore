@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Only include ts files
+!*.ts
+!deno.jsonc
+!lib/**/*.ts
