@@ -76,7 +76,6 @@ export class UnixHttpSocket {
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
         const http_stream = stdstreams.readableStreamFromReader(new stdio.BufReader(connection));
         const line_stream = http_stream.pipeThrough(new stdstreams.DelimiterStream(encoded_crlf, { disposition: "suffix" }));
-
         let status = -1, status_text = "";
         const headers = new Headers();
         let response_part: "status" | "head" | "body" = "status";
@@ -119,39 +118,20 @@ export class UnixHttpSocket {
  * This class assumes that the data comes in packets that are separated by CRLF tokens
  * by using a stdstreams.DelimiterStream transformation.
  */
-class DechunkingTransferStream implements TransformStream<Uint8Array, Uint8Array> {
-    public readonly readable: ReadableStream<Uint8Array>;
-    public readonly writable: WritableStream<Uint8Array>;
-
+class DechunkingTransferStream extends TransformStream<Uint8Array, Uint8Array>{
     constructor() {
-        const unchunker = new DechunkingTransferStream.Unchunker();
-
-        this.readable = new ReadableStream({
-            start(controller) {
-                unchunker.on_chunk = chunk => controller.enqueue(chunk);
-                unchunker.on_close = () => controller.close();
-            }
-        });
-
-        this.writable = new WritableStream({
-            write(uint8Array) {
-                unchunker.addBinaryData(uint8Array);
-            }
-        });
+        super(new DechunkingTransferStream.Unchunker());
     }
 
-    static Unchunker = class {
-        public on_chunk?: (chunk: Uint8Array) => void;
-        public on_close?: () => void;
-
+    static Unchunker = class implements Transformer<Uint8Array, Uint8Array> {
         private current_chunk_length?: number;
         private current_chunk_position = 0;
         private current_chunk_data?: Uint8Array;
 
-        addBinaryData(data: Uint8Array) {
-            // we're not currently decoing a chunk, start a new one
+        transform(chunk: Uint8Array, controller: TransformStreamDefaultController<Uint8Array>): void {
+            // we're not currently decoing a chunk, start a new one;
             if (this.current_chunk_length === undefined) {
-                const data_length_string = String.fromCharCode(...data).trim();
+                const data_length_string = String.fromCharCode(...chunk).trim();
                 if (data_length_string.length == 0) {
                     return;
                 }
@@ -159,20 +139,20 @@ class DechunkingTransferStream implements TransformStream<Uint8Array, Uint8Array
                 this.current_chunk_data = new Uint8Array(this.current_chunk_length);
                 if (this.current_chunk_length === 0) {
                     // a zero-length chunk indicates the end of the stream
-                    this.on_close?.();
+                    controller.terminate();
                 }
 
                 return;
             }
 
             // read the chunk. the final CRLF is not part of the chunk data
-            const data_view = data.subarray(0, this.current_chunk_length - this.current_chunk_position);
+            const data_view = chunk.subarray(0, this.current_chunk_length - this.current_chunk_position);
             this.current_chunk_data!.set(data_view, this.current_chunk_position);
-            this.current_chunk_position += data.length;
+            this.current_chunk_position += chunk.length;
             if (this.current_chunk_position >= this.current_chunk_length) {
                 this.current_chunk_length = undefined;
                 this.current_chunk_position = 0;
-                this.on_chunk?.(this.current_chunk_data!);
+                controller.enqueue(this.current_chunk_data!);
             }
         }
     };
