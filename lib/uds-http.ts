@@ -22,23 +22,6 @@ function reset_stream(input: ReadableStreamDefaultReader<Uint8Array>): ReadableS
 }
 
 /**
- * a `BufReader` that closes the underlying connection to the usix socket
- * after the buffer is read to EOF (null)
- */
-class AutoClosingReader extends stdio.BufReader {
-    constructor(private connection: Deno.UnixConn) {
-        super(connection);
-    }
-    async read(p: Uint8Array): Promise<number | null> {
-        const result = await super.read(p);
-        if (result === null) {
-            this.connection.close();
-        }
-        return result;
-    }
-}
-
-/**
  * Represents a HTTP connection to a server over a (local) Unix Socket (AF_UNIX).
  * the `fetch` method represents a interface inspired by the `fetch` method in the WebPlatform
  */
@@ -91,7 +74,7 @@ export class UnixHttpSocket {
     }
 
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
-        const http_stream = stdstreams.readableStreamFromReader(new AutoClosingReader(connection));
+        const http_stream = stdstreams.readableStreamFromReader(connection);
         const line_stream = http_stream.pipeThrough(new stdstreams.DelimiterStream(encoded_crlf, { disposition: "suffix" }));
         let status = -1, status_text = "";
         const headers = new Headers();
