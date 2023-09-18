@@ -1,5 +1,6 @@
 {
   "tasks": {
-    "dev": "deno run --unstable --allow-read=/var/run/docker.sock --allow-write=/var/run/docker.sock --watch main.ts"
+    "dev": "deno run --unstable --allow-read=/var/run/docker.sock --allow-write=/var/run/docker.sock --watch main.ts",
+    "test": "deno --unstable test --allow-read test/ --allow-write $TMPDIR --coverage=coverage_profile"
   }
 }
