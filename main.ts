@@ -1,8 +1,15 @@
 import { DockerApi } from "./lib/docker-api.ts";
 
 
-const response = await new DockerApi().get_images();
-console.log(response);
-// console.log(await response.text());
-console.log(await response.json());
+const api = await new DockerApi();
+
+const response = await api.get_version();
+console.log(await response);
+
+const event_stream = await api.subscribe_events();
+
+for await (const event of event_stream) {
+    console.log(event);
+}
+
 console.log("done");
