@@ -1,4 +1,4 @@
-import { stdstreams, stdio } from "../deps.ts";
+import { streams, io } from "../deps.ts";
 import { UnixHttpSocket } from "./uds-http.ts";
 
 type DockerVersionReponse = {
@@ -56,8 +56,9 @@ type DockerEvent = DockerContainerEvent | DockerImageEvent | DockerVolumeEvent |
 export class DockerApi {
     // we use the oldest version of the API that supports all the features we want
     // to be compatible with most versions.
-    private static DEFAULT_VERSION = "v1.22";
-    private static DEFAULT_HEADERS = {
+    public static DEFAULT_VERSION = "v1.22";
+    public static DEFAULT_SOCKET_PATH = "/var/run/docker.sock";
+    public static DEFAULT_HEADERS = {
         "Accept": "application/json",
         "Accept-Encoding": "identity"
     };
@@ -65,9 +66,10 @@ export class DockerApi {
     private socket_client: UnixHttpSocket;
 
     constructor(
+        socket_path: string = DockerApi.DEFAULT_SOCKET_PATH,
         private api_version = DockerApi.DEFAULT_VERSION
     ) {
-        this.socket_client = new UnixHttpSocket("/var/run/docker.sock");
+        this.socket_client = new UnixHttpSocket(socket_path);
     }
 
     private get(endpoint: `/${string}`): Promise<Response> {
@@ -87,7 +89,7 @@ export class DockerApi {
     async subscribe_events(): Promise<AsyncGenerator<DockerEvent>> {
         const http_stream = await this.socket_client.fetch(`http://localhost/${this.api_version}/events`, { headers: DockerApi.DEFAULT_HEADERS });
         const http_stream_reader = http_stream.body!.getReader();
-        const reader = new stdio.BufReader(stdstreams.readerFromStreamReader(http_stream_reader));
+        const reader = new io.BufReader(streams.readerFromStreamReader(http_stream_reader));
         return async function* event_stream() {
             do {
                 const nextLine = await reader.readString("\n");
