@@ -18,11 +18,11 @@ export class DockerApi {
     }
 
     async get_version() {
-        return await this.socket_client.fetch(`/${this.api_version}/version`, { headers: DockerApi.DEFAULT_HEADERS, method: "GET" });
+        return await this.socket_client.fetch(`http://localhost/${this.api_version}/version`, { headers: DockerApi.DEFAULT_HEADERS, method: "GET" });
     }
 
     async get_images() {
-        return await this.socket_client.fetch(`/${this.api_version}/images/json`, { headers: DockerApi.DEFAULT_HEADERS, method: "GET" });
+        return await this.socket_client.fetch(`http://localhost/${this.api_version}/images/json`, { headers: DockerApi.DEFAULT_HEADERS, method: "GET" });
     }
 
 }

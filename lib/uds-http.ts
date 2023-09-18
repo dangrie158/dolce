@@ -21,68 +21,12 @@ function reset_stream(input: ReadableStreamDefaultReader<Uint8Array>): ReadableS
     return stdstreams.readableStreamFromReader(stdstreams.readerFromStreamReader(input));
 }
 
-function encode_search_params(data: URLSearchParams): Uint8Array {
-    const encoded_form_data: string[] = [];
-    data.forEach((value, key) => {
-        encoded_form_data.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
-    });
-    return utf8_encoder.encode(encoded_form_data.join("="));
-}
-
-async function encode_form_data(data: FormData): Promise<[string, Uint8Array]> {
-    const boundary = `-----Boundary_${crypto.randomUUID()}`;
-    const encoded_boundary = utf8_encoder.encode(boundary);
-    const body_buffer = new stdio.Buffer();
-    await data.forEach(async (value, key) => {
-        if (typeof value === "string") {
-            let part = `${boundary}${CRLF}`;
-            part += `Content-Disposition: form-data; name="${key}"${CRLF}`;
-            part += `${value}${CRLF}`;
-            const encoded_part = utf8_encoder.encode(part);
-            body_buffer.grow(encoded_part.length);
-            await body_buffer.write(encoded_part);
-        } else {
-            let part_header = `${boundary}${CRLF}`;
-            part_header += `Content-Disposition: form-data; name="${key}"${CRLF}`;
-            part_header += `Content-Type: "${value.type}"${CRLF}`;
-            const encoded_part_header = utf8_encoder.encode(part_header);
-            body_buffer.grow(encoded_part_header.length + value.size + encoded_crlf.length);
-            await body_buffer.write(encoded_part_header);
-            await body_buffer.write(new Uint8Array(await value.arrayBuffer()));
-            await body_buffer.write(encoded_crlf);
-        }
-        body_buffer.grow(encoded_boundary.length + encoded_crlf.length);
-        await body_buffer.write(encoded_boundary);
-        await body_buffer.write(encoded_crlf);
-    });
-    return [boundary, await stdstreams.readAll(body_buffer)];
-}
-
-async function encode_body(body: BodyInit): Promise<[string, Uint8Array]> {
-    if (typeof body === "string") {
-        return ["", utf8_encoder.encode(body)];
-    } else if (body instanceof ReadableStream) {
-        return ["", await stdstreams.readAll(stdstreams.readerFromStreamReader(body.getReader()))];
-    } else if (body instanceof FormData) {
-        const [boundary, encoded_body] = await encode_form_data(body);
-        return [`multipart/form-data; boundary=${boundary}`, encoded_body];
-    } else if (body instanceof URLSearchParams) {
-        return ["multipart/x-www-form-urlencoded", encode_search_params(body)];
-    } else if (body instanceof Blob) {
-        return [body.type, new Uint8Array(await body.arrayBuffer())];
-    } else if (body instanceof ArrayBuffer) {
-        return ["", new Uint8Array(body)];
-    }
-    throw new Error(`Don't know how to encode body of type ${body.constructor.name}`);
-}
-
 /**
  * Represents a HTTP connection to a server over a (local) Unix Socket (AF_UNIX).
  * the `fetch` method represents a interface inspired by the `fetch` method in the WebPlatform
  */
 export class UnixHttpSocket {
     private static DEFAULT_HEADERS = new Headers({
-        "Host": "localhost", // localhost ist the default host for UDS connections as it doesn't matter
         "User-Agent": UA_STRING,
         "Connection": "close" // keep the api much simpler by not allowing connection reuse
     });
@@ -98,45 +42,32 @@ export class UnixHttpSocket {
         });
     }
 
-    public async fetch(path: `/${string}`, options: RequestInit) {
+    public async fetch(input: string | Request, init: RequestInit) {
+        const request = new Request(input, init);
+        const request_url = new URL(request.url);
         // merge default and userprovided headers with user-provided values taking precendence.
-        // note that we have no guarantee of header field order, however in practice it does not matter
-        // see: https://www.rfc-editor.org/rfc/rfc9110.html
-        const request_headers = new Headers();
-        UnixHttpSocket.DEFAULT_HEADERS.forEach((value, key) => request_headers.set(key, value));
-        new Headers(options.headers)?.forEach((value, key) => request_headers.set(key, value));
-        if (options.body) {
-            request_headers.set("Content-Length", options.body.toString());
+        UnixHttpSocket.DEFAULT_HEADERS.forEach((value, key) => request.headers.get(key) ? null : request.headers.set(key, value));
+        if (request.headers.get("Connection") !== "close") {
+            throw new Error("only 'Connection: close' connection header supported");
         }
 
         // encode the body and set headers if we have any information about the content type
-        let request_body = new Uint8Array(0), content_type: string;
-        if (options.body) {
-            [content_type, request_body] = await encode_body(options.body);
-            request_headers.set("Content-Length", request_body.length.toString(10));
-            // only set the content type if it is not already set by the user
-            if (content_type !== "" && !request_headers.has("Content-Type")) {
-                request_headers.set("Content-Type", content_type);
-            }
-        }
+        const request_body = new Uint8Array(await request.arrayBuffer());
 
-        // build the request text
-        let request_header_string = `${options.method} ${path} HTTP/1.1${CRLF}`;
-        request_headers.forEach((value, key) => {
+        // build the request text;
+        let request_header_string = `${request.method} ${request_url.pathname} HTTP/1.1${CRLF}`;
+        request_header_string += `Host: ${request_url.host}${CRLF}`;
+        request_header_string += `Content-Length: ${request_body.length.toString(10)}${CRLF}`;
+        request.headers.forEach((value, key) => {
             request_header_string += `${key}: ${value}${CRLF}`;
         });
 
         const request_header = utf8_encoder.encode(request_header_string);
-        const request_size = request_header.length + encoded_crlf.length + request_body.length + encoded_crlf.length;
-        const request_data = new stdio.Buffer();
-        request_data.grow(request_size);
-        await request_data.write(request_header);
-        await request_data.write(encoded_crlf);
-        await request_data.write(request_body);
-        await request_data.write(encoded_crlf);
-
         const connection = await this.get_connection();
-        await connection.write(request_data.bytes());
+        await connection.write(request_header);
+        await connection.write(encoded_crlf);
+        await connection.write(request_body);
+        await connection.write(encoded_crlf);
 
         const response = await this.read_response(connection);
         return response;
