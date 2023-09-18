@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --unstable --allow-read=/var/run/docker.sock --allow-write=/var/run/docker.sock --watch main.ts",
+    "dev": "DOLCE_LOG_LEVEL=DEBUG deno run --unstable --allow-read=/var/run/docker.sock,./templates --allow-write=/var/run/docker.sock --allow-env --watch main.ts",
+    "bmp": "deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts",
     "test": "deno --unstable test --allow-read test/ --allow-write $TMPDIR --coverage=coverage_profile"
   }
 }

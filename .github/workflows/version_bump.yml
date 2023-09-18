@@ -38,8 +38,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-          deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.1.0/cli.ts --${{github.event.inputs.releaseKind}}
-          echo "NEW_VERSION=$(deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.1.0/cli.ts --info | grep "Current version:" | cut -c 23-27)" >> $GITHUB_ENV
+          deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --${{github.event.inputs.releaseKind}}
+          echo "NEW_VERSION=$(deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --info | grep "Current version:" | cut -c 23-27)" >> $GITHUB_ENV
 
       - name: Tag release
         env:
