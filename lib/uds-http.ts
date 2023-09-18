@@ -59,7 +59,7 @@ export class UnixHttpSocket {
         });
     }
 
-    public async fetch(input: string | Request, init: RequestInit) {
+    public async fetch(input: string | Request, init?: RequestInit | undefined) {
         const request = new Request(input, init);
         const request_url = new URL(request.url);
         // merge default and userprovided headers with user-provided values taking precendence.
