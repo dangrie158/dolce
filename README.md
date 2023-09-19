@@ -1,4 +1,4 @@
-![Dolce logo](./assets/logo.svg)
+![Dolce logo](./assets/logo_full.svg)
 
 ## Docker Live Container Events
 
