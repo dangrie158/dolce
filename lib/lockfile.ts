@@ -1,5 +1,5 @@
 
-import { path } from "../deps.ts";
+import { path, async } from "../deps.ts";
 
 type LockFileInformation = {
     last_update: Date,
@@ -13,8 +13,9 @@ export enum LockFileRegisterStatus {
     FailAnotherProcessRunning,
 }
 
-
 export class LockFile {
+    static DebounceInterval = 1000;
+
     private terminateHandler: () => void = () => Deno.exit(0);
     private unloadHandler: () => void = () => this.remove();
 
@@ -63,6 +64,8 @@ export class LockFile {
         await Deno.writeTextFile(this.lock_file_path, JSON.stringify(info));
         return info;
     }
+
+    debounced_update = async.debounce(async () => await this.update(), LockFile.DebounceInterval);
 
     async exists(): Promise<boolean> {
         try {

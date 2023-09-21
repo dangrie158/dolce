@@ -53,6 +53,7 @@ console.log(installed_notifiers);
 for await (const event of event_stream) {
     if (event.Type == "container") {
         installed_notifiers.forEach(notifier => notifier?.add_event(event));
+        lockfile.debounced_update();
     }
 }
 
