@@ -85,6 +85,17 @@ export type DockerVolumeEvent = GenericDockerEvent<"volume", VolumeAction>;
 export type DockerNetworkEvent = GenericDockerEvent<"network", NetworkAction>;
 export type DockerEvent = DockerContainerEvent | DockerImageEvent | DockerVolumeEvent | DockerNetworkEvent;
 
+type DockerEventAction = DockerEvent["Action"];
+type DockerEventType = DockerEvent["Type"];
+type DockerEventFilters = {
+    event?: DockerEventAction[];
+    type?: DockerEventType[];
+    container?: string[];
+    image?: string[];
+    label?: string[];
+    volume?: string[];
+    network?: string[];
+};
 
 export class DockerApi {
     // we use the oldest version of the API that supports all the features we want
@@ -124,16 +135,32 @@ export class DockerApi {
         return response.json();
     }
 
-    async subscribe_events(): Promise<AsyncGenerator<DockerEvent>> {
-        const http_stream = await this.socket_client.fetch(`http://localhost/${this.api_version}/events`, { headers: DockerApi.DEFAULT_HEADERS });
+    async subscribe_events(options: { since?: Date, until?: Date, filters?: DockerEventFilters; } = {}): Promise<AsyncGenerator<DockerEvent>> {
+        const url = new URL(`http://localhost/${this.api_version}/events`);
+        if (options.since !== undefined) {
+            const date_param = options.since.getTime() / 1000;
+            url.searchParams.append("since", date_param.toFixed());
+        }
+        if (options.until !== undefined) {
+            const date_param = options.until.getTime() / 1000;
+            url.searchParams.append("until", date_param.toFixed());
+        }
+        if (options.filters !== undefined) {
+            const date_param = JSON.stringify(options.filters);
+            url.searchParams.append("filters", date_param);
+        }
+
+        const http_stream = await this.socket_client.fetch(url.toString(), { headers: DockerApi.DEFAULT_HEADERS });
         const http_stream_reader = http_stream.body!.getReader();
         const reader = new io.BufReader(streams.readerFromStreamReader(http_stream_reader));
         return async function* event_stream() {
             do {
                 const nextLine = await reader.readString("\n");
-                if (nextLine !== null) {
-                    yield JSON.parse(nextLine);
+                if (nextLine === null) {
+                    // check if we're done reading
+                    return;
                 }
+                yield JSON.parse(nextLine);
             } while (true);
         }();
     }
