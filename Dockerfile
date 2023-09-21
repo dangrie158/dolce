@@ -11,4 +11,10 @@ COPY . .
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
 RUN deno cache main.ts
 
-CMD exec deno run --unstable --allow-write=${DOCKER_SOCKET} --allow-read=${DOCKER_SOCKET},./templates --allow-env main.ts
+CMD exec deno run \
+    --unstable \
+    --allow-read=${DOCKER_SOCKET},./templates \
+    --allow-write=${DOCKER_SOCKET} \
+    --allow-net ${SMTP_HOSTNAME} \
+    --allow-env \
+    main.ts
