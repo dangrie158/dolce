@@ -5,5 +5,6 @@
 !*.ts
 !deno.jsonc
 !lib/**/*.ts
-!templates/**/*.(ts|eta)
+!templates/*.ts
+!templates/**/*.eta
 !test/**/*.ts

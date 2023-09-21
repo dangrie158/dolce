@@ -1,0 +1,35 @@
+---json
+{"subject": "Container Status Changed"}
+---
+<%
+    function newest_first(event_a, event_b){
+        return event_b.timeNano - event_a.timeNano;
+    }
+
+    function get_event_class(event){
+        switch (event.Action) {
+        case "start": return "success"
+        case "die": return "error"
+        case "kill": return "error"
+        case "oom": return "error"
+        case "stop": return "warning"
+        case "pause": return "warning"
+        case "unpause": return "success"
+        default: ""
+        }
+    }
+%>
+<% layout("./base.eta") %>
+
+<h1>Hello,</h1>
+<p>There are changes to the status of your containers. The last changes are (newest first):</p>
+
+<table>
+    <tr><th>Container</th>&#009;<th>Action</th>&#009;<th>Time</th></tr>
+    <% it.events.toSorted(newest_first).forEach(event => { %>
+    <tr><td><p><%= event.from %></p></td>&#009;<td><span class="<%= get_event_class(event) %>"><%= event.Action %></span></td>&#009;<td><%= new Date(event.time * 1000).toLocaleString() %></td></tr>
+    <% }); %>
+</table>
+
+
+<p>If something new happens, you won't be bothered again with updates until <%= it.earliest_next_update.toLocaleString() %>.</p>
