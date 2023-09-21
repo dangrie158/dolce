@@ -1,5 +1,5 @@
 
-import { path, async } from "../deps.ts";
+import { path, async, log } from "../deps.ts";
 
 type LockFileInformation = {
     last_update: Date,
@@ -15,9 +15,17 @@ export enum LockFileRegisterStatus {
 
 export class LockFile {
     static DebounceInterval = 1000;
+    static get logger() { return log.getLogger("notifier"); }
 
-    private terminateHandler: () => void = () => Deno.exit(0);
-    private unloadHandler: () => void = () => this.remove();
+    private terminate_handler: () => void = () => {
+        LockFile.logger.info("received SIGTERM or SIGINT, gracefully shutting down");
+        Deno.exit(0);
+    };
+
+    private unload_handler: () => Promise<void> = async () => {
+        LockFile.logger.info(`removing lockfile "${this.lock_file_path}"`);
+        await this.remove();
+    };
 
     constructor(private lock_file_path: string) { }
 
@@ -28,11 +36,18 @@ export class LockFile {
             let lock_file_information: LockFileInformation | undefined;
             try {
                 lock_file_information = await this.read_contents();
+                // check if the other process is still running
                 if (this.is_process_running(lock_file_information.pid)) {
                     status = LockFileRegisterStatus.FailAnotherProcessRunning;
                 }
+                // check if we're the running process. this may only happen in dev mode with the --watch flag
+                if (lock_file_information.pid === Deno.pid) {
+                    status = LockFileRegisterStatus.Success;
+                }
             } finally {
-                status_callback(status, this.lock_file_path, lock_file_information);
+                if (status !== LockFileRegisterStatus.Success) {
+                    status_callback(status, this.lock_file_path, lock_file_information);
+                }
             }
         }
 
@@ -41,18 +56,20 @@ export class LockFile {
         const lock_file_information = await this.update();
 
         // delete the lockfile if this process stops gracefully
-        addEventListener("unload", this.unloadHandler);
+        addEventListener("unload", this.unload_handler);
 
         // shutdown gracefully on SIGTERM as this is the signal send to the process by `docker stop`
         // https://docs.docker.com/engine/reference/commandline/stop/
-        Deno.addSignalListener("SIGTERM", this.terminateHandler);
+        Deno.addSignalListener("SIGTERM", this.terminate_handler);
+        // also support SIGINT since it is the default signal fired when Ctrl+C on a keyboard
+        Deno.addSignalListener("SIGINT", this.terminate_handler);
 
         status_callback(LockFileRegisterStatus.Success, this.lock_file_path, lock_file_information);
     }
 
     async unregister() {
-        Deno.removeSignalListener("SIGTERM", this.terminateHandler);
-        removeEventListener("unload", this.unloadHandler);
+        Deno.removeSignalListener("SIGTERM", this.terminate_handler);
+        removeEventListener("unload", this.unload_handler);
         await this.remove();
     }
 
