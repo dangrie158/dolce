@@ -1,5 +1,5 @@
 import { DOMParser, Eta, extract_frontmatter, path } from "../deps.ts";
-import { DockerContainerEvent } from "../lib/docker-api.ts";
+import { DockerContainerEvent } from "./docker-api.ts";
 
 type EMailFrontMatter = { subject: string; };
 
@@ -9,12 +9,12 @@ type BaseMainContext = {
     hostname: string;
 };
 
-type EventMailContext = BaseMainContext & {
+export type EventMailContext = BaseMainContext & {
     events: DockerContainerEvent[];
     earliest_next_update: Date;
 };
 
-type RestartMailContext = BaseMainContext & {
+export type RestartMailContext = BaseMainContext & {
     events_since_shutdown: DockerContainerEvent[];
     downtime_start: Date;
     downtime_end: Date;
@@ -25,7 +25,7 @@ type MailContext = EventMailContext | RestartMailContext;
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
 export class EMailTemplate {
-    static engine = new Eta({ views: path.join(this_dir, "emails") });
+    static engine = new Eta({ views: path.join(this_dir, "../templates/emails") });
 
     private html_content?: string;
     private text_content?: string;
