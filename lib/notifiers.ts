@@ -1,9 +1,11 @@
 import { SmtpClient } from "../deps.ts";
 import { log } from "../deps.ts";
-import { EMailTemplate } from "../templates/templates.ts";
+import { EMailTemplate, RestartMailContext } from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
 import * as env from "./env.ts";
+
+export type RestartInfo = Omit<RestartMailContext, "hostname">;
 
 export abstract class Notifier {
     constructor(
@@ -11,6 +13,8 @@ export abstract class Notifier {
         ..._args: unknown[]
     ) { }
     abstract add_event(event: DockerContainerEvent): void;
+    abstract notify_about_events(): Promise<void>;
+    abstract notify_about_restart(restart_info: RestartInfo): Promise<void>;
 
     static try_create(_: string): Notifier | undefined { throw new Error(`${this.name} does not implement try_create()`); }
     static get logger() { return log.getLogger("notifier"); }
@@ -29,7 +33,6 @@ export abstract class Notifier {
  * SMTP_FROM: string? (optional, defaults to dolce@<hostname>)
  */
 export class SmtpNotifier extends Notifier {
-    private client = new SmtpClient({ content_encoding: "base64" });
     private buffered_events: DockerContainerEvent[] = [];
 
     constructor(
@@ -49,7 +52,27 @@ export class SmtpNotifier extends Notifier {
         this.buffered_events.push(event);
     }
 
-    private async connect() {
+    async notify_about_events() {
+        const mail = new EMailTemplate("event.eta");
+        await mail.render({
+            hostname: this.hostname,
+            earliest_next_update: new Date(),
+            events: this.buffered_events
+        });
+        await this.send_email(mail);
+    }
+
+    async notify_about_restart(restart_info: RestartInfo) {
+        const mail = new EMailTemplate("event.eta");
+        await mail.render({
+            hostname: this.hostname,
+            ...restart_info
+        });
+        await this.send_email(mail);
+    }
+
+    private async connect(): Promise<SmtpClient> {
+        const client = new SmtpClient({ content_encoding: "base64" });
         const connection_config = {
             hostname: this.smtp_hostname,
             port: this.smtp_port,
@@ -57,22 +80,19 @@ export class SmtpNotifier extends Notifier {
             password: this.smtp_password
         };
         if (this.use_ssl) {
-            await this.client.connectTLS(connection_config);
+            await client.connectTLS(connection_config);
         } else {
-            await this.client.connect(connection_config);
+            await client.connect(connection_config);
         }
+        return client;
     }
 
-    private async send_email() {
-        const mail = new EMailTemplate("event.eta");
-        await mail.render({
-            hostname: this.hostname,
-            earliest_next_update: new Date(),
-            events: this.buffered_events
-        });
 
-        this.recipients.forEach(async (recipient) =>
-            await this.client.send({
+    private async send_email(mail: EMailTemplate) {
+        SmtpNotifier.logger.info(`sending ${mail.constructor.name} via SMTP Notifier`);
+        const client = await this.connect();
+        await this.recipients.map(async (recipient) =>
+            await client.send({
                 content: mail.text,
                 html: mail.html,
                 subject: mail.subject,
@@ -80,6 +100,7 @@ export class SmtpNotifier extends Notifier {
                 to: recipient,
             })
         );
+        await client.close();
     }
 
     static try_create(hostname: string): Notifier | undefined {
