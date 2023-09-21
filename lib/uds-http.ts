@@ -1,5 +1,5 @@
 
-import { io, streams } from "../deps.ts";
+import { streams } from "../deps.ts";
 
 const UA_VERSION = "0.1.0";
 const UA_STRING = `Dolce Container Monitor v${UA_VERSION}`;
@@ -55,7 +55,7 @@ export class UnixHttpSocket {
         const request_body = new Uint8Array(await request.arrayBuffer());
 
         // build the request text;
-        let request_header_string = `${request.method} ${request_url.pathname} HTTP/1.1${CRLF}`;
+        let request_header_string = `${request.method} ${request_url.pathname + request_url.search} HTTP/1.1${CRLF}`;
         request_header_string += `Host: ${request_url.host}${CRLF}`;
         request_header_string += `Content-Length: ${request_body.length.toString(10)}${CRLF}`;
         request.headers.forEach((value, key) => {
