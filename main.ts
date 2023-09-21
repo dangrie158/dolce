@@ -1,23 +1,11 @@
-
 import { log } from "./deps.ts";
 
 import { DockerApi } from "./lib/docker-api.ts";
+import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
 
-async function check_and_register_lockfile() {
 
-    const lock_file_path = "/var/run/dolce/lock.json";
-    Deno.mkdir(lock_file_path, { recursive: true });
-    await Deno.writeTextFile(lock_file_path, JSON.stringify({}));
-    globalThis.addEventListener("unload", () => {
-        console.log('goodbye!');
-    });
-    Deno.addSignalListener("SIGTERM", () => {
-        Deno.exit(0);
-    });
-}
-await check_and_register_lockfile();
-
+const lock_file_path = "/var/run/dolce/lock.json";
 
 const log_level: log.LevelName = Deno.env.get("DOLCE_LOG_LEVEL") as log.LevelName ?? "INFO";
 log.setup({
@@ -32,6 +20,23 @@ log.setup({
 const logger = log.getLogger("main");
 
 logger.info(`starting dolce container monitor v0.1.0`);
+
+const lockfile = new LockFile(lock_file_path);
+lockfile.register((status, lock_file_path, lock_file_contents) => {
+    switch (status) {
+        case LockFileRegisterStatus.Success:
+            logger.info(`created lockfile ${lock_file_path} for pid ${lock_file_contents!.pid}`);
+            break;
+        case LockFileRegisterStatus.SuccessOldLockfileFound:
+            logger.warning(`found old but stale lockfile ${lock_file_path} for pid ${lock_file_contents!.pid} that is no longer running`);
+            // ToDo: notify about restart
+            break;
+        case LockFileRegisterStatus.FailAnotherProcessRunning:
+            logger.error(`another process with PID ${lock_file_contents!.pid} is already running!`);
+            Deno.exit(0);
+            break;
+    }
+});
 
 const docker_api_socket = Deno.env.get("DOCKER_SOCKET") ?? DockerApi.DEFAULT_SOCKET_PATH;
 logger.debug(`connecting to Docker API socket at ${docker_api_socket}`);
