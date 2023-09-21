@@ -27,6 +27,39 @@ type DockerContainerResponse = {
     SizeRootFs: number;
 };
 
+type DockerInfoResponse = {
+    ID: string;
+    Containers: number;
+    ContainersRunning: number;
+    ContainersPaused: number;
+    ContainersStopped: number;
+    Images: number;
+    Driver: string;
+    DriverStatus: [string, string][];
+    MemoryLimit: boolean;
+    SwapLimit: boolean;
+    PidsLimit: boolean;
+    Debug: boolean;
+    NFd: number;
+    SystemTime: string;
+    LoggingDriver: string;
+    CgroupDriver: string;
+    CgroupVersion: string;
+    KernelVersion: string;
+    OperatingSystem: string;
+    OSVersion: string;
+    OSType: string;
+    Architecture: string;
+    NCPU: number,
+    MemTotal: number;
+    DockerRootDir: string;
+    Name: string;
+    Labels: string[];
+    ExperimentalBuild: boolean;
+    ServerVersion: string;
+    //...
+};
+
 type ContainerAction = "attach" | "commit" | "copy" | "create" | "destroy" | "die" | "exec_create" | "exec_start" | "export " | "kill" | "oom" | "pause" | "rename" | "resize" | "restart" | "start" | "stop" | "top" | "unpause" | "update";
 type ImageAction = "delete" | "import" | "load" | "pull" | "push" | "save" | "tag" | "untag" | "prune";
 type VolumeAction = "create" | "mount" | "unmount" | "destroy" | "prune";
@@ -46,11 +79,11 @@ type GenericDockerEvent<Type, Actions> = {
     timeNano: number;
 };
 
-type DockerContainerEvent = GenericDockerEvent<"container", ContainerAction>;
-type DockerImageEvent = GenericDockerEvent<"image", ImageAction>;
-type DockerVolumeEvent = GenericDockerEvent<"volume", VolumeAction>;
-type DockerNetworkEvent = GenericDockerEvent<"network", NetworkAction>;
-type DockerEvent = DockerContainerEvent | DockerImageEvent | DockerVolumeEvent | DockerNetworkEvent;
+export type DockerContainerEvent = GenericDockerEvent<"container", ContainerAction>;
+export type DockerImageEvent = GenericDockerEvent<"image", ImageAction>;
+export type DockerVolumeEvent = GenericDockerEvent<"volume", VolumeAction>;
+export type DockerNetworkEvent = GenericDockerEvent<"network", NetworkAction>;
+export type DockerEvent = DockerContainerEvent | DockerImageEvent | DockerVolumeEvent | DockerNetworkEvent;
 
 
 export class DockerApi {
@@ -78,6 +111,11 @@ export class DockerApi {
 
     async get_version(): Promise<DockerVersionReponse> {
         const response = await this.get("/version");
+        return response.json();
+    }
+
+    async get_info(): Promise<DockerInfoResponse> {
+        const response = await this.get("/info");
         return response.json();
     }
 
