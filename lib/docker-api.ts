@@ -87,7 +87,7 @@ export type DockerEvent = DockerContainerEvent | DockerImageEvent | DockerVolume
 
 type DockerEventAction = DockerEvent["Action"];
 type DockerEventType = DockerEvent["Type"];
-type DockerEventFilters = {
+export type DockerEventFilters = {
     event?: DockerEventAction[];
     type?: DockerEventType[];
     container?: string[];

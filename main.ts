@@ -1,12 +1,17 @@
 import { log } from "./deps.ts";
 
-import { DockerApi, DockerContainerEvent } from "./lib/docker-api.ts";
+import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
 
 
 const lock_file_path = "/var/run/dolce/lock.json";
 const startup_time = new Date();
+const event_filters: DockerEventFilters = {
+    type: ["container"],
+    event: ["start", "die", "kill", "oom", "stop", "pause", "unpause"]
+};
+
 
 // setup logging first so we can output helpful messages
 const log_level: log.LevelName = Deno.env.get("DOLCE_LOG_LEVEL") as log.LevelName ?? "INFO";
@@ -61,7 +66,7 @@ if (restart_time !== undefined) {
     const missed_events_stream = await api.subscribe_events({
         since: restart_time,
         until: startup_time,
-        filters: { type: ["container"] }
+        filters: event_filters
     });
 
     const missed_events = [];
