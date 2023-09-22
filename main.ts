@@ -77,7 +77,7 @@ if (restart_time !== undefined) {
         events_since_shutdown: missed_events
     };
     log.info(`sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`);
-    installed_notifiers.forEach(notifier => notifier.notify_about_restart(restart_information));
+    installed_notifiers.forEach(async notifier => await notifier.notify_about_restart(restart_information));
 }
 
 const event_stream = await api.subscribe_events({
@@ -86,6 +86,6 @@ const event_stream = await api.subscribe_events({
 });
 for await (const event of event_stream) {
     log.info(`new container event received: <"${event.from}": ${event.Action}>`);
-    installed_notifiers.forEach(notifier => notifier.add_event(event as DockerContainerEvent));
-    lockfile.throttled_update();
+    installed_notifiers.forEach(async notifier => await notifier.add_event(event as DockerContainerEvent));
+    await lockfile.throttled_update();
 }

@@ -83,7 +83,7 @@ export class LockFile {
         return info;
     }
 
-    throttled_update = throttle(async () => await this.update(), LockFile.DebounceInterval);
+    throttled_update = throttle(async () => { await this.update(); }, LockFile.UPDATE_THROTTLE_INTERVAL);
 
     async exists(): Promise<boolean> {
         try {
