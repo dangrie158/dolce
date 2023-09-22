@@ -61,6 +61,9 @@ const installed_notifiers = ALL_NOTIFIERS
     .map(notifier => notifier.try_create(docker_host_info.Name))
     .filter(posiibleNotifier => posiibleNotifier !== undefined) as Notifier[];
 
+// restore the notifier state if we we're shutdown unexpectedly
+installed_notifiers.forEach(async notifier => await notifier.restore_from_wal());
+
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {
     // send notification about the restart

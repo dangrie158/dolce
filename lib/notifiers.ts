@@ -1,23 +1,77 @@
 import { SmtpClient } from "../deps.ts";
-import { log } from "../deps.ts";
+import { log, streams } from "../deps.ts";
 import { EMailTemplate, RestartMailContext } from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
 import * as env from "./env.ts";
+import { throttle } from "./async.ts";
 
 export type RestartInfo = Omit<RestartMailContext, "hostname">;
 
+type WriteAheadLog = {
+    buffered_events: DockerContainerEvent[];
+};
+
 export abstract class Notifier {
+    private static WAL_THROTTLE_INTERVAL = 200;
+    private static createion_counter = 0;
+
+    protected buffered_events: DockerContainerEvent[] = [];
+    private unique_id: number;
+    private wal_file: Deno.FsFile;
+
     constructor(
         protected hostname: string,
         ..._args: unknown[]
-    ) { }
-    abstract add_event(event: DockerContainerEvent): void;
+    ) {
+        this.unique_id = Notifier.createion_counter++;
+        this.wal_file = Deno.openSync(this.wal_file_path, { read: true, write: true, create: true });
+    }
+
+    protected get wal_file_path() {
+        return `/var/run/dolce/${this.constructor.name.toLowerCase()}_${this.unique_id}.wal`;
+    }
+
+    async add_event(event: DockerContainerEvent): Promise<void> {
+        this.buffered_events.push(event);
+        await this.update_wal_throttled();
+    }
+
+    async restore_from_wal() {
+        Notifier.logger.debug(`flushing WAL ${this.wal_file_path} for notifier ${this.constructor.name} ${this.unique_id}`);
+        let wal_contents: WriteAheadLog;
+        try {
+            wal_contents = await streams.toJson(this.wal_file.readable) as WriteAheadLog;
+        } catch {
+            Notifier.logger.debug(`failed to read WAL file ${this.wal_file_path}`);
+            return;
+        }
+
+        this.buffered_events = wal_contents.buffered_events;
+        // TODO: check if we need to send a notification
+    }
+
+    private async trancate_wal() {
+        await this.wal_file.truncate();
+        await Deno.fsync(this.wal_file.rid);
+    }
+
+    async update_wal() {
+        const wal_contents: WriteAheadLog = {
+            buffered_events: this.buffered_events
+        };
+        const wal_contents_string = JSON.stringify(wal_contents);
+        const wal_contents_bytes = new TextEncoder().encode(wal_contents_string);
+        await Deno.write(this.wal_file.rid, wal_contents_bytes);
+        await Deno.fsync(this.wal_file.rid);
+    }
+    update_wal_throttled = throttle(async () => { await this.update_wal; }, Notifier.WAL_THROTTLE_INTERVAL);
+
     abstract notify_about_events(): Promise<void>;
     abstract notify_about_restart(restart_info: RestartInfo): Promise<void>;
 
+    protected static get logger() { return log.getLogger("notifier"); }
     static try_create(_: string): Notifier | undefined { throw new Error(`${this.name} does not implement try_create()`); }
-    static get logger() { return log.getLogger("notifier"); }
 }
 
 /**
@@ -33,7 +87,6 @@ export abstract class Notifier {
  * SMTP_FROM: string? (optional, defaults to dolce@<hostname>)
  */
 export class SmtpNotifier extends Notifier {
-    private buffered_events: DockerContainerEvent[] = [];
 
     constructor(
         hostname: string,
@@ -46,10 +99,6 @@ export class SmtpNotifier extends Notifier {
         private smtp_password?: string,
     ) {
         super(hostname);
-    }
-
-    add_event(event: DockerContainerEvent): void {
-        this.buffered_events.push(event);
     }
 
     async notify_about_events() {
