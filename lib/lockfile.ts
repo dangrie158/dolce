@@ -1,5 +1,6 @@
 
-import { path, async, log } from "../deps.ts";
+import { path, log } from "../deps.ts";
+import { throttle } from "./async.ts";
 
 type LockFileInformation = {
     last_update: Date,
@@ -82,7 +83,7 @@ export class LockFile {
         return info;
     }
 
-    debounced_update = async.debounce(async () => await this.update(), LockFile.DebounceInterval);
+    throttled_update = throttle(async () => await this.update(), LockFile.DebounceInterval);
 
     async exists(): Promise<boolean> {
         try {

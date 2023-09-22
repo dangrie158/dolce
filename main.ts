@@ -82,10 +82,10 @@ if (restart_time !== undefined) {
 
 const event_stream = await api.subscribe_events({
     since: startup_time,
-    filters: { type: ["container"] }
+    filters: event_filters
 });
 for await (const event of event_stream) {
     log.info(`new container event received: <"${event.from}": ${event.Action}>`);
     installed_notifiers.forEach(notifier => notifier.add_event(event as DockerContainerEvent));
-    lockfile.debounced_update();
+    lockfile.throttled_update();
 }
