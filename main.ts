@@ -21,7 +21,8 @@ log.setup({
     },
     loggers: {
         main: { level: log_level, handlers: ["default"] },
-        notifier: { level: log_level, handlers: ["default"] }
+        notifier: { level: log_level, handlers: ["default"] },
+        lockfile: { level: log_level, handlers: ["default"] }
     },
 });
 const logger = log.getLogger("main");

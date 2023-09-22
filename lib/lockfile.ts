@@ -15,8 +15,8 @@ export enum LockFileRegisterStatus {
 }
 
 export class LockFile {
-    static DebounceInterval = 1000;
-    static get logger() { return log.getLogger("notifier"); }
+    static UPDATE_THROTTLE_INTERVAL = 1000;
+    static get logger() { return log.getLogger("lockfile"); }
 
     private terminate_handler: () => void = () => {
         LockFile.logger.info("received SIGTERM or SIGINT, gracefully shutting down");
