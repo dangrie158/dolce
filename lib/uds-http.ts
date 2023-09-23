@@ -13,12 +13,25 @@ const ascii_decoder = new TextDecoder("ascii");
 const encoded_crlf = utf8_encoder.encode(CRLF);
 
 /**
- * resets a stream reader so it is no longer in `disturbed` state even if we already read from the stream.
- * This is nerccessary because the `Response` constructor expects a pristine stream that was never read
- * from to track the `bodyUsed` state.
+ * creates a new stream from a reader. this is useful so the reader it is no longer in `disturbed` state
+ * even if we already read from the stream. This is nerccessary because the `Response` constructor expects
+ * a pristine stream that was never read from to track the `bodyUsed` state.
  */
-function reset_stream(input: ReadableStreamDefaultReader<Uint8Array>): ReadableStream<Uint8Array> {
-    return streams.readableStreamFromReader(streams.readerFromStreamReader(input));
+function stream_from_reader(input: ReadableStreamDefaultReader<Uint8Array>): ReadableStream<Uint8Array> {
+    return new ReadableStream({
+        async start(controller) {
+            let done: boolean;
+            do {
+                const read_result = await input.read();
+                done = read_result.done;
+                if (done) {
+                    controller.close();
+                    return;
+                }
+                controller.enqueue(read_result.value!);
+            } while (!done);
+        },
+    });
 }
 
 /**
@@ -74,8 +87,7 @@ export class UnixHttpSocket {
     }
 
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
-        const http_stream = streams.readableStreamFromReader(connection);
-        const line_stream = http_stream.pipeThrough(new streams.DelimiterStream(encoded_crlf, { disposition: "suffix" }));
+        const line_stream = connection.readable.pipeThrough(new streams.DelimiterStream(encoded_crlf, { disposition: "suffix" }));
         let status = -1, status_text = "";
         const headers = new Headers();
         let response_part: "status" | "head" | "body" = "status";
@@ -105,7 +117,7 @@ export class UnixHttpSocket {
             }
         }
 
-        let response_stream = reset_stream(line_stream.getReader());
+        let response_stream = stream_from_reader(line_stream.getReader());
         if (headers.get("Transfer-Encoding") === "chunked") {
             response_stream = response_stream.pipeThrough(new DechunkingTransferStream());
         }
