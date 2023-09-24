@@ -1,21 +1,24 @@
 
+export function wait(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 type ThrottledFunction<T extends Array<void>> = {
     (...args: T): Promise<void>;
 };
 
-export function throttle<T extends Array<void>>(fn: (this: ThrottledFunction<T>, ...args: T) => Promise<void>, wait: number): ThrottledFunction<T> {
-    let timer: number | undefined;
+export function throttle<T extends Array<void>>(fn: (this: ThrottledFunction<T>, ...args: T) => Promise<void>, delay: number): ThrottledFunction<T> {
+    let is_cooling_down: boolean;
     let last_args: T | undefined;
     const throttled_fn = async (...args: T) => {
-        if (timer === undefined) {
+        if (!is_cooling_down) {
             await fn.call(throttled_fn, ...args);
-            timer = setTimeout(() => {
-                if (last_args !== undefined) {
-                    fn.call(throttled_fn, ...last_args);
-                }
-                timer = undefined;
-                last_args = undefined;
-            }, wait);
+            is_cooling_down = true;
+            await wait(delay);
+            is_cooling_down = false;
+            if (last_args !== undefined) {
+                fn.call(throttled_fn, ...last_args);
+            }
         } else {
             last_args = args;
             return Promise.resolve();
