@@ -65,7 +65,11 @@ export abstract class Notifier {
         if (this.buffered_events.length === 0) { return; }
 
         Notifier.logger.info(`sending notification about ${this.buffered_events.length} events with ${this.constructor.name}`);
-        this.notify_about_events();
+        try {
+            await this.notify_about_events();
+        } catch (error) {
+            Notifier.logger.error(`failed to send notification with ${this.constructor.name}: ${error}`);
+        }
         this.last_delivery = Date.now();
         await this.update_wal();
 
@@ -226,7 +230,7 @@ export class SmtpNotifier extends Notifier {
 
         const smtp_sender = env.get_string("SMTP_FROM", `dolce@${hostname}`);
         const recipients = env.get_array("SMTP_RECIPIENTS");
-        const use_ssl = env.get_bool("SMTP_USETLS", false);
+        const use_ssl = env.get_bool("SMTP_USETLS");
         const smtp_hostname = env.get_string("SMTP_HOSTNAME")!;
         const smtp_port = env.get_number("SMTP_PORT");
         const smtp_username = env.get_string("SMTP_USERNAME");

@@ -81,7 +81,13 @@ if (restart_time !== undefined) {
         events_since_shutdown: missed_events
     };
     logger.info(`sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`);
-    installed_notifiers.forEach(async notifier => await notifier.notify_about_restart(restart_information));
+    installed_notifiers.forEach(async notifier => {
+        try {
+            await notifier.notify_about_restart(restart_information);
+        } catch (error) {
+            logger.error(`failed to send notification with ${notifier.constructor.name}: ${error}`);
+        }
+    });
 }
 
 const event_stream = await api.subscribe_events({
