@@ -17,8 +17,12 @@ export function get_string<D extends (string | undefined)>(key: string, default_
     return env.has(key) ? env.get(key)! : default_value!;
 }
 
-export function get_bool<D extends (boolean | undefined)>(key: string, default_value?: D): boolean | D {
-    return env.has(key) ? !!env.get(key)! : default_value!;
+/**
+ * get a boolean value. the truthiness of the value is determined by
+ * the pure existence of the key in the environment
+ * */
+export function get_bool(key: string): boolean {
+    return env.has(key);
 }
 
 /**
