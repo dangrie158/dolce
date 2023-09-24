@@ -5,7 +5,7 @@ import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
 
 
-const lock_file_path = "/var/run/dolce/lock.json";
+const lock_file_path = "/var/run/dolce/lockfile";
 const startup_time = new Date();
 const event_filters: DockerEventFilters = {
     type: ["container"],
@@ -17,7 +17,7 @@ const event_filters: DockerEventFilters = {
 const log_level: log.LevelName = Deno.env.get("DOLCE_LOG_LEVEL") as log.LevelName ?? "INFO";
 log.setup({
     handlers: {
-        default: new log.handlers.ConsoleHandler(log_level, { formatter: "{levelName} {loggerName}: {msg}" })
+        default: new log.handlers.ConsoleHandler(log_level, { formatter: "{levelName}\t{loggerName}\t {msg}" })
     },
     loggers: {
         main: { level: log_level, handlers: ["default"] },
@@ -31,7 +31,7 @@ logger.info(`starting dolce container monitor v0.1.0`);
 // create and register the lockfile, also check if we are already running or experienced an unexpected shutdown
 let restart_time: Date | undefined;
 const lockfile = new LockFile(lock_file_path);
-lockfile.register((status, lock_file_path, lock_file_contents) => {
+await lockfile.register((status, lock_file_path, lock_file_contents) => {
     switch (status) {
         case LockFileRegisterStatus.Success:
             logger.info(`created lockfile ${lock_file_path} for pid ${lock_file_contents!.pid}`);
@@ -62,7 +62,7 @@ const installed_notifiers = ALL_NOTIFIERS
     .filter(posiibleNotifier => posiibleNotifier !== undefined) as Notifier[];
 
 // restore the notifier state if we we're shutdown unexpectedly
-installed_notifiers.forEach(async notifier => await notifier.restore_from_wal());
+installed_notifiers.map(async notifier => await notifier.restore_from_wal());
 
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {
@@ -80,7 +80,7 @@ if (restart_time !== undefined) {
         downtime_end: startup_time,
         events_since_shutdown: missed_events
     };
-    log.info(`sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`);
+    logger.info(`sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`);
     installed_notifiers.forEach(async notifier => await notifier.notify_about_restart(restart_information));
 }
 
@@ -89,7 +89,7 @@ const event_stream = await api.subscribe_events({
     filters: event_filters
 });
 for await (const event of event_stream) {
-    log.info(`new container event received: <"${event.from}": ${event.Action}>`);
+    logger.info(`new container event received: <"${event.from}": ${event.Action}>`);
     installed_notifiers.forEach(async notifier => await notifier.add_event(event as DockerContainerEvent));
     await lockfile.throttled_update();
 }
