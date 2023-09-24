@@ -1,5 +1,5 @@
 
-import { streams } from "../deps.ts";
+import { DelimiterStream } from "../deps.ts";
 
 const UA_VERSION = "0.1.0";
 const UA_STRING = `Dolce Container Monitor v${UA_VERSION}`;
@@ -87,7 +87,8 @@ export class UnixHttpSocket {
     }
 
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
-        const line_stream = connection.readable.pipeThrough(new streams.DelimiterStream(encoded_crlf, { disposition: "suffix" }));
+        const line_stream = connection.readable
+            .pipeThrough(new DelimiterStream(encoded_crlf, { disposition: "suffix" }));
         let status = -1, status_text = "";
         const headers = new Headers();
         let response_part: "status" | "head" | "body" = "status";
