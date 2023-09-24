@@ -1,4 +1,4 @@
-import { streams, io } from "../deps.ts";
+import { TextLineStream } from "../deps.ts";
 import { UnixHttpSocket } from "./uds-http.ts";
 
 type DockerVersionReponse = {
@@ -151,16 +151,15 @@ export class DockerApi {
         }
 
         const http_stream = await this.socket_client.fetch(url.toString(), { headers: DockerApi.DEFAULT_HEADERS });
-        const http_stream_reader = http_stream.body!.getReader();
-        const reader = new io.BufReader(streams.readerFromStreamReader(http_stream_reader));
+        const line_reader = http_stream.body!
+            .pipeThrough(new TextDecoderStream())
+            .pipeThrough(new TextLineStream())
+            .getReader();
         return async function* event_stream() {
             do {
-                const nextLine = await reader.readString("\n");
-                if (nextLine === null) {
-                    // check if we're done reading
-                    return;
-                }
-                yield JSON.parse(nextLine);
+                const { done, value } = await line_reader.read();
+                if (done) { return; }
+                yield JSON.parse(value);
             } while (true);
         }();
     }
