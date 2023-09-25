@@ -1,5 +1,5 @@
 import { SmtpClient, log } from "../deps.ts";
-import { DiscordTemplate, EMailTemplate, EventTemplateName, RestartMessageContext, Template } from "./templates.ts";
+import { DiscordTemplate, EMailTemplate, EventTemplateName, RestartMessageContext, TelegramTemplate, Template } from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
 import * as env from "./env.ts";
@@ -202,7 +202,7 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
 
     protected async send_message(message: EMailTemplate) {
         const client = await this.connect();
-        await this.recipients.map(async recipient => {
+        const send_promises = this.recipients.map(async recipient => {
             SmtpNotifier.logger.info(`sending mail to ${recipient} via SMTP Notifier`);
             await client.send({
                 content: message.text,
@@ -213,6 +213,7 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
             });
             null;
         });
+        await Promise.all(send_promises);
         await client.close();
     }
 
@@ -230,11 +231,23 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
         const smtp_port = env.get_number("SMTP_PORT");
         const smtp_username = env.get_string("SMTP_USERNAME");
         const smtp_password = env.get_string("SMTP_PASSWORD");
+
+        if (recipients.length === 0) {
+            TelegramNotifier.logger.warning("SMTP_HOSTNAME set but SMTP_RECIPIENTS is empty");
+        }
+
         SmtpNotifier.logger.info(`creating SmtpNotifier for ${smtp_username}@${smtp_hostname}`);
         return new this(hostname, undefined, smtp_sender, recipients, use_ssl, smtp_hostname, smtp_port, smtp_username, smtp_password);
     }
 }
 
+/**
+ * Notifier to send Messages via a Discord WebHook
+ *
+ * this notifier can be configured using the following environment variables
+ *
+ * DISCORD_WEBHOOK: string URL of the webhook (required to enable the notifier)
+ */
 class DiscordNotifier extends Notifier<DiscordTemplate> {
     protected constructor(
         hostname: string,
@@ -245,16 +258,13 @@ class DiscordNotifier extends Notifier<DiscordTemplate> {
     }
 
     protected async send_message(message: DiscordTemplate) {
-        const response = await fetch(this.webhook_url, {
+        await fetch(this.webhook_url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: message.text,
         });
-        console.log(response);
-        console.log(await response.text());
-        console.log(await message.text);
     }
 
     static try_create(hostname: string): DiscordNotifier | undefined {
@@ -270,4 +280,59 @@ class DiscordNotifier extends Notifier<DiscordTemplate> {
     }
 }
 
-export const ALL_NOTIFIERS = [SmtpNotifier, DiscordNotifier];
+/**
+ * Notifier to send Messages via a the Telegram API
+ *
+ * this notifier can be configured using the following environment variables
+ *
+ * TELEGRAM_HTTP_TOKEN: string HTTP Token of your Bot
+ * TELEGRAM_RECIPIENT_IDS: string[] IDs of the recipient groups/users
+ */
+class TelegramNotifier extends Notifier<TelegramTemplate> {
+    protected constructor(
+        hostname: string,
+        backoff_settings: BackoffSettings = Notifier.DEFAULT_BACKOFF_SETTINGS,
+        private http_token: string,
+        private recipient_ids: string[]
+    ) {
+        super(TelegramTemplate, hostname, backoff_settings);
+    }
+
+    protected async send_message(message: TelegramTemplate) {
+        console.log(message.text);
+        const send_promises = this.recipient_ids.map(async recipient => {
+            const response = await fetch(`https://api.telegram.org/bot${this.http_token}/sendMessage`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    chat_id: recipient,
+                    text: message.text,
+                    parse_mode: "MarkdownV2"
+                })
+            });
+            console.log(response);
+            console.log(await response.text());
+        });
+        await Promise.all(send_promises);
+    }
+
+    static try_create(hostname: string): TelegramNotifier | undefined {
+        TelegramNotifier.logger.debug("trying to create TelegramNotifier");
+        if (!env.ensure_defined("TELEGRAM_HTTP_TOKEN", "TELEGRAM_RECIPIENT_IDS")) {
+            TelegramNotifier.logger.debug("TELEGRAM_HTTP_TOKEN or TELEGRAM_RECIPIENT_IDS not set, skipping creation");
+            return undefined;
+        }
+
+        const http_token = env.get_string("TELEGRAM_HTTP_TOKEN")!;
+        const recipient_ids = env.get_array("TELEGRAM_RECIPIENT_IDS")!;
+        if (recipient_ids.length === 0) {
+            TelegramNotifier.logger.warning("TELEGRAM_HTTP_TOKEN set but TELEGRAM_RECIPIENT_IDS is empty");
+        }
+        TelegramNotifier.logger.info("creating TelegramNotifier");
+        return new this(hostname, undefined, http_token, recipient_ids);
+    }
+}
+
+export const ALL_NOTIFIERS = [SmtpNotifier, DiscordNotifier, TelegramNotifier];

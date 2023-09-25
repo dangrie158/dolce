@@ -103,9 +103,24 @@ export class DiscordTemplate extends Template {
         await super.render(context);
     }
 
-    get json(): unknown[] {
+    get text(): string {
         this.ensure_rendered();
-        return JSON.parse(this.string_content!);
+        return this.string_content!;
+    }
+}
+
+export class TelegramTemplate extends Template {
+    private static engine = new Eta({ views: path.join(this_dir, "../templates/telegram") });
+    private string_content?: string;
+
+    get path(): string {
+        return TelegramTemplate.engine.resolvePath(this.template_name);
+    }
+
+    async render(context: MessageContext) {
+        this.string_content = await TelegramTemplate.engine.render(this.template_name, context);
+
+        await super.render(context);
     }
 
     get text(): string {
