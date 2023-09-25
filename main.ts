@@ -4,9 +4,12 @@ import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docke
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
 import { Template } from "./lib/templates.ts";
+import * as env from "./lib/env.ts";
 
+type SupervisorMode = "ALL" | "TAGGED";
+const SUPERVISION_ENABLED_LABEL = "dolce.enabled";
+const LOCK_FILE_PATH = "/var/run/dolce/lockfile";
 
-const lock_file_path = "/var/run/dolce/lockfile";
 const startup_time = new Date();
 const event_filters: DockerEventFilters = {
     type: ["container"],
@@ -15,7 +18,7 @@ const event_filters: DockerEventFilters = {
 
 
 // setup logging first so we can output helpful messages
-const log_level: log.LevelName = Deno.env.get("DOLCE_LOG_LEVEL") as log.LevelName ?? "INFO";
+const log_level: log.LevelName = env.get_string("DOLCE_LOG_LEVEL", "INFO") as log.LevelName;
 log.setup({
     handlers: {
         default: new log.handlers.ConsoleHandler(log_level, { formatter: "{levelName}\t{loggerName}\t {msg}" })
@@ -31,7 +34,7 @@ logger.info(`starting dolce container monitor v0.1.0`);
 
 // create and register the lockfile, also check if we are already running or experienced an unexpected shutdown
 let restart_time: Date | undefined;
-const lockfile = new LockFile(lock_file_path);
+const lockfile = new LockFile(LOCK_FILE_PATH);
 await lockfile.register((status, lock_file_path, lock_file_contents) => {
     switch (status) {
         case LockFileRegisterStatus.Success:
@@ -50,12 +53,19 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
 
 
 // connect to the docker API
-const docker_api_socket = Deno.env.get("DOCKER_SOCKET") ?? DockerApi.DEFAULT_SOCKET_PATH;
+const docker_api_socket = env.get_string("DOCKER_SOCKET", DockerApi.DEFAULT_SOCKET_PATH);
 logger.debug(`connecting to Docker API socket at ${docker_api_socket}`);
 const api = new DockerApi(docker_api_socket);
 const docker_version = await api.get_version();
 const docker_host_info = await api.get_info();
 logger.info(`connected to Docker ${docker_version.Version} (API: ${docker_version.ApiVersion})`);
+
+const supervision_mode = env.get_string("DOLCE_SUPERVISION_MODE", "ALL") as SupervisorMode;
+if (!["TAGGED", "ALL"].includes(supervision_mode)) {
+    logger.error(`value for "DOLCE_SUPERVISION_MODE" not one of ("TAGGED", "ALL"), ${supervision_mode} instead`);
+    Deno.exit(1);
+}
+logger.info(`supervision mode set to ${supervision_mode}`);
 
 // create all the notifiers that are setup via the environment
 const installed_notifiers = ALL_NOTIFIERS
@@ -97,6 +107,10 @@ const event_stream = await api.subscribe_events({
 });
 for await (const event of event_stream) {
     logger.info(`new container event received: <"${event.from}": ${event.Action}>`);
-    installed_notifiers.forEach(async notifier => await notifier.add_event(event as DockerContainerEvent));
-    await lockfile.throttled_update();
+    if (supervision_mode === "ALL" || event.Actor.Attributes[SUPERVISION_ENABLED_LABEL] === "true") {
+        installed_notifiers.forEach(async notifier => await notifier.add_event(event as DockerContainerEvent));
+        await lockfile.throttled_update();
+    } else {
+        logger.debug(`container <"${event.from}"> does not have "${SUPERVISION_ENABLED_LABEL}" label set to true, skipping event`);
+    }
 }

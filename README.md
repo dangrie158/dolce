@@ -56,6 +56,29 @@ Configuration of the service is done via environment variables.
 - `DOLCE_LOG_LEVEL: string?` one of the
   [Deno Log Levels](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels),
   defaults to `INFO`
+- `DOCKER_SOCKET: string?` path to the docker socket, defaults to
+  `/var/run/docker.sock`
+- `DOLCE_SUPERVISION_MODE: string?` if set to the string `TAGGED`, only
+  containers with the tag `dolce.enabled` and a value of true will create
+  events, defaults to all in which case all containers are supervised. Example:
+  ```yaml
+  services:
+  importatntservice:
+    ...# will create notifications
+    tags:
+      dolce.enabled: true
+  unimportatntservice:
+    ...# won't create notifications
+    tags:
+      dolce.enabled: false
+  anotherunimportantservice:
+    ...# won't create notifications
+  dolce:
+    image: dangrie158/dolce
+    ...
+    environment:
+      DOLCE_SUPERVISION_MODE: TAGGED
+  ```
 
 ### Setup SMTP Notifications:
 
