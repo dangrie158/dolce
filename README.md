@@ -4,7 +4,17 @@
 
 Current Version: v0.1.0
 
-Get notified if something (bad) happens to your containers.
+## Features
+
+Get notified if something (bad) happens to your containers. Supports the
+following notification options:
+
+- EMail via SMTP
+- Discord via WebHooks
+- Telegram via the Bot API
+
+All Notifications use a exponential backoff algorithm to avoid spamming you with
+messages if a container decides to go into a restart loop.
 
 ## Setup
 
@@ -31,6 +41,7 @@ services:
         # get notified via Telegram messages
         TELEGRAM_HTTP_TOKEN: 123456789123456:AABBCCDDEEFFGGHHIIJJKKLLMM
         TELEGRAM_RECIPIENT_IDS: 12345678912,456789123 # see below for how to get these values
+    restart: unless-stopped # Dolce handles restarts gracefully and tries to recover any messages that may happened while the service was down
 ```
 
 ## Configuration
