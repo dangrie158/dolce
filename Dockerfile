@@ -17,11 +17,11 @@ CMD exec deno run \
 # unstable flag is needed for Deno.connect to a Unix Socket (lib/uds-http.ts)
     --unstable \
 # /var/run/dolce/ => lockfile directory
-    --allow-read=${DOCKER_SOCKET},./templates,/var/run/dolce/ \
+    --allow-read="./templates,/var/run/dolce/,${DOCKER_SOCKET}" \
 # /var/run/dolce/ => lockfile directory
-    --allow-write=${DOCKER_SOCKET},/var/run/dolce/ \
+    --allow-write="/var/run/dolce/,${DOCKER_SOCKET}" \
 # for SmtpNotifier
-    --allow-net ${SMTP_HOSTNAME} \
+    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost}" \
 # for lib/env.ts, obviously
     --allow-env \
 # for Deno.kill in lib/lockfile.ts
