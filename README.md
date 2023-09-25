@@ -2,7 +2,10 @@
 
 ## Docker Live Container Events
 
-Current Version: v0.1.0
+![current release](https://img.shields.io/github/v/tag/dangrie158/dolce)
+![build status](https://img.shields.io/github/actions/workflow/status/dangrie158/dolce/ci.yml)
+![licence: MIT](https://img.shields.io/github/license/dangrie158/dolce?logo=reacthookform&logoColor=white)
+![docker pulls](https://img.shields.io/docker/pulls/dangrie158/dolce?logo=docker)
 
 ## Features
 
