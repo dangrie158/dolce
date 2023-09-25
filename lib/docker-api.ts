@@ -130,8 +130,8 @@ export class DockerApi {
         return response.json();
     }
 
-    async get_containers(): Promise<DockerContainerResponse> {
-        const response = await this.get("/containers");
+    async get_container(id: string): Promise<DockerContainerResponse> {
+        const response = await this.get(`/containers/${id}/json`);
         return response.json();
     }
 
