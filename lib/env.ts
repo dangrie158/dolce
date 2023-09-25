@@ -35,5 +35,5 @@ export function get_bool(key: string): boolean {
  */
 export function get_array(key: string): string[] {
     const string_value = env.has(key) ? env.get(key)! : "";
-    return string_value.split(":");
+    return string_value.split(":").filter(x => x.length > 0);
 }
