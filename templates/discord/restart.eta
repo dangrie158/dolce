@@ -1,0 +1,58 @@
+<%-
+    function newest_first(event_a, event_b){
+        return event_b.timeNano - event_a.timeNano;
+    }
+    function get_event_color(event){
+        switch (event.Action) {
+        case "start": return "success"
+        case "die": return "error"
+        case "kill": return "error"
+        case "oom": return "error"
+        case "stop": return "warning"
+        case "pause": return "warning"
+        case "unpause": return "success"
+        default: return ""
+        }
+    }
+    function color_text(text, color){
+        switch (color) {
+        case "success": return `\`\`\`diff\\n+${ text }\\n\`\`\``
+        case "warning": return `\`\`\`fix\\n${ text }\\n\`\`\``
+        case "error": return `\`\`\`diff\\n-${ text }\\n\`\`\``
+        default: return `\`\`\`\\n${ text }\\n\`\`\``
+        }
+    }
+-%>
+{
+    "content": "",
+    "tts": false,
+    "embeds": [
+        {
+            "type": "rich",
+            "title": "Dolce Restarted",
+            "description": "It appears that the Dolce service on <%= it.hostname %> restarted after not shutting down normally. This means it may missed some events, namely it was blind starting <%= it.downtime_start.toLocaleString() %> until <%= it.downtime_end.toLocaleString() %>.\n\nHere is a list of the events that happened in the meantime:",
+            "color": 14961766,
+            "fields": [
+            <%~ it.events_since_shutdown.toSorted(newest_first).slice(-10).map(event => `
+                {
+                    "name": "${ new Date(event.time * 1000).toLocaleString() }",
+                    "value": "${ color_text(`${ event.from } -> ${ event.Action }`, get_event_color(event)) }"
+                }`).join(",")
+            %>
+            <%~ it.events_since_shutdown.length > 10 ? `,{"name": "...and more", "value": "${it.events_since_shutdown.length - 10} older events omitted"}` : ""%>
+            ],
+            "thumbnail": {
+                "url": "https://raw.githubusercontent.com/dangrie158/dolce/master/assets/logo_compact.png",
+                "height": 0,
+                "width": 0
+            },
+            "author": {
+                "name": "Dolce@<%= it.hostname %>",
+                "url": "https://github.com/dangrie158/dolce/tree/master"
+            },
+            "footer": {
+                "text": "However, this may be incomplete if docker restarted during the downtime.\nIf you knowingly killed the process you can ignore this message and use `docker stop <containername>` the next time to avoid this message."
+            }
+        }
+    ]
+}

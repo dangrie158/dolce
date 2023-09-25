@@ -1,49 +1,58 @@
 import { DOMParser, Eta, extract_frontmatter, path } from "../deps.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
-type EMailFrontMatter = { subject: string; };
 
-type EventTemplateName = "event.eta" | "restart.eta";
+export type EventTemplateName = "event.eta" | "restart.eta";
 
-type BaseMainContext = {
+export type BaseMessageContext = {
     hostname: string;
 };
 
-export type EventMailContext = BaseMainContext & {
+export type EventMessageContext = BaseMessageContext & {
     events: DockerContainerEvent[];
     earliest_next_update: Date;
 };
 
-export type RestartMailContext = BaseMainContext & {
+export type RestartMessageContext = BaseMessageContext & {
     events_since_shutdown: DockerContainerEvent[];
     downtime_start: Date;
     downtime_end: Date;
 };
 
-type MailContext = EventMailContext | RestartMailContext;
+type MessageContext = EventMessageContext | RestartMessageContext;
 
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
-export class EMailTemplate {
-    static engine = new Eta({ views: path.join(this_dir, "../templates/emails") });
+export class Template {
+    private is_rendered = false;
 
-    private html_content?: string;
-    private text_content?: string;
-    frontmatter?: EMailFrontMatter;
+    constructor(protected template_name: EventTemplateName) { }
 
-    constructor(private template_name: EventTemplateName) { }
-
-    private ensure_rendered() {
-        if (this.html_content === undefined) {
+    protected ensure_rendered() {
+        if (!this.is_rendered) {
             throw new Error("template not rendered. Call `render()` first");
         }
     }
+
+    public render(_context: MessageContext): Promise<void> {
+        this.is_rendered = true;
+        return Promise.resolve();
+    }
+}
+
+type EMailFrontMatter = { subject: string; };
+export class EMailTemplate extends Template {
+    private static engine = new Eta({ views: path.join(this_dir, "../templates/email") });
+
+    private html_content?: string;
+    private text_content?: string;
+    private frontmatter?: EMailFrontMatter;
 
     get path(): string {
         return EMailTemplate.engine.resolvePath(this.template_name);
     }
 
-    async render(context: MailContext) {
+    async render(context: MessageContext) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
         const { attrs, body } = extract_frontmatter<EMailFrontMatter>(template_contents);
@@ -62,6 +71,7 @@ export class EMailTemplate {
             .filter((line, index, lines) => lines[index - 1]?.trim().length !== 0 || line.trim().length !== 0);
 
         this.text_content = prefix_free_content_lines.join("\n").trim();
+        await super.render(context);
     }
 
     get html(): string {
@@ -77,5 +87,29 @@ export class EMailTemplate {
     get subject(): string {
         this.ensure_rendered();
         return this.frontmatter!.subject;
+    }
+}
+
+export class DiscordTemplate extends Template {
+    private static engine = new Eta({ views: path.join(this_dir, "../templates/discord") });
+    private string_content?: string;
+
+    get path(): string {
+        return DiscordTemplate.engine.resolvePath(this.template_name);
+    }
+
+    async render(context: MessageContext) {
+        this.string_content = await DiscordTemplate.engine.render(this.template_name, context);
+        await super.render(context);
+    }
+
+    get json(): unknown[] {
+        this.ensure_rendered();
+        return JSON.parse(this.string_content!);
+    }
+
+    get text(): string {
+        this.ensure_rendered();
+        return this.string_content!;
     }
 }

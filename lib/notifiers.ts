@@ -1,11 +1,11 @@
 import { SmtpClient, log } from "../deps.ts";
-import { EMailTemplate, RestartMailContext } from "./templates.ts";
+import { DiscordTemplate, EMailTemplate, EventTemplateName, RestartMessageContext, Template } from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
 import * as env from "./env.ts";
 import { throttle, wait } from "./async.ts";
 
-export type RestartInfo = Omit<RestartMailContext, "hostname">;
+export type RestartInfo = Omit<RestartMessageContext, "hostname">;
 
 
 type WriteAheadLog = {
@@ -25,7 +25,7 @@ function exponential_backoff(iteration: number, options: BackoffSettings) {
     return Math.floor(Math.min(options.max_timeout, options.min_timeout * (options.multiplier ** iteration)));
 }
 
-export abstract class Notifier {
+export abstract class Notifier<MessageClass extends Template> {
     private static WAL_THROTTLE_INTERVAL = 1000;
     protected static DEFAULT_BACKOFF_SETTINGS: BackoffSettings = {
         min_timeout: 10,
@@ -42,7 +42,8 @@ export abstract class Notifier {
     private backoff_iteration = 0;
     private unique_id: number;
 
-    constructor(
+    protected constructor(
+        private message_class: { new(_: EventTemplateName): MessageClass; },
         protected hostname: string,
         private backoff_settings: BackoffSettings,
         ..._args: unknown[]
@@ -112,7 +113,7 @@ export abstract class Notifier {
         this.is_in_backoff_cooldown = true;
         Notifier.logger.info(`restored from WAL, next delivery: ${new Date(next_delivery_date).toLocaleString()}`);
         const time_until_next_send = Math.max(0, next_delivery_date - Date.now());
-        await wait(time_until_next_send * 1000);
+        await wait(time_until_next_send);
         this.is_in_backoff_cooldown = false;
         await this.schedule_event_delivery_if_neccessary();
     }
@@ -128,15 +129,31 @@ export abstract class Notifier {
     }
     update_wal_throttled = throttle(async () => { await this.update_wal(); }, Notifier.WAL_THROTTLE_INTERVAL);
 
-    async notify_about_events(): Promise<void> {
+    async notify_about_events() {
+        const message = new this.message_class("event.eta");
+        await message.render({
+            hostname: this.hostname,
+            earliest_next_update: new Date(),
+            events: this.buffered_events
+        });
+        await this.send_message(message);
         this.buffered_events = [];
         await this.update_wal();
     }
 
-    abstract notify_about_restart(restart_info: RestartInfo): Promise<void>;
+    async notify_about_restart(restart_info: RestartInfo) {
+        const message = new this.message_class("restart.eta");
+        await message.render({
+            hostname: this.hostname,
+            ...restart_info
+        });
+        await this.send_message(message);
+    }
+
+    protected abstract send_message(message: MessageClass): Promise<void>;
 
     protected static get logger() { return log.getLogger("notifier"); }
-    static try_create(_: string): Notifier | undefined { throw new Error(`${this.name} does not implement try_create()`); }
+    static try_create(_: string): Notifier<Template> | undefined { throw new Error(`${this.name} does not implement try_create()`); }
 }
 
 /**
@@ -151,9 +168,8 @@ export abstract class Notifier {
  * SMTP_USETLS: boolean? (optional, default false)
  * SMTP_FROM: string? (optional, defaults to dolce@<hostname>)
  */
-export class SmtpNotifier extends Notifier {
-
-    constructor(
+export class SmtpNotifier extends Notifier<EMailTemplate> {
+    protected constructor(
         hostname: string,
         backoff_settings: BackoffSettings = Notifier.DEFAULT_BACKOFF_SETTINGS,
         private sender: string,
@@ -164,27 +180,7 @@ export class SmtpNotifier extends Notifier {
         private smtp_username?: string,
         private smtp_password?: string,
     ) {
-        super(hostname, backoff_settings);
-    }
-
-    async notify_about_events() {
-        const mail = new EMailTemplate("event.eta");
-        await mail.render({
-            hostname: this.hostname,
-            earliest_next_update: new Date(),
-            events: this.buffered_events
-        });
-        await this.send_email(mail);
-        await super.notify_about_events();
-    }
-
-    async notify_about_restart(restart_info: RestartInfo) {
-        const mail = new EMailTemplate("restart.eta");
-        await mail.render({
-            hostname: this.hostname,
-            ...restart_info
-        });
-        await this.send_email(mail);
+        super(EMailTemplate, hostname, backoff_settings);
     }
 
     private async connect(): Promise<SmtpClient> {
@@ -204,15 +200,14 @@ export class SmtpNotifier extends Notifier {
     }
 
 
-    private async send_email(mail: EMailTemplate) {
+    protected async send_message(message: EMailTemplate) {
         const client = await this.connect();
         await this.recipients.map(async recipient => {
-
             SmtpNotifier.logger.info(`sending mail to ${recipient} via SMTP Notifier`);
             await client.send({
-                content: mail.text,
-                html: mail.html,
-                subject: mail.subject,
+                content: message.text,
+                html: message.html,
+                subject: message.subject,
                 from: this.sender,
                 to: recipient,
             });
@@ -221,7 +216,7 @@ export class SmtpNotifier extends Notifier {
         await client.close();
     }
 
-    static try_create(hostname: string): Notifier | undefined {
+    static try_create(hostname: string): SmtpNotifier | undefined {
         SmtpNotifier.logger.debug("trying to create SMTP Notifier");
         if (!env.ensure_defined("SMTP_HOSTNAME", "SMTP_RECIPIENTS")) {
             SmtpNotifier.logger.debug("SMTP_HOSTNAME or SMTP_RECIPIENTS not set, skipping creation");
@@ -240,4 +235,39 @@ export class SmtpNotifier extends Notifier {
     }
 }
 
-export const ALL_NOTIFIERS: typeof Notifier[] = [SmtpNotifier];
+class DiscordNotifier extends Notifier<DiscordTemplate> {
+    protected constructor(
+        hostname: string,
+        backoff_settings: BackoffSettings = Notifier.DEFAULT_BACKOFF_SETTINGS,
+        private webhook_url: string
+    ) {
+        super(DiscordTemplate, hostname, backoff_settings);
+    }
+
+    protected async send_message(message: DiscordTemplate) {
+        const response = await fetch(this.webhook_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: message.text,
+        });
+        console.log(response);
+        console.log(await response.text());
+        console.log(await message.text);
+    }
+
+    static try_create(hostname: string): DiscordNotifier | undefined {
+        DiscordNotifier.logger.debug("trying to create DiscordNotifier");
+        if (!env.ensure_defined("DISCORD_WEBHOOK")) {
+            DiscordNotifier.logger.debug("DISCORD_WEBHOOK not set, skipping creation");
+            return undefined;
+        }
+
+        const webhook_url = env.get_string("DISCORD_WEBHOOK")!;
+        DiscordNotifier.logger.info("creating DiscordNotifier");
+        return new this(hostname, undefined, webhook_url);
+    }
+}
+
+export const ALL_NOTIFIERS = [SmtpNotifier, DiscordNotifier];

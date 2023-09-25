@@ -3,6 +3,7 @@ import { log } from "./deps.ts";
 import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
+import { Template } from "./lib/templates.ts";
 
 
 const lock_file_path = "/var/run/dolce/lockfile";
@@ -59,7 +60,7 @@ logger.info(`connected to Docker ${docker_version.Version} (API: ${docker_versio
 // create all the notifiers that are setup via the environment
 const installed_notifiers = ALL_NOTIFIERS
     .map(notifier => notifier.try_create(docker_host_info.Name))
-    .filter(posiibleNotifier => posiibleNotifier !== undefined) as Notifier[];
+    .filter(posiibleNotifier => posiibleNotifier !== undefined) as Notifier<Template>[];
 
 // restore the notifier state if we we're shutdown unexpectedly
 installed_notifiers.map(async notifier => await notifier.restore_from_wal());
