@@ -3,4 +3,4 @@ commit: "chore: bump to v%.%.%"
 files:
   README.md: v%.%.%
   lib/uds-http.ts: const UA_VERSION = "%.%.%";
-  main.ts: "`Starting dolce container monitor v%.%.%`"
+  main.ts: logger.info(`starting dolce container monitor v%.%.%`);
