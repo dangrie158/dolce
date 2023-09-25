@@ -299,9 +299,8 @@ class TelegramNotifier extends Notifier<TelegramTemplate> {
     }
 
     protected async send_message(message: TelegramTemplate) {
-        console.log(message.text);
-        const send_promises = this.recipient_ids.map(async recipient => {
-            const response = await fetch(`https://api.telegram.org/bot${this.http_token}/sendMessage`, {
+        const send_promises = this.recipient_ids.map(async recipient =>
+            await fetch(`https://api.telegram.org/bot${this.http_token}/sendMessage`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -311,10 +310,8 @@ class TelegramNotifier extends Notifier<TelegramTemplate> {
                     text: message.text,
                     parse_mode: "MarkdownV2"
                 })
-            });
-            console.log(response);
-            console.log(await response.text());
-        });
+            })
+        );
         await Promise.all(send_promises);
     }
 
