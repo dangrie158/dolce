@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: deno-fmt
+        name: deno-fmt
+        entry: deno fmt
+        language: system
+        pass_filenames: false
+
+      - id: deno-lint
+        name: deno-lint
+        entry: deno lint
+        language: system
+        pass_filenames: false
+
+      - id: deno-test
+        name: deno-test
+        entry: deno task test
+        language: system
+        pass_filenames: false
+
+      - id: check-bmp-valid
+        name: check-bmp-valid
+        entry: deno task bmp
+        language: system
+        pass_filenames: false
