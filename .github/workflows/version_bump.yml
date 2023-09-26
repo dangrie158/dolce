@@ -23,9 +23,13 @@ jobs:
         run: |
           git config --global core.symlinks true
           git config --global fetch.parallel 32
+          git config --global user.name 'Dolce Version Updater'
+          git config --global user.email '${{ github.actor }}@users.noreply.github.com'
 
       - name: Clone repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Install deno
         uses: denoland/setup-deno@v1
@@ -39,12 +43,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --${{github.event.inputs.releaseKind}}
+          deno run --allow-read=. --allow-write=. --allow-run https://deno.land/x/bmp@v0.2.0/cli.ts --commit
           echo "NEW_VERSION=$(deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --info | grep "Current version:" | cut -c 23-27)" >> $GITHUB_ENV
 
-      - name: Tag release
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        uses: tvdias/github-tagger@v0.0.2
-        with:
-          repo-token: "${{ secrets.RELEASE_TOKEN }}"
-          tag: "v${{ env.NEW_VERSION }}"
+      - name: Commit new version
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/${{ github.repository }}
+          git push
+          git push --tags
