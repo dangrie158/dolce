@@ -1,6 +1,6 @@
-![Dolce logo](./assets/logo_full.svg)
-
 ## Docker Live Container Events
+
+![Dolce logo](./assets/logo_full.svg)
 
 ![current release](https://img.shields.io/github/v/tag/dangrie158/dolce)
 ![build status](https://img.shields.io/github/actions/workflow/status/dangrie158/dolce/ci.yml)
