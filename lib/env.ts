@@ -6,7 +6,7 @@
 const env = Deno.env;
 
 export function ensure_defined(...keys: string[]): boolean {
-    return keys.every(key => env.has(key));
+    return keys.every((key) => env.has(key));
 }
 
 export function get_number<D extends (number | undefined)>(key: string, default_value?: D): number | D {
@@ -20,7 +20,7 @@ export function get_string<D extends (string | undefined)>(key: string, default_
 /**
  * get a boolean value. the truthiness of the value is determined by
  * the pure existence of the key in the environment
- * */
+ */
 export function get_bool(key: string): boolean {
     return env.has(key);
 }
@@ -35,5 +35,5 @@ export function get_bool(key: string): boolean {
  */
 export function get_array(key: string): string[] {
     const string_value = env.has(key) ? env.get(key)! : "";
-    return string_value.split(":").filter(x => x.length > 0);
+    return string_value.split(":").filter((x) => x.length > 0);
 }

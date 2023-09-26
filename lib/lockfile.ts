@@ -1,12 +1,15 @@
-
-import { path, log } from "../deps.ts";
+import { log, path } from "../deps.ts";
 import { throttle } from "./async.ts";
 
 type LockFileInformation = {
-    last_update: Date,
+    last_update: Date;
     pid: number;
 };
-type LockFileRegisterCallback = (status: LockFileRegisterStatus, lock_file_path: string, lock_file_contents?: LockFileInformation) => void;
+type LockFileRegisterCallback = (
+    status: LockFileRegisterStatus,
+    lock_file_path: string,
+    lock_file_contents?: LockFileInformation,
+) => void;
 
 export enum LockFileRegisterStatus {
     Success,
@@ -16,7 +19,9 @@ export enum LockFileRegisterStatus {
 
 export class LockFile {
     static UPDATE_THROTTLE_INTERVAL = 1000;
-    static get logger() { return log.getLogger("lockfile"); }
+    static get logger() {
+        return log.getLogger("lockfile");
+    }
 
     private terminate_handler: () => void = () => {
         LockFile.logger.info("received SIGTERM or SIGINT, gracefully shutting down");
@@ -28,7 +33,7 @@ export class LockFile {
         await this.remove();
     };
 
-    constructor(private lock_file_path: string) { }
+    constructor(private lock_file_path: string) {}
 
     async register(status_callback: LockFileRegisterCallback) {
         // check if another lockfile exists
@@ -77,13 +82,15 @@ export class LockFile {
     async update(): Promise<LockFileInformation> {
         const info: LockFileInformation = {
             last_update: new Date(),
-            pid: Deno.pid
+            pid: Deno.pid,
         };
         await Deno.writeTextFile(this.lock_file_path, JSON.stringify(info));
         return info;
     }
 
-    throttled_update = throttle(async () => { await this.update(); }, LockFile.UPDATE_THROTTLE_INTERVAL);
+    throttled_update = throttle(async () => {
+        await this.update();
+    }, LockFile.UPDATE_THROTTLE_INTERVAL);
 
     async exists(): Promise<boolean> {
         try {
@@ -102,7 +109,7 @@ export class LockFile {
         const lock_file_information = JSON.parse(lockfile_contents);
         return {
             pid: lock_file_information.pid,
-            last_update: new Date(lock_file_information.last_update)
+            last_update: new Date(lock_file_information.last_update),
         };
     }
 
@@ -114,5 +121,4 @@ export class LockFile {
         }
         return true;
     }
-
 }

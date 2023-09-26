@@ -1,12 +1,18 @@
-import { SmtpClient, log } from "../deps.ts";
-import { DiscordTemplate, EMailTemplate, EventTemplateName, RestartMessageContext, TelegramTemplate, Template } from "./templates.ts";
+import { log, SmtpClient } from "../deps.ts";
+import {
+    DiscordTemplate,
+    EMailTemplate,
+    EventTemplateName,
+    RestartMessageContext,
+    TelegramTemplate,
+    Template,
+} from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
 import * as env from "./env.ts";
 import { throttle, wait } from "./async.ts";
 
 export type RestartInfo = Omit<RestartMessageContext, "hostname">;
-
 
 type WriteAheadLog = {
     last_delivery: number;
@@ -31,7 +37,7 @@ export abstract class Notifier<MessageClass extends Template> {
         min_timeout: 10,
         max_timeout: 60 * 24 * 60,
         multiplier: 10,
-        max_iteration: 4
+        max_iteration: 4,
     };
 
     private static creation_counter = 0;
@@ -43,7 +49,7 @@ export abstract class Notifier<MessageClass extends Template> {
     private unique_id: number;
 
     protected constructor(
-        private message_class: { new(_: EventTemplateName): MessageClass; },
+        private message_class: { new (_: EventTemplateName): MessageClass },
         protected hostname: string,
         private backoff_settings: BackoffSettings,
         ..._args: unknown[]
@@ -62,10 +68,12 @@ export abstract class Notifier<MessageClass extends Template> {
     }
 
     async schedule_event_delivery_if_neccessary() {
-        if (this.is_in_backoff_cooldown) { return; }
-        if (this.buffered_events.length === 0) { return; }
+        if (this.is_in_backoff_cooldown) return;
+        if (this.buffered_events.length === 0) return;
 
-        Notifier.logger.info(`sending notification about ${this.buffered_events.length} events with ${this.constructor.name}`);
+        Notifier.logger.info(
+            `sending notification about ${this.buffered_events.length} events with ${this.constructor.name}`,
+        );
         try {
             await this.notify_about_events();
         } catch (error) {
@@ -103,12 +111,13 @@ export abstract class Notifier<MessageClass extends Template> {
         this.last_delivery = wal_contents.last_delivery;
         this.backoff_iteration = wal_contents.backoff_iteration;
 
-        let next_delivery_date = this.last_delivery + exponential_backoff(this.backoff_iteration, this.backoff_settings);
+        let next_delivery_date = this.last_delivery +
+            exponential_backoff(this.backoff_iteration, this.backoff_settings);
         const now = Date.now();
         while (next_delivery_date < now) {
             next_delivery_date += exponential_backoff(this.backoff_iteration, this.backoff_settings);
             this.backoff_iteration -= 1;
-            if (this.backoff_iteration <= 0) { break; }
+            if (this.backoff_iteration <= 0) break;
         }
         this.is_in_backoff_cooldown = true;
         Notifier.logger.info(`restored from WAL, next delivery: ${new Date(next_delivery_date).toLocaleString()}`);
@@ -122,19 +131,21 @@ export abstract class Notifier<MessageClass extends Template> {
         const wal_contents: WriteAheadLog = {
             buffered_events: this.buffered_events,
             last_delivery: this.last_delivery,
-            backoff_iteration: this.backoff_iteration
+            backoff_iteration: this.backoff_iteration,
         };
         const wal_contents_string = JSON.stringify(wal_contents);
         await Deno.writeTextFile(this.wal_file_path, wal_contents_string);
     }
-    update_wal_throttled = throttle(async () => { await this.update_wal(); }, Notifier.WAL_THROTTLE_INTERVAL);
+    update_wal_throttled = throttle(async () => {
+        await this.update_wal();
+    }, Notifier.WAL_THROTTLE_INTERVAL);
 
     async notify_about_events() {
         const message = new this.message_class("event.eta");
         await message.render({
             hostname: this.hostname,
             earliest_next_update: new Date(),
-            events: this.buffered_events
+            events: this.buffered_events,
         });
         await this.send_message(message);
         this.buffered_events = [];
@@ -145,15 +156,19 @@ export abstract class Notifier<MessageClass extends Template> {
         const message = new this.message_class("restart.eta");
         await message.render({
             hostname: this.hostname,
-            ...restart_info
+            ...restart_info,
         });
         await this.send_message(message);
     }
 
     protected abstract send_message(message: MessageClass): Promise<void>;
 
-    protected static get logger() { return log.getLogger("notifier"); }
-    static try_create(_: string): Notifier<Template> | undefined { throw new Error(`${this.name} does not implement try_create()`); }
+    protected static get logger() {
+        return log.getLogger("notifier");
+    }
+    static try_create(_: string): Notifier<Template> | undefined {
+        throw new Error(`${this.name} does not implement try_create()`);
+    }
 }
 
 /**
@@ -189,7 +204,7 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
             hostname: this.smtp_hostname,
             port: this.smtp_port,
             username: this.smtp_username,
-            password: this.smtp_password
+            password: this.smtp_password,
         };
         if (this.use_ssl) {
             await client.connectTLS(connection_config);
@@ -199,10 +214,9 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
         return client;
     }
 
-
     protected async send_message(message: EMailTemplate) {
         const client = await this.connect();
-        const send_promises = this.recipients.map(async recipient => {
+        const send_promises = this.recipients.map(async (recipient) => {
             SmtpNotifier.logger.info(`sending mail to ${recipient} via SMTP Notifier`);
             await client.send({
                 content: message.text,
@@ -237,7 +251,17 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
         }
 
         SmtpNotifier.logger.info(`creating SmtpNotifier for ${smtp_username}@${smtp_hostname}`);
-        return new this(hostname, undefined, smtp_sender, recipients, use_ssl, smtp_hostname, smtp_port, smtp_username, smtp_password);
+        return new this(
+            hostname,
+            undefined,
+            smtp_sender,
+            recipients,
+            use_ssl,
+            smtp_hostname,
+            smtp_port,
+            smtp_username,
+            smtp_password,
+        );
     }
 }
 
@@ -252,7 +276,7 @@ class DiscordNotifier extends Notifier<DiscordTemplate> {
     protected constructor(
         hostname: string,
         backoff_settings: BackoffSettings = Notifier.DEFAULT_BACKOFF_SETTINGS,
-        private webhook_url: string
+        private webhook_url: string,
     ) {
         super(DiscordTemplate, hostname, backoff_settings);
     }
@@ -261,7 +285,7 @@ class DiscordNotifier extends Notifier<DiscordTemplate> {
         await fetch(this.webhook_url, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             body: message.text,
         });
@@ -293,23 +317,23 @@ class TelegramNotifier extends Notifier<TelegramTemplate> {
         hostname: string,
         backoff_settings: BackoffSettings = Notifier.DEFAULT_BACKOFF_SETTINGS,
         private http_token: string,
-        private recipient_ids: string[]
+        private recipient_ids: string[],
     ) {
         super(TelegramTemplate, hostname, backoff_settings);
     }
 
     protected async send_message(message: TelegramTemplate) {
-        const send_promises = this.recipient_ids.map(async recipient =>
+        const send_promises = this.recipient_ids.map(async (recipient) =>
             await fetch(`https://api.telegram.org/bot${this.http_token}/sendMessage`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     chat_id: recipient,
                     text: message.text,
-                    parse_mode: "MarkdownV2"
-                })
+                    parse_mode: "MarkdownV2",
+                }),
             })
         );
         await Promise.all(send_promises);

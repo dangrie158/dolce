@@ -13,20 +13,19 @@ const LOCK_FILE_PATH = "/var/run/dolce/lockfile";
 const startup_time = new Date();
 const event_filters: DockerEventFilters = {
     type: ["container"],
-    event: ["start", "die", "kill", "oom", "stop", "pause", "unpause"]
+    event: ["start", "die", "kill", "oom", "stop", "pause", "unpause"],
 };
-
 
 // setup logging first so we can output helpful messages
 const log_level: log.LevelName = env.get_string("DOLCE_LOG_LEVEL", "INFO") as log.LevelName;
 log.setup({
     handlers: {
-        default: new log.handlers.ConsoleHandler(log_level, { formatter: "{levelName}\t{loggerName}\t {msg}" })
+        default: new log.handlers.ConsoleHandler(log_level, { formatter: "{levelName}\t{loggerName}\t {msg}" }),
     },
     loggers: {
         main: { level: log_level, handlers: ["default"] },
         notifier: { level: log_level, handlers: ["default"] },
-        lockfile: { level: log_level, handlers: ["default"] }
+        lockfile: { level: log_level, handlers: ["default"] },
     },
 });
 const logger = log.getLogger("main");
@@ -41,8 +40,12 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
             logger.info(`created lockfile ${lock_file_path} for pid ${lock_file_contents!.pid}`);
             break;
         case LockFileRegisterStatus.SuccessOldLockfileFound:
-            logger.warning(`found old but stale lockfile ${lock_file_path} for pid ${lock_file_contents!.pid} that is no longer running.
-            Last seen at ${lock_file_contents!.last_update.toLocaleString()}`);
+            logger.warning(
+                `found old but stale lockfile ${lock_file_path} for pid ${
+                    lock_file_contents!.pid
+                } that is no longer running.
+            Last seen at ${lock_file_contents!.last_update.toLocaleString()}`,
+            );
             restart_time = lock_file_contents!.last_update;
             break;
         case LockFileRegisterStatus.FailAnotherProcessRunning:
@@ -50,7 +53,6 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
             Deno.exit(0);
     }
 });
-
 
 // connect to the docker API
 const docker_api_socket = env.get_string("DOCKER_SOCKET", DockerApi.DEFAULT_SOCKET_PATH);
@@ -69,11 +71,11 @@ logger.info(`supervision mode set to ${supervision_mode}`);
 
 // create all the notifiers that are setup via the environment
 const installed_notifiers = ALL_NOTIFIERS
-    .map(notifier => notifier.try_create(docker_host_info.Name))
-    .filter(posiibleNotifier => posiibleNotifier !== undefined) as Notifier<Template>[];
+    .map((notifier) => notifier.try_create(docker_host_info.Name))
+    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<Template>[];
 
 // restore the notifier state if we we're shutdown unexpectedly
-installed_notifiers.map(async notifier => await notifier.restore_from_wal());
+installed_notifiers.map(async (notifier) => await notifier.restore_from_wal());
 
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {
@@ -81,7 +83,7 @@ if (restart_time !== undefined) {
     const missed_events_stream = await api.subscribe_events({
         since: restart_time,
         until: startup_time,
-        filters: event_filters
+        filters: event_filters,
     });
 
     const missed_events = [];
@@ -89,10 +91,12 @@ if (restart_time !== undefined) {
     const restart_information = {
         downtime_start: restart_time,
         downtime_end: startup_time,
-        events_since_shutdown: missed_events
+        events_since_shutdown: missed_events,
     };
-    logger.info(`sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`);
-    installed_notifiers.forEach(async notifier => {
+    logger.info(
+        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`,
+    );
+    installed_notifiers.forEach(async (notifier) => {
         try {
             await notifier.notify_about_restart(restart_information);
         } catch (error) {
@@ -103,14 +107,16 @@ if (restart_time !== undefined) {
 
 const event_stream = await api.subscribe_events({
     since: startup_time,
-    filters: event_filters
+    filters: event_filters,
 });
 for await (const event of event_stream) {
     logger.info(`new container event received: <"${event.from}": ${event.Action}>`);
     if (supervision_mode === "ALL" || event.Actor.Attributes[SUPERVISION_ENABLED_LABEL] === "true") {
-        installed_notifiers.forEach(async notifier => await notifier.add_event(event as DockerContainerEvent));
+        installed_notifiers.forEach(async (notifier) => await notifier.add_event(event as DockerContainerEvent));
         await lockfile.throttled_update();
     } else {
-        logger.debug(`container <"${event.from}"> does not have "${SUPERVISION_ENABLED_LABEL}" label set to true, skipping event`);
+        logger.debug(
+            `container <"${event.from}"> does not have "${SUPERVISION_ENABLED_LABEL}" label set to true, skipping event`,
+        );
     }
 }

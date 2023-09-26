@@ -1,7 +1,6 @@
 import { DOMParser, Eta, extract_frontmatter, path } from "../deps.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 
-
 export type EventTemplateName = "event.eta" | "restart.eta";
 
 export type BaseMessageContext = {
@@ -26,7 +25,7 @@ const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 export class Template {
     private is_rendered = false;
 
-    constructor(protected template_name: EventTemplateName) { }
+    constructor(protected template_name: EventTemplateName) {}
 
     protected ensure_rendered() {
         if (!this.is_rendered) {
@@ -40,7 +39,7 @@ export class Template {
     }
 }
 
-type EMailFrontMatter = { subject: string; };
+type EMailFrontMatter = { subject: string };
 export class EMailTemplate extends Template {
     private static engine = new Eta({ views: path.join(this_dir, "../templates/email") });
 
@@ -63,10 +62,12 @@ export class EMailTemplate extends Template {
         const text_content_lines = document!.getElementsByTagName("main")[0].textContent.split("\n");
 
         // find the smalles number of leading whitespace excluding lines with only whitespace
-        const min_prefix_length = Math.min(...text_content_lines.map(line => (line.match(/^([ |\t]*)\S/)?.[0].length ?? Infinity) - 1));
+        const min_prefix_length = Math.min(
+            ...text_content_lines.map((line) => (line.match(/^([ |\t]*)\S/)?.[0].length ?? Infinity) - 1),
+        );
         const prefix_free_content_lines = text_content_lines
             // remove the common (minimum) whitespace in front of all lines
-            .map(line => line.substring(min_prefix_length))
+            .map((line) => line.substring(min_prefix_length))
             // remove consecutive blank lines
             .filter((line, index, lines) => lines[index - 1]?.trim().length !== 0 || line.trim().length !== 0);
 

@@ -1,16 +1,19 @@
 import { assert } from "https://deno.land/std@0.201.0/assert/assert.ts";
 import { UnixHttpSocket } from "../lib/uds-http.ts";
-import { assertInstanceOf, assertStrictEquals, assertNotEquals, assertObjectMatch } from "https://deno.land/std@0.201.0/assert/mod.ts";
+import {
+    assertInstanceOf,
+    assertNotEquals,
+    assertObjectMatch,
+    assertStrictEquals,
+} from "https://deno.land/std@0.201.0/assert/mod.ts";
 import { assertRejects } from "https://deno.land/std@0.201.0/assert/assert_rejects.ts";
-
-
 
 Deno.test("fetch API", async (test) => {
     const worker = new Worker(new URL("./dummy-server.ts", import.meta.url).href, { type: "module" });
     const server_socket = await new Promise<string>((resolve) => {
-        worker.onmessage = ((socket_path_message: MessageEvent<string>) => {
+        worker.onmessage = (socket_path_message: MessageEvent<string>) => {
             resolve(socket_path_message.data);
-        });
+        };
     });
 
     const socket_client = new UnixHttpSocket(server_socket);
@@ -45,7 +48,7 @@ Deno.test("fetch API", async (test) => {
         const response = await socket_client.fetch("http://localhost/echojson/", {
             method: "POST",
             body: JSON.stringify({ key: "value" }),
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
         });
         assertObjectMatch(await response.json(), { key: "value" });
     });

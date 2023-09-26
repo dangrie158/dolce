@@ -1,4 +1,3 @@
-
 import { DelimiterStream } from "../deps.ts";
 
 const UA_VERSION = "1.0.0";
@@ -41,17 +40,17 @@ function stream_from_reader(input: ReadableStreamDefaultReader<Uint8Array>): Rea
 export class UnixHttpSocket {
     private static DEFAULT_HEADERS = new Headers({
         "User-Agent": UA_STRING,
-        "Connection": "close" // keep the api much simpler by not allowing connection reuse
+        "Connection": "close", // keep the api much simpler by not allowing connection reuse
     });
 
     constructor(
-        private socket_path: string
-    ) { }
+        private socket_path: string,
+    ) {}
 
     private async get_connection(): Promise<Deno.UnixConn> {
         return await Deno.connect({
             path: this.socket_path,
-            transport: "unix"
+            transport: "unix",
         });
     }
 
@@ -59,7 +58,9 @@ export class UnixHttpSocket {
         const request = new Request(input, init);
         const request_url = new URL(request.url);
         // merge default and userprovided headers with user-provided values taking precendence.
-        UnixHttpSocket.DEFAULT_HEADERS.forEach((value, key) => request.headers.get(key) ? null : request.headers.set(key, value));
+        UnixHttpSocket.DEFAULT_HEADERS.forEach((value, key) =>
+            request.headers.get(key) ? null : request.headers.set(key, value)
+        );
         if (request.headers.get("Connection") !== "close") {
             throw new Error("only 'Connection: close' connection header supported");
         }
@@ -132,7 +133,7 @@ export class UnixHttpSocket {
  * This class assumes that the data comes in packets that are separated by CRLF tokens
  * by using a stdstreams.DelimiterStream transformation.
  */
-class DechunkingTransferStream extends TransformStream<Uint8Array, Uint8Array>{
+class DechunkingTransferStream extends TransformStream<Uint8Array, Uint8Array> {
     constructor() {
         super(new DechunkingTransferStream.Unchunker());
     }

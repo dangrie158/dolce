@@ -1,13 +1,15 @@
-
 export function wait(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 type ThrottledFunction<T extends Array<void>> = {
     (...args: T): Promise<void>;
 };
 
-export function throttle<T extends Array<void>>(fn: (this: ThrottledFunction<T>, ...args: T) => Promise<void>, delay: number): ThrottledFunction<T> {
+export function throttle<T extends Array<void>>(
+    fn: (this: ThrottledFunction<T>, ...args: T) => Promise<void>,
+    delay: number,
+): ThrottledFunction<T> {
     let is_cooling_down: boolean;
     let last_args: T | undefined;
     const throttled_fn = async (...args: T) => {

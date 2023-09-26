@@ -9,15 +9,14 @@
 
 ## Features
 
-Get notified if something (bad) happens to your containers. Supports the
-following notification options:
+Get notified if something (bad) happens to your containers. Supports the following notification options:
 
 - EMail via SMTP
 - Discord via WebHooks
 - Telegram via the Bot API
 
-All Notifications use a exponential backoff algorithm to avoid spamming you with
-messages if a container decides to go into a restart loop.
+All Notifications use a exponential backoff algorithm to avoid spamming you with messages if a container decides to go
+into a restart loop.
 
 ## Setup
 
@@ -53,14 +52,11 @@ Configuration of the service is done via environment variables.
 
 ### General Behaviour:
 
-- `DOLCE_LOG_LEVEL: string?` one of the
-  [Deno Log Levels](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels),
+- `DOLCE_LOG_LEVEL: string?` one of the [Deno Log Levels](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels),
   defaults to `INFO`
-- `DOCKER_SOCKET: string?` path to the docker socket, defaults to
-  `/var/run/docker.sock`
-- `DOLCE_SUPERVISION_MODE: string?` if set to the string `TAGGED`, only
-  containers with the tag `dolce.enabled` and a value of true will create
-  events, defaults to all in which case all containers are supervised. Example:
+- `DOCKER_SOCKET: string?` path to the docker socket, defaults to `/var/run/docker.sock`
+- `DOLCE_SUPERVISION_MODE: string?` if set to the string `TAGGED`, only containers with the tag `dolce.enabled` and a
+  value of true will create events, defaults to all in which case all containers are supervised. Example:
   ```yaml
   services:
   importatntservice:
@@ -93,9 +89,8 @@ Configuration of the service is done via environment variables.
 
 ### Setup GMail as your SMTP Server
 
-If you don't have a SMTP Server handy that you can use to send your
-notifications, using the GMail SMTP server may be a handy alternative for small
-setups. For this you need to setup the service as follows:
+If you don't have a SMTP Server handy that you can use to send your notifications, using the GMail SMTP server may be a
+handy alternative for small setups. For this you need to setup the service as follows:
 
 ```yaml
 - SMTP_HOSTNAME: smtp.gmail.com
@@ -105,9 +100,8 @@ setups. For this you need to setup the service as follows:
 - SMTP_FROM: <youraccount>@gmail.com
 ```
 
-Your can find a
-[Tutorial here](https://support.google.com/accounts/answer/185833?hl=en) on how
-to get the `<App Password>`
+Your can find a [Tutorial here](https://support.google.com/accounts/answer/185833?hl=en) on how to get the
+`<App Password>`
 
 ### Setup Discord Notifications:
 
@@ -121,8 +115,8 @@ to get the `<App Password>`
 - Go to the channel you want to get the updates
 - Click the settings icon
 - Go to `Integrations` -> `Webhooks`
-- Create a `New Webhook`, set it up however you want. you can use the png icon
-  in `assets/` as a profile picture if you want or choose whatever you want
+- Create a `New Webhook`, set it up however you want. you can use the png icon in `assets/` as a profile picture if you
+  want or choose whatever you want
 - `Copy Webhook URL` to get the URL into your Clipboard
 
 ### Setup Telegram Notifications:
@@ -134,11 +128,9 @@ to get the `<App Password>`
 
 #### Step by Step:
 
-- Message [@BotFather](https://t.me/thebotfather) to create a new Bot and get
-  your `TELEGRAM_HTTP_TOKEN`
-- Add the Bot to the Group you want to recieve updates in or send a DM from your
-  account
+- Message [@BotFather](https://t.me/thebotfather) to create a new Bot and get your `TELEGRAM_HTTP_TOKEN`
+- Add the Bot to the Group you want to recieve updates in or send a DM from your account
 - go to `https://api.telegram.org/bot<TELEGRAM_HTTP_TOKEN>/getUpdates` or use
-  `curl https://api.telegram.org/bot<TELEGRAM_HTTP_TOKEN>/getUpdates | jq '.result[].message.from'`
-  if you have `curl` and `jq` installed`
+  `curl https://api.telegram.org/bot<TELEGRAM_HTTP_TOKEN>/getUpdates | jq '.result[].message.from'` if you have `curl`
+  and `jq` installed`
 - get the IDs your interested in from the response

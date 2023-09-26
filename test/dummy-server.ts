@@ -5,7 +5,7 @@
 
 const socket_dir = await Deno.makeTempDir();
 const socket_path = `${socket_dir}/dolce-test.sock`;
-const server = Deno.listen({ path: socket_path, transport: 'unix' });
+const server = Deno.listen({ path: socket_path, transport: "unix" });
 
 self.onbeforeunload = () => {
     // cleanup when done
@@ -24,9 +24,16 @@ for await (const conn of server) {
                 case "/empty/":
                     return requestEvent.respondWith(new Response("{}", { status: 200 }));
                 case "/echojson/":
-                    return requestEvent.respondWith(new Response(JSON.stringify(await requestEvent.request.json()), { status: 200, headers: { "Content-Type": "application/json" } }));
+                    return requestEvent.respondWith(
+                        new Response(JSON.stringify(await requestEvent.request.json()), {
+                            status: 200,
+                            headers: { "Content-Type": "application/json" },
+                        }),
+                    );
                 case "/echoformdata/":
-                    return requestEvent.respondWith(new Response(await requestEvent.request.formData(), { status: 200 }));
+                    return requestEvent.respondWith(
+                        new Response(await requestEvent.request.formData(), { status: 200 }),
+                    );
                 case "/echochunked/":
                     return requestEvent.respondWith(new Response(await requestEvent.request.body, { status: 200 }));
                 case "/getstream/": {
@@ -35,7 +42,7 @@ for await (const conn of server) {
                         start(controller: ReadableByteStreamController) {
                             controller.enqueue(new TextEncoder().encode("event"));
                             controller.close();
-                        }
+                        },
                     });
                     return requestEvent.respondWith(new Response(stream, { status: 200 }));
                 }
