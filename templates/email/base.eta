@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
         :root {
-            --dolce-pink: #e44c66;
+            --dolce-pink: #f73a63;
             --dolce-yellow: #ffe5d9;
             --dolce-light-yellow: #fff6f2;
             --dolce-dark-gray: #757575;
