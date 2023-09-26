@@ -30,7 +30,7 @@ services:
     command: "sleep 1; exit 0;"
     restart: unless-stopped
   dolce:
-    image: dangrie158/dolce:v0.1.0
+    image: dangrie158/dolce:v1.0.0
     volumes: # we need access to the docker socket inside the container
       - /var/run/docker.sock:/var/run/docker.sock
     environment: # or use a .env file

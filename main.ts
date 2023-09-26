@@ -30,7 +30,7 @@ log.setup({
     },
 });
 const logger = log.getLogger("main");
-logger.info(`starting dolce container monitor v0.1.0`);
+logger.info(`starting dolce container monitor v1.0.0`);
 
 // create and register the lockfile, also check if we are already running or experienced an unexpected shutdown
 let restart_time: Date | undefined;

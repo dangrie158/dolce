@@ -1,5 +1,5 @@
-version: 0.1.0
-commit: "chore: bump to v%.%.%"
+version: 1.0.0
+commit: 'chore: bump to v%.%.%'
 files:
   README.md: v%.%.%
   lib/uds-http.ts: const UA_VERSION = "%.%.%";
