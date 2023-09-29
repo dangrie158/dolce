@@ -78,12 +78,12 @@ Configuration of the service is done via environment variables.
 
 ### Notification Backoff
 
-- `DOLCE_MIN_TIMEOUT: number`: minimum number of seconds between notifications, defaults to $10$
-- `DOLCE_MAX_TIMEOUT: number`: maximum number of seconds between notifications, defaults to $60 * 60 * 24$ (1 day)
-- `DOLCE_MULTIPLIER: number`: multiplier to increase the timeout with each message, defaults to $10$
+- `DOLCE_MIN_TIMEOUT: number`: minimum number of seconds between notifications, defaults to $m=10$
+- `DOLCE_MAX_TIMEOUT: number`: maximum number of seconds between notifications, defaults to $M=60 * 60 * 24$ (1 day)
+- `DOLCE_MULTIPLIER: number`: multiplier to increase the timeout with each message, defaults to $f=10$
 
-The delay between notifications is calculated as $delay(n) = min(DOLCE\_MIN\_TIMEOUT * DOLCE\_MULTIPLIER ^ n,
-DOLCE\_MAX\_TIMEOUT)$ where n is the current iteration of the backoff algorithm.
+The delay between notifications is calculated as $delay(n) = min(m * f ^ n, M)$ where $n$ is the current iteration of
+the backoff algorithm.
 
 If you assume you have a container that has a problem and repeatetly restarts every second starting $t=0$, you will
 receive the following notifications with the default settings
