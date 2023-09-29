@@ -18,10 +18,9 @@ const event_filters: DockerEventFilters = {
 };
 
 const backoff_settings = {
-    min_timeout: 10,
-    max_timeout: 60 * 24 * 60,
-    multiplier: 10,
-    max_iteration: 4,
+    min_timeout: env.get_number("DOLCE_MIN_TIMEOUT", 10),
+    max_timeout: env.get_number("DOLCE_MAX_TIMEOUT", 60 * 60 * 24),
+    multiplier: env.get_number("DOLCE_MULTIPLIER", 10),
 };
 
 // setup logging first so we can output helpful messages
