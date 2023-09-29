@@ -4,6 +4,7 @@ import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docke
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
 import { Template } from "./lib/templates.ts";
+import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
 import * as env from "./lib/env.ts";
 
 type SupervisorMode = "ALL" | "TAGGED";
@@ -14,6 +15,13 @@ const startup_time = new Date();
 const event_filters: DockerEventFilters = {
     type: ["container"],
     event: ["start", "die", "kill", "oom", "stop", "pause", "unpause"],
+};
+
+const backoff_settings = {
+    min_timeout: 10,
+    max_timeout: 60 * 24 * 60,
+    multiplier: 10,
+    max_iteration: 4,
 };
 
 // setup logging first so we can output helpful messages
@@ -41,10 +49,9 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
             break;
         case LockFileRegisterStatus.SuccessOldLockfileFound:
             logger.warning(
-                `found old but stale lockfile ${lock_file_path} for pid ${
-                    lock_file_contents!.pid
-                } that is no longer running.
-            Last seen at ${lock_file_contents!.last_update.toLocaleString()}`,
+                `found old but stale lockfile ${lock_file_path} for pid \
+                ${lock_file_contents!.pid} that is no longer running. \
+                Last seen at ${lock_file_contents!.last_update.toLocaleString()}`,
             );
             restart_time = lock_file_contents!.last_update;
             break;
@@ -74,8 +81,21 @@ const installed_notifiers = ALL_NOTIFIERS
     .map((notifier) => notifier.try_create(docker_host_info.Name))
     .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<Template>[];
 
-// restore the notifier state if we we're shutdown unexpectedly
-installed_notifiers.map(async (notifier) => await notifier.restore_from_wal());
+const event_registry = await register_events(async (events, earliest_next_update) => {
+    logger.info(`sending events notification to all registered notifiers with ${events.length} events`);
+    const notify_promises = installed_notifiers.map(async (notifier) =>
+        await notifier.notify_about_events(events, earliest_next_update)
+    );
+    await Promise.all(notify_promises);
+    logger.info(`earliest next notification at ${earliest_next_update.toLocaleString()}`);
+}, backoff_settings);
+
+const next_delivery = await get_next_delivery(event_registry);
+if (next_delivery !== null) {
+    logger.info(`next delivery is scheduled for ${next_delivery?.toLocaleString()}`);
+} else {
+    logger.info(`no delivery scheduled. waiting for events`);
+}
 
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {
@@ -112,7 +132,7 @@ const event_stream = await api.subscribe_events({
 for await (const event of event_stream) {
     logger.info(`new container event received: <"${event.from}": ${event.Action}>`);
     if (supervision_mode === "ALL" || event.Actor.Attributes[SUPERVISION_ENABLED_LABEL] === "true") {
-        installed_notifiers.forEach(async (notifier) => await notifier.add_event(event as DockerContainerEvent));
+        await add_event(event_registry, event as DockerContainerEvent);
         await lockfile.throttled_update();
     } else {
         logger.debug(
