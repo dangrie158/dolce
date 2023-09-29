@@ -91,9 +91,9 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
     }
 
     protected async send_message(message: EMailTemplate) {
-        const client = await this.connect();
         const send_promises = this.recipients.map(async (recipient) => {
             SmtpNotifier.logger.info(`sending mail to ${recipient} via SMTP Notifier`);
+            const client = await this.connect();
             await client.send({
                 content: message.text,
                 html: message.html,
@@ -101,10 +101,9 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
                 from: this.sender,
                 to: recipient,
             });
-            null;
+            await client.close();
         });
         await Promise.all(send_promises);
-        await client.close();
     }
 
     static try_create(hostname: string): SmtpNotifier | undefined {
