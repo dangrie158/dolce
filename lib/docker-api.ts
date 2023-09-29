@@ -80,7 +80,8 @@ type ContainerAction =
     | "stop"
     | "top"
     | "unpause"
-    | "update";
+    | "update"
+    | "health_status";
 type ImageAction = "delete" | "import" | "load" | "pull" | "push" | "save" | "tag" | "untag" | "prune";
 type VolumeAction = "create" | "mount" | "unmount" | "destroy" | "prune";
 type NetworkAction = "create" | "connect" | "disconnect" | "destroy" | "update" | "remove" | "prune";
@@ -120,7 +121,7 @@ export type DockerEventFilters = {
 export class DockerApi {
     // we use the oldest version of the API that supports all the features we want
     // to be compatible with most versions.
-    public static DEFAULT_VERSION = "v1.22";
+    public static DEFAULT_VERSION = "v1.27";
     public static DEFAULT_SOCKET_PATH = "/var/run/docker.sock";
     public static DEFAULT_HEADERS = {
         "Accept": "application/json",

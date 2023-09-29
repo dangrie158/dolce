@@ -11,6 +11,7 @@
         case "stop": return "⏹️"
         case "pause": return "⏸️"
         case "unpause": return "⏯️"
+        case "health_status": return "❓"
         default: return ""
         }
     }

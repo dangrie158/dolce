@@ -14,7 +14,7 @@ const LOCK_FILE_PATH = "/var/run/dolce/lockfile";
 const startup_time = new Date();
 const event_filters: DockerEventFilters = {
     type: ["container"],
-    event: ["start", "die", "kill", "oom", "stop", "pause", "unpause"],
+    event: ["start", "die", "kill", "oom", "stop", "pause", "unpause", "health_status"],
 };
 
 const backoff_settings = {

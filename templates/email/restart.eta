@@ -15,6 +15,7 @@
         case "stop": return "warning"
         case "pause": return "warning"
         case "unpause": return "success"
+        case "health_status": return "warning"
         default: ""
         }
     }
