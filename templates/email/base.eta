@@ -125,7 +125,7 @@
     </main>
     <footer>
         <p>brought to you by Dolce@<%= it.hostname %>, sorry for the inconvenience</p>
-        <img src="https://raw.githubusercontent.com/dangrie158/dolce/master/assets/logo_compact.svg" alt="Dolce Logo">
+        <img src="https://raw.githubusercontent.com/dangrie158/dolce/master/assets/logo_compact.png" alt="Dolce Logo">
     </footer>
 </body>
 
