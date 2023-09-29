@@ -35,14 +35,14 @@ services:
     environment: # or use a .env file
         # get notified via EMail
         SMTP_HOSTNAME: smtp.gmail.com # see below for how to configure using your gmail
-        SMTP_RECIPIENTS: incidents@example.com,personal@gmail.com
+        SMTP_RECIPIENTS: incidents@example.com:personal@gmail.com
 
         # get notified via discord
         DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
 
         # get notified via Telegram messages
         TELEGRAM_HTTP_TOKEN: 123456789123456:AABBCCDDEEFFGGHHIIJJKKLLMM
-        TELEGRAM_RECIPIENT_IDS: 12345678912,456789123 # see below for how to get these values
+        TELEGRAM_RECIPIENT_IDS: 12345678912:456789123 # see below for how to get these values
     restart: unless-stopped # Dolce handles restarts gracefully and tries to recover any messages that may happened while the service was down
 ```
 
@@ -104,14 +104,15 @@ problem and everything is quiet for the next 24 hours and breaks again after tha
 
 ### Setup SMTP Notifications:
 
-#### Required Settings:
+#### Available Settings:
 
-- `SMTP_HOSTNAME: string` (required to enable the notifier)
-- `SMTP_PORT: number?` (optional, uses default ports depending on `SMTP_USETLS`)
-- `SMTP_USERNAME: string?` (optional)
-- `SMTP_PASSWORD: string?` (optional)
-- `SMTP_USETLS: boolean?` (optional, default false)
-- `SMTP_FROM: string?` (optional, defaults to dolce@<hostname>)
+- `SMTP_HOSTNAME: string` required, fqdn or ip of the sending mailserver
+- `SMTP_RECIPIENTS: string[]` required, a colon (`:`) separated list of recipient adresses
+- `SMTP_PORT: number?` optional, uses default ports depending on `SMTP_USETLS`
+- `SMTP_USERNAME: string?` optional, no authentication is used if unset
+- `SMTP_PASSWORD: string?` optional, no authentication is used if unset
+- `SMTP_USETLS: boolean?` optional, defaults to false
+- `SMTP_FROM: string?` optional, defaults to dolce@<hostname>
 
 ### Setup GMail as your SMTP Server
 
@@ -120,10 +121,11 @@ handy alternative for small setups. For this you need to setup the service as fo
 
 ```yaml
 - SMTP_HOSTNAME: smtp.gmail.com
+- SMTP_RECIPIENTS: incidents@service.com
 - SMTP_USETLS: 1
 - SMTP_USERNAME: <youraccount>@gmail.com
 - SMTP_PASSWORD: <Your App Password>
-- SMTP_FROM: <youraccount>@gmail.com
+- SMTP_FROM: <youraccount>@service.com
 ```
 
 Your can find a [Tutorial here](https://support.google.com/accounts/answer/185833?hl=en) on how to get the
@@ -150,7 +152,7 @@ Your can find a [Tutorial here](https://support.google.com/accounts/answer/18583
 #### Required Settings:
 
 - `TELEGRAM_HTTP_TOKEN: string`
-- `TELEGRAM_RECIPIENT_IDS: string[]`
+- `TELEGRAM_RECIPIENT_IDS: string[]` colon separated list of chat IDs
 
 #### Step by Step:
 
