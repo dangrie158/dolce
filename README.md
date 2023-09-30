@@ -54,7 +54,9 @@ Configuration of the service is done via environment variables.
 
 - `DOLCE_LOG_LEVEL: string?` one of the [Deno Log Levels](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels),
   defaults to `INFO`
-- `DOCKER_SOCKET: string?` path to the docker socket, defaults to `/var/run/docker.sock`
+- `DOCKER_HOST: string?` path to the docker socket, defaults to `/var/run/docker.sock`, can be set to an `ip:port`-pair
+  when used with `DOCKER_TRANSPORT=tcp`
+- `DOCKER_TRANSPORT: string?` must be either `unix` or `tcp`, defaults to `unix`
 - `DOLCE_SUPERVISION_MODE: string?` if set to the string `TAGGED`, only containers with the tag `dolce.enabled` and a
   value of true will create events, defaults to all in which case all containers are supervised. Example:
   ```yaml

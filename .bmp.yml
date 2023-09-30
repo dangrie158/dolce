@@ -2,5 +2,5 @@ version: 2.1.1
 commit: 'chore: bump to v%.%.%'
 files:
   README.md: v%.%.%
-  lib/uds-http.ts: const UA_VERSION = "%.%.%";
+  lib/universal-http.ts: const UA_VERSION = "%.%.%";
   main.ts: logger.info(`starting dolce container monitor v%.%.%`);

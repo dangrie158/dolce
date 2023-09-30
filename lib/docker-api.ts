@@ -1,5 +1,5 @@
 import { TextLineStream } from "../deps.ts";
-import { UnixHttpSocket } from "./uds-http.ts";
+import { HttpSocket } from "./universal-http.ts";
 
 type DockerVersionReponse = {
     Version: string;
@@ -122,19 +122,19 @@ export class DockerApi {
     // we use the oldest version of the API that supports all the features we want
     // to be compatible with most versions.
     public static DEFAULT_VERSION = "v1.27";
-    public static DEFAULT_SOCKET_PATH = "/var/run/docker.sock";
+    public static DEFAULT_SOCKET_PATH = new URL("unix:///var/run/docker.sock");
     public static DEFAULT_HEADERS = {
         "Accept": "application/json",
         "Accept-Encoding": "identity",
     };
 
-    private socket_client: UnixHttpSocket;
+    private socket_client: HttpSocket;
 
     constructor(
-        socket_path: string = DockerApi.DEFAULT_SOCKET_PATH,
+        socket_path: URL = DockerApi.DEFAULT_SOCKET_PATH,
         private api_version = DockerApi.DEFAULT_VERSION,
     ) {
-        this.socket_client = new UnixHttpSocket(socket_path);
+        this.socket_client = new HttpSocket(socket_path);
     }
 
     private get(endpoint: `/${string}`): Promise<Response> {

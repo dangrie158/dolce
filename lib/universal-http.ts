@@ -34,31 +34,44 @@ function stream_from_reader(input: ReadableStreamDefaultReader<Uint8Array>): Rea
 }
 
 /**
- * Represents a HTTP connection to a server over a (local) Unix Socket (AF_UNIX).
+ * Represents a HTTP connection to a server over a (local) Unix Socket (AF_UNIX) or a local or remote TCP socket.
  * the `fetch` method represents a interface inspired by the `fetch` method in the WebPlatform
  */
-export class UnixHttpSocket {
+export class HttpSocket {
     private static DEFAULT_HEADERS = new Headers({
         "User-Agent": UA_STRING,
         "Connection": "close", // keep the api much simpler by not allowing connection reuse
     });
 
     constructor(
-        private socket_path: string,
+        private socket_url: URL,
     ) {}
 
-    private async get_connection(): Promise<Deno.UnixConn> {
-        return await Deno.connect({
-            path: this.socket_path,
-            transport: "unix",
-        });
+    private async get_connection(): Promise<Deno.UnixConn | Deno.TcpConn> {
+        // const socket_url = new URL(`${this.transport}://${this.socket_path}`);
+        if (this.socket_url.protocol === "unix:") {
+            return await Deno.connect({
+                path: this.socket_url.pathname,
+                transport: "unix",
+            });
+        } else if (this.socket_url.protocol === "tcp:") {
+            return await Deno.connect({
+                hostname: this.socket_url.hostname,
+                port: Number.parseInt(this.socket_url.port),
+                transport: "tcp",
+            });
+        } else {
+            throw new Error(
+                `unexpected protocol in url ${this.socket_url.protocol}. thould be either "tcp:" or "unix:"`,
+            );
+        }
     }
 
     public async fetch(input: string | Request, init?: RequestInit | undefined) {
         const request = new Request(input, init);
         const request_url = new URL(request.url);
         // merge default and userprovided headers with user-provided values taking precendence.
-        UnixHttpSocket.DEFAULT_HEADERS.forEach((value, key) =>
+        HttpSocket.DEFAULT_HEADERS.forEach((value, key) =>
             request.headers.get(key) ? null : request.headers.set(key, value)
         );
         if (request.headers.get("Connection") !== "close") {

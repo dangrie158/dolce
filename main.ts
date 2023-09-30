@@ -61,8 +61,17 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
 });
 
 // connect to the docker API
-const docker_api_socket = env.get_string("DOCKER_SOCKET", DockerApi.DEFAULT_SOCKET_PATH);
+const docker_host = env.get_string("DOCKER_HOST");
+const docker_transport = env.get_string("DOCKER_TRANSPORT", "unix");
+let docker_api_socket: URL;
+if (docker_host !== undefined) {
+    docker_api_socket = new URL(`${docker_transport}://${docker_host}`);
+} else {
+    docker_api_socket = DockerApi.DEFAULT_SOCKET_PATH;
+}
+
 logger.debug(`connecting to Docker API socket at ${docker_api_socket}`);
+
 const api = new DockerApi(docker_api_socket);
 const docker_version = await api.get_version();
 const docker_host_info = await api.get_info();

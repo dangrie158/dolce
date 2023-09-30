@@ -1,5 +1,5 @@
 FROM denoland/deno:alpine
-ENV DOCKER_SOCKET /var/run/docker.sock
+ENV DOCKER_HOST /var/run/docker.sock
 
 WORKDIR /dolce
 
@@ -14,14 +14,14 @@ RUN mkdir -p /var/run/dolce
 RUN deno cache main.ts
 
 CMD exec deno run \
-# unstable flag is needed for Deno.connect to a Unix Socket (lib/uds-http.ts)
+# unstable flag is needed for Deno.connect to a Unix Socket (lib/universal-http.ts)
     --unstable \
 # /var/run/dolce/ => lockfile directory
-    --allow-read="./templates,/var/run/dolce/,${DOCKER_SOCKET}" \
+    --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST}" \
 # /var/run/dolce/ => lockfile directory
-    --allow-write="/var/run/dolce/,${DOCKER_SOCKET}" \
+    --allow-write="/var/run/dolce/,${DOCKER_HOST}" \
 # for SmtpNotifier
-    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost}" \
+    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${DOCKER_HOST}" \
 # for lib/env.ts, obviously
     --allow-env \
 # for Deno.kill in lib/lockfile.ts
