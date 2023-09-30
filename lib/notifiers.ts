@@ -4,15 +4,15 @@ import {
     EMailTemplate,
     EventTemplateName,
     RestartMessageContext,
+    SimpleTemplate,
     TelegramTemplate,
-    Template,
 } from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
 import * as env from "./env.ts";
 
 export type RestartInfo = Omit<RestartMessageContext, "hostname">;
 
-export abstract class Notifier<MessageClass extends Template> {
+export abstract class Notifier<MessageClass extends SimpleTemplate> {
     protected constructor(
         private message_class: { new (_: EventTemplateName): MessageClass },
         protected hostname: string,
@@ -43,7 +43,7 @@ export abstract class Notifier<MessageClass extends Template> {
     protected static get logger() {
         return log.getLogger("notifier");
     }
-    static try_create(_: string): Notifier<Template> | undefined {
+    static try_create(_: string): Notifier<SimpleTemplate> | undefined {
         throw new Error(`${this.name} does not implement try_create()`);
     }
 }

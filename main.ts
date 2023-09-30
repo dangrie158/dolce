@@ -3,7 +3,7 @@ import { log } from "./deps.ts";
 import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
-import { Template } from "./lib/templates.ts";
+import { SimpleTemplate } from "./lib/templates.ts";
 import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
 import * as env from "./lib/env.ts";
 
@@ -78,7 +78,7 @@ logger.info(`supervision mode set to ${supervision_mode}`);
 // create all the notifiers that are setup via the environment
 const installed_notifiers = ALL_NOTIFIERS
     .map((notifier) => notifier.try_create(docker_host_info.Name))
-    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<Template>[];
+    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<SimpleTemplate>[];
 
 const event_registry = await register_events(async (events, earliest_next_update) => {
     logger.info(`sending events notification to all registered notifiers with ${events.length} events`);

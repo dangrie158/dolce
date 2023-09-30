@@ -22,33 +22,43 @@ type MessageContext = EventMessageContext | RestartMessageContext;
 
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
-export class Template {
-    private is_rendered = false;
+export class SimpleTemplate {
+    protected engine: Eta;
+    protected is_rendered = false;
+    protected text_content?: string;
 
-    constructor(protected template_name: EventTemplateName) {}
+    constructor(protected template_folder: string, protected template_name: EventTemplateName) {
+        this.engine = new Eta({ views: path.join(this_dir, "../templates/", template_folder) });
+    }
+
+    get path(): string {
+        return this.engine.resolvePath(this.template_name);
+    }
 
     protected ensure_rendered() {
         if (!this.is_rendered) {
-            throw new Error("template not rendered. Call `render()` first");
+            throw new Error("template not rendered. Call `render()` first (and make sure you await that call)");
         }
     }
 
-    public render(_context: MessageContext): Promise<void> {
+    public async render(context: MessageContext): Promise<void> {
+        this.text_content = await this.engine.renderAsync(this.template_name, context);
         this.is_rendered = true;
-        return Promise.resolve();
+    }
+
+    get text(): string {
+        this.ensure_rendered();
+        return this.text_content!;
     }
 }
 
 type EMailFrontMatter = { subject: string };
-export class EMailTemplate extends Template {
-    private static engine = new Eta({ views: path.join(this_dir, "../templates/email") });
-
+export class EMailTemplate extends SimpleTemplate {
     private html_content?: string;
-    private text_content?: string;
     private frontmatter?: EMailFrontMatter;
 
-    get path(): string {
-        return EMailTemplate.engine.resolvePath(this.template_name);
+    constructor(protected template_name: EventTemplateName) {
+        super("email", template_name);
     }
 
     async render(context: MessageContext) {
@@ -56,7 +66,7 @@ export class EMailTemplate extends Template {
         const template_contents = await Deno.readTextFile(template_path);
         const { attrs, body } = extract_frontmatter<EMailFrontMatter>(template_contents);
         this.frontmatter = attrs;
-        this.html_content = await EMailTemplate.engine.renderStringAsync(body, context);
+        this.html_content = await this.engine.renderStringAsync(body, context);
 
         const document = new DOMParser().parseFromString(this.html_content!, "text/html");
         const text_content_lines = document!.getElementsByTagName("main")[0].textContent.split("\n");
@@ -72,17 +82,12 @@ export class EMailTemplate extends Template {
             .filter((line, index, lines) => lines[index - 1]?.trim().length !== 0 || line.trim().length !== 0);
 
         this.text_content = prefix_free_content_lines.join("\n").trim();
-        await super.render(context);
+        this.is_rendered = true;
     }
 
     get html(): string {
         this.ensure_rendered();
         return this.html_content!;
-    }
-
-    get text(): string {
-        this.ensure_rendered();
-        return this.text_content!;
     }
 
     get subject(): string {
@@ -91,41 +96,14 @@ export class EMailTemplate extends Template {
     }
 }
 
-export class DiscordTemplate extends Template {
-    private static engine = new Eta({ views: path.join(this_dir, "../templates/discord") });
-    private string_content?: string;
-
-    get path(): string {
-        return DiscordTemplate.engine.resolvePath(this.template_name);
-    }
-
-    async render(context: MessageContext) {
-        this.string_content = await DiscordTemplate.engine.render(this.template_name, context);
-        await super.render(context);
-    }
-
-    get text(): string {
-        this.ensure_rendered();
-        return this.string_content!;
+export class DiscordTemplate extends SimpleTemplate {
+    constructor(template_name: EventTemplateName) {
+        super("discord", template_name);
     }
 }
 
-export class TelegramTemplate extends Template {
-    private static engine = new Eta({ views: path.join(this_dir, "../templates/telegram") });
-    private string_content?: string;
-
-    get path(): string {
-        return TelegramTemplate.engine.resolvePath(this.template_name);
-    }
-
-    async render(context: MessageContext) {
-        this.string_content = await TelegramTemplate.engine.render(this.template_name, context);
-
-        await super.render(context);
-    }
-
-    get text(): string {
-        this.ensure_rendered();
-        return this.string_content!;
+export class TelegramTemplate extends SimpleTemplate {
+    constructor(template_name: EventTemplateName) {
+        super("telegram", template_name);
     }
 }
