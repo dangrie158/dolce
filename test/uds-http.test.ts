@@ -1,12 +1,12 @@
-import { assert } from "https://deno.land/std@0.201.0/assert/assert.ts";
 import { UnixHttpSocket } from "../lib/uds-http.ts";
 import {
+    assert,
     assertInstanceOf,
     assertNotEquals,
     assertObjectMatch,
+    assertRejects,
     assertStrictEquals,
-} from "https://deno.land/std@0.201.0/assert/mod.ts";
-import { assertRejects } from "https://deno.land/std@0.201.0/assert/assert_rejects.ts";
+} from "https://deno.land/std@0.203.0/assert/mod.ts";
 
 Deno.test("fetch API", async (test) => {
     const worker = new Worker(new URL("./dummy-server.ts", import.meta.url).href, { type: "module" });
