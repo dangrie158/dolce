@@ -43,7 +43,7 @@
             <%~ it.events.length > 10 ? `,{"name": "...and more", "value": "${it.events.length - 10} older events omitted"}` : ""%>
             ],
             "thumbnail": {
-                "url": "https://raw.githubusercontent.com/dangrie158/dolce/master/assets/logo_compact.png",
+                "url": "https://raw.githubusercontent.com/dangrie158/dolce/master/docs/assets/logo_compact.png",
                 "height": 0,
                 "width": 0
             },

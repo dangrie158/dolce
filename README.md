@@ -1,6 +1,6 @@
 ## Docker Live Container Events
 
-![Dolce logo](https://github.com/dangrie158/dolce/blob/master/assets/logo_full.svg)
+![Dolce logo](https://github.com/dangrie158/dolce/blob/master/docs/assets/logo_full.svg)
 
 ![current release](https://img.shields.io/github/v/tag/dangrie158/dolce)
 ![build status](https://img.shields.io/github/actions/workflow/status/dangrie158/dolce/ci.yml)
@@ -184,8 +184,8 @@ Your can find a [Tutorial here](https://support.google.com/accounts/answer/18583
 - Go to the channel you want to get the updates
 - Click the settings icon
 - Go to `Integrations` -> `Webhooks`
-- Create a `New Webhook`, set it up however you want. you can use the png icon in `assets/` as a profile picture if you
-  want or choose whatever you want
+- Create a `New Webhook`, set it up however you want. you can use the png icon in `docs/assets/` as a profile picture if
+  you want or choose whatever you want
 - `Copy Webhook URL` to get the URL into your Clipboard
 
 ### Setup Telegram Notifications:

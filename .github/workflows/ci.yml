@@ -13,6 +13,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 jobs:
   build:
+    name: Build Image
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -58,3 +59,39 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: dangrie158/dolce
+
+  build-docs:
+    name: Build the Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Get build ref
+        id: vars
+        run: echo "ref=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies
+        run: pip install mkdocs-material mike
+
+      - name: Configure Git user
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Fetch the gh-pages branch
+        run: git fetch origin gh-pages --depth=1
+
+      - name: Push the new documentation version
+        run: mike deploy --push ${{ steps.vars.outputs.ref }}
+
+      - name: Set stable alias for new version
+        if: startsWith(github.event.ref, 'refs/tags/v')
+        run: mike alias --push --update-aliases ${{ steps.vars.outputs.ref }} stable
+
+      - name: Set latest alias for new version
+        if: github.ref == 'refs/heads/master'
+        run: mike alias --push --update-aliases ${{ steps.vars.outputs.ref }} latest
