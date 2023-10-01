@@ -63,11 +63,11 @@ Configuration of the service is done via environment variables.
   services:
   importatntservice:
     ...# will create notifications
-    tags:
+    labels:
       dolce.enabled: true
   unimportatntservice:
     ...# won't create notifications
-    tags:
+    labels:
       dolce.enabled: false
   anotherunimportantservice:
     ...# won't create notifications
