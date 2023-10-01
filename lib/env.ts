@@ -27,10 +27,10 @@ export function get_bool(key: string): boolean {
 
 /**
  * get a array of values split at `:`
- * e.g. EXAMPLE=test1:test2::last
+ * e.g. `EXAMPLE=test1:test2::last`
  * ```js
  * get_array("EXAMPLE")
- * ["test1", "test2", "", "last"]
+ * ["test1", "test2", "last"]
  * ```
  */
 export function get_array(key: string): string[] {

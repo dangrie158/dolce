@@ -1,6 +1,12 @@
 import { log } from "./deps.ts";
 
-import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
+import {
+    CONTAINER_ACTIONS,
+    ContainerAction,
+    DockerApi,
+    DockerContainerEvent,
+    DockerEventFilters,
+} from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
 import { SimpleTemplate } from "./lib/templates.ts";
@@ -12,10 +18,6 @@ const SUPERVISION_ENABLED_LABEL = "dolce.enabled";
 const LOCK_FILE_PATH = "/var/run/dolce/lockfile";
 
 const startup_time = new Date();
-const event_filters: DockerEventFilters = {
-    type: ["container"],
-    event: ["start", "die", "kill", "oom", "stop", "pause", "unpause", "health_status"],
-};
 
 const backoff_settings = {
     min_timeout: env.get_number("DOLCE_MIN_TIMEOUT", 10),
@@ -56,7 +58,7 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
             break;
         case LockFileRegisterStatus.FailAnotherProcessRunning:
             logger.error(`another process with PID ${lock_file_contents!.pid} is already running!`);
-            Deno.exit(0);
+            Deno.exit(1);
     }
 });
 
@@ -104,6 +106,34 @@ if (next_delivery !== null) {
 } else {
     logger.info(`no delivery scheduled. waiting for events`);
 }
+
+// setup the event filter for all events we're interested in
+let events_of_interest: ContainerAction[] = [
+    "start",
+    "die",
+    "kill",
+    "oom",
+    "stop",
+    "pause",
+    "unpause",
+    "health_status",
+];
+if (env.ensure_defined("DOLCE_EVENTS")) {
+    const events = env.get_array("DOLCE_EVENTS");
+    const unknown_events = events.filter((event_name) => !CONTAINER_ACTIONS.includes(event_name as ContainerAction));
+
+    if (unknown_events.length > 0) {
+        logger.error(`unknown event names "${unknown_events.join(",")}" in DOLCE_EVENTS`);
+        Deno.exit(1);
+    }
+
+    events_of_interest = events as ContainerAction[];
+}
+
+const event_filters: DockerEventFilters = {
+    type: ["container"],
+    event: events_of_interest,
+};
 
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {

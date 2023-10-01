@@ -60,28 +60,30 @@ type DockerInfoResponse = {
     //...
 };
 
-type ContainerAction =
-    | "attach"
-    | "commit"
-    | "copy"
-    | "create"
-    | "destroy"
-    | "die"
-    | "exec_create"
-    | "exec_start"
-    | "export "
-    | "kill"
-    | "oom"
-    | "pause"
-    | "rename"
-    | "resize"
-    | "restart"
-    | "start"
-    | "stop"
-    | "top"
-    | "unpause"
-    | "update"
-    | "health_status";
+export const CONTAINER_ACTIONS = [
+    "attach",
+    "commit",
+    "copy",
+    "create",
+    "destroy",
+    "die",
+    "exec_create",
+    "exec_start",
+    "export ",
+    "kill",
+    "oom",
+    "pause",
+    "rename",
+    "resize",
+    "restart",
+    "start",
+    "stop",
+    "top",
+    "unpause",
+    "update",
+    "health_status",
+] as const;
+export type ContainerAction = typeof CONTAINER_ACTIONS[number];
 type ImageAction = "delete" | "import" | "load" | "pull" | "push" | "save" | "tag" | "untag" | "prune";
 type VolumeAction = "create" | "mount" | "unmount" | "destroy" | "prune";
 type NetworkAction = "create" | "connect" | "disconnect" | "destroy" | "update" | "remove" | "prune";
