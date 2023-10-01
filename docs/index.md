@@ -1,17 +1,46 @@
-# Welcome to MkDocs
+---
+title: Dolce
+icon: material/home
+---
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+![Dolce logo](assets/logo_full.svg)
 
-## Commands
+![current release](https://img.shields.io/github/v/tag/dangrie158/dolce)
+![build status](https://img.shields.io/github/actions/workflow/status/dangrie158/dolce/ci.yml)
+![licence: MIT](https://img.shields.io/github/license/dangrie158/dolce?logo=reacthookform&logoColor=white)
+![docker pulls](https://img.shields.io/docker/pulls/dangrie158/dolce?logo=docker)
 
-- `mkdocs new [dir-name]` - Create a new project.
-- `mkdocs serve` - Start the live-reloading docs server.
-- `mkdocs build` - Build the documentation site.
-- `mkdocs -h` - Print help message and exit.
+# **Do**cker **L**ive **C**ontainer **E**vents {: .hero-header }
 
-## Project layout
+## Features
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+Get notified if something (bad) happens to your containers. Supports the following notification options:
+
+<div class="grid cards" markdown>
+- :material-email: **EMail** With your own SMTP Server
+- :simple-discord: **Discord** via WebHooks
+- :simple-telegram: **Telegram** via the Bot API
+- :material-bell: ...and many more
+</div>
+
+All Notifications use a exponential backoff algorithm to avoid spamming you with messages if a container decides to go
+into a restart loop.
+
+## Example
+
+```yaml
+version: "3"
+services:
+  importatntservice:
+    image: "ubuntu:latest"
+    command: "sleep 1; exit 0;"
+    restart: unless-stopped
+
+  dolce:
+    image: dangrie158/dolce:v2.2.0
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+        DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
+```

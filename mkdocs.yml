@@ -1,12 +1,33 @@
 site_name: Dolce Documentation
+nav:
+  - index.md
+  - quickstart.md
+  - configuration.md
+  - Notifiers:
+    - notifiers/smtp.md
+    - notifiers/discord.md
+    - notifiers/telegram.md
+  - Advanced:
+    - advanced/reduced-permissions.md
+    - advanced/notification-backoff.md
+
 repo_url: https://github.com/dangrie158/dolce
 extra_css:
-  - stylesheets/extra.css
+  - css/extra.css
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
+extra_javascript:
+  - js/katex.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js
+
+
 theme:
   name: material
-
   logo: assets/logo_compact.svg
   favicon: assets/logo_compact.png
+  features:
+    - content.code.annotate
+    - content.code.copy
 
   palette:
     # Palette toggle for automatic mode
@@ -42,3 +63,14 @@ extra:
 plugins:
   - mike:
       canonical_version: stable
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
