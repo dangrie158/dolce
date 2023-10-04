@@ -52,6 +52,11 @@ export abstract class Template {
     }
 }
 
+// this type is statisfied by all concrete implementations of the Template class
+export type ConcreteTemplate = Omit<typeof Template, "new"> & {
+    new (_: EventTemplateName): Template;
+};
+
 export class SimpleTemplate extends Template {
     constructor(template_name: EventTemplateName) {
         super("simple", template_name);

@@ -2,8 +2,7 @@ import { log } from "./deps.ts";
 
 import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
-import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
-import { Template } from "./lib/templates.ts";
+import { ALL_NOTIFIERS, Notifier, try_create } from "./lib/notifiers.ts";
 import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
 import { Configuration } from "./configuration.ts";
 
@@ -61,8 +60,8 @@ logger.info(`supervision mode set to ${Configuration.supervision_mode}`);
 
 // create all the notifiers that are setup via the environment
 const installed_notifiers = ALL_NOTIFIERS
-    .map((notifier) => notifier.try_create(docker_host_info.Name))
-    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<Template>[];
+    .map((notifier) => try_create(notifier, docker_host_info.Name))
+    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier[];
 
 const event_registry = await register_events(async (events, earliest_next_update) => {
     logger.info(`sending events notification to all registered notifiers with ${events.length} events`);
@@ -77,7 +76,7 @@ const next_delivery = await get_next_delivery(event_registry);
 if (next_delivery !== null) {
     logger.info(`next delivery is scheduled for ${next_delivery?.toLocaleString()}`);
 } else {
-    logger.info(`no delivery scheduled. waiting for events`);
+    logger.info("no delivery scheduled. waiting for events");
 }
 
 // setup the event filter for all events we're interested in
