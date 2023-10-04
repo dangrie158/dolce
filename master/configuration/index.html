@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo_compact.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.3">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.d451bc0e.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.79e020e9.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
@@ -341,6 +341,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#lockfile" class="md-nav__link">
+    Lockfile
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -592,6 +599,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#lockfile" class="md-nav__link">
+    Lockfile
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -642,6 +656,12 @@
 <td>Transport used to talk to docker</td>
 </tr>
 <tr>
+<td><code>DOLCE_SUPERVISION_LABEL</code></td>
+<td><code>string?</code></td>
+<td><code>dolce.enabled</code></td>
+<td>See <a href="#supervision-mode">Supervision Mode</a></td>
+</tr>
+<tr>
 <td><code>DOLCE_SUPERVISION_MODE</code></td>
 <td><code>ALL</code> | <code>TAGGED</code></td>
 <td><code>ALL</code></td>
@@ -653,28 +673,57 @@
 <td>All available</td>
 <td>See <a href="#event-selection">Event Selection</a></td>
 </tr>
+<tr>
+<td><code>DOLCE_MIN_TIMEOUT</code></td>
+<td><code>number</code></td>
+<td>10</td>
+<td>See <a href="../advanced/notification-backoff/">Notification Backoff</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_MAX_TIMEOUT</code></td>
+<td><code>number</code></td>
+<td>60<em>60</em>24</td>
+<td>See <a href="../advanced/notification-backoff/">Notification Backoff</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_MULTIPLIER</code></td>
+<td><code>number</code></td>
+<td>10</td>
+<td>See <a href="../advanced/notification-backoff/">Notification Backoff</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_LOCKFILE</code></td>
+<td><code>string</code></td>
+<td><code>/var/run/dolce/lockfile</code></td>
+<td>See <a href="#lockfile">Lockfile</a></td>
+</tr>
 </tbody>
 </table>
 <h2 id="supervision-mode">Supervision Mode</h2>
-<p>If the variable <code>DOLCE_SUPERVISION_MODE</code> is set to the string <code>TAGGED</code>, only containers with the tag <code>dolce.enabled</code> and
-a value of true will create events. If instead set to <code>ALL</code> or unset, all containers are supervised.</p>
+<p>If the variable <code>DOLCE_SUPERVISION_MODE</code> is set to the string <code>TAGGED</code>, only containers with the tag specified in
+<code>DOLCE_SUPERVISION_LABEL</code> and a value of true will create events. If instead set to <code>ALL</code> or unset, all containers are
+supervised.</p>
 <div class="highlight"><span class="filename">Example using DOLCE_SUPERVISION_MODE=TAGGED</span><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="nt">importatntservice</span><span class="p">:</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...# will create notifications</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">labels</span><span class="p p-Indicator">:</span>
-<span class="w">    </span><span class="nt">dolce.enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="nt">unimportatntservice</span><span class="p">:</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...# won&#39;t create notifications</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">labels</span><span class="p p-Indicator">:</span>
-<span class="w">    </span><span class="nt">dolce.enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="nt">anotherunimportantservice</span><span class="p">:</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...# won&#39;t create notifications</span>
-<span class="nt">dolce</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
-<span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">DOLCE_SUPERVISION_MODE</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TAGGED</span>
+<span class="w">  </span><span class="nt">dolce</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">DOLCE_SUPERVISION_MODE</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TAGGED</span>
+<span class="w">      </span><span class="nt">DOLCE_SUPERVISION_LABEL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitor.enable</span>
+<span class="w">  </span><span class="nt">importantservice</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">monitor.enable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"> </span><span class="c1"># (1)!</span>
+<span class="w">  </span><span class="nt">unimportantservice</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">monitor.enable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># (2)!</span>
+<span class="w">  </span><span class="nt">anotherunimportantservice</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"> </span><span class="c1"># (3)!</span>
 </code></pre></div>
+<ol>
+<li>will create notifications, the label is set to exactly "true"</li>
+<li>won't create notifications, the label is explicitly set to a value other than "true"</li>
+<li>won't create notifications, the label is not set at all</li>
+</ol>
 <h2 id="event-selection">Event Selection</h2>
 <p>By default you will get notified for a subset of all available events that are fired by the Docker Engine: <code>start</code></p>
 <ul>
@@ -697,6 +746,11 @@ in <code>die</code> and <code>start</code> events you can set:</p>
 <p>This is the list of all available events:</p>
 <p><code>attach</code>, <code>commit</code>, <code>copy</code>, <code>create</code>, <code>destroy</code>, <code>detach</code>, <code>die</code>, <code>exec_create</code>, <code>exec_detach</code>, <code>exec_start</code>, <code>export</code>,
 <code>health_status</code>, <code>kill</code>, <code>oom</code>, <code>pause</code>, <code>rename</code>, <code>resize</code>, <code>restart</code>, <code>start</code>, <code>stop</code>, <code>top</code>, <code>unpause</code>, <code>update</code>.</p>
+<h2 id="lockfile">Lockfile</h2>
+<p>The lockfile is used to detect unexpected shutdowns and avoid mutliple instances of the service running at the same
+time. You can mount this path in a volume to detect unexpected shutdowns outside of the lifetime of the container.</p>
+<p>If you plan on using multiple instances of Dolce (e.g. to enable multiple configurations) make sure that if this is
+mounted in a volume, no two different services access the same file.</p>
 
 
 
@@ -734,10 +788,11 @@ in <code>die</code> and <code>start</code> events you can set:</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
+    
     <script id="__config" type="application/json">{"base": "..", "features": ["content.code.annotate", "content.code.copy"], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.726fbb30.min.js"></script>
+      <script src="../assets/javascripts/bundle.6eac0284.min.js"></script>
       
         <script src="../js/katex.js"></script>
       
