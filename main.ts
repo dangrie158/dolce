@@ -1,48 +1,28 @@
 import { log } from "./deps.ts";
 
-import {
-    CONTAINER_ACTIONS,
-    ContainerAction,
-    DockerApi,
-    DockerContainerEvent,
-    DockerEventFilters,
-} from "./lib/docker-api.ts";
+import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier } from "./lib/notifiers.ts";
-import { SimpleTemplate } from "./lib/templates.ts";
+import { Template } from "./lib/templates.ts";
 import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
-import * as env from "./lib/env.ts";
-
-type SupervisorMode = "ALL" | "TAGGED";
-const SUPERVISION_ENABLED_LABEL = "dolce.enabled";
-const LOCK_FILE_PATH = "/var/run/dolce/lockfile";
+import { Configuration } from "./configuration.ts";
 
 const startup_time = new Date();
-
-const backoff_settings = {
-    min_timeout: env.get_number("DOLCE_MIN_TIMEOUT", 10),
-    max_timeout: env.get_number("DOLCE_MAX_TIMEOUT", 60 * 60 * 24),
-    multiplier: env.get_number("DOLCE_MULTIPLIER", 10),
-};
-
-// setup logging first so we can output helpful messages
-const log_level: log.LevelName = env.get_string("DOLCE_LOG_LEVEL", "INFO") as log.LevelName;
-log.setup({
-    handlers: {
-        default: new log.handlers.ConsoleHandler(log_level, { formatter: "{levelName}\t{loggerName}\t {msg}" }),
-    },
-    loggers: {
-        main: { level: log_level, handlers: ["default"] },
-        notifier: { level: log_level, handlers: ["default"] },
-        lockfile: { level: log_level, handlers: ["default"] },
-    },
-});
 const logger = log.getLogger("main");
 logger.info(`starting dolce container monitor v2.2.0`);
 
+if (!Configuration.is_valid) {
+    logger.error(`configuration invalid found:`);
+    for (const [key, error] of Object.entries(Configuration.errors)) {
+        logger.error(`\t${key}: ${error}`);
+    }
+    Deno.exit(1);
+} else {
+    logger.debug(`loaded configurations: ${Configuration}`);
+}
 // create and register the lockfile, also check if we are already running or experienced an unexpected shutdown
 let restart_time: Date | undefined;
-const lockfile = new LockFile(LOCK_FILE_PATH);
+const lockfile = new LockFile(Configuration.lockfile_path);
 await lockfile.register((status, lock_file_path, lock_file_contents) => {
     switch (status) {
         case LockFileRegisterStatus.Success:
@@ -63,11 +43,9 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
 });
 
 // connect to the docker API
-const docker_host = env.get_string("DOCKER_HOST");
-const docker_transport = env.get_string("DOCKER_TRANSPORT", "unix");
 let docker_api_socket: URL;
-if (docker_host !== undefined) {
-    docker_api_socket = new URL(`${docker_transport}://${docker_host}`);
+if (Configuration.docker_host !== undefined) {
+    docker_api_socket = new URL(`${Configuration.docker_transport}://${Configuration.docker_host}`);
 } else {
     docker_api_socket = DockerApi.DEFAULT_SOCKET_PATH;
 }
@@ -79,17 +57,12 @@ const docker_version = await api.get_version();
 const docker_host_info = await api.get_info();
 logger.info(`connected to Docker ${docker_version.Version} (API: ${docker_version.ApiVersion})`);
 
-const supervision_mode = env.get_string("DOLCE_SUPERVISION_MODE", "ALL") as SupervisorMode;
-if (!["TAGGED", "ALL"].includes(supervision_mode)) {
-    logger.error(`value for "DOLCE_SUPERVISION_MODE" not one of ("TAGGED", "ALL"), ${supervision_mode} instead`);
-    Deno.exit(1);
-}
-logger.info(`supervision mode set to ${supervision_mode}`);
+logger.info(`supervision mode set to ${Configuration.supervision_mode}`);
 
 // create all the notifiers that are setup via the environment
 const installed_notifiers = ALL_NOTIFIERS
     .map((notifier) => notifier.try_create(docker_host_info.Name))
-    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<SimpleTemplate>[];
+    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier<Template>[];
 
 const event_registry = await register_events(async (events, earliest_next_update) => {
     logger.info(`sending events notification to all registered notifiers with ${events.length} events`);
@@ -98,7 +71,7 @@ const event_registry = await register_events(async (events, earliest_next_update
     );
     await Promise.all(notify_promises);
     logger.info(`earliest next notification at ${earliest_next_update.toLocaleString()}`);
-}, backoff_settings);
+}, Configuration);
 
 const next_delivery = await get_next_delivery(event_registry);
 if (next_delivery !== null) {
@@ -108,31 +81,9 @@ if (next_delivery !== null) {
 }
 
 // setup the event filter for all events we're interested in
-let events_of_interest: ContainerAction[] = [
-    "start",
-    "die",
-    "kill",
-    "oom",
-    "stop",
-    "pause",
-    "unpause",
-    "health_status",
-];
-if (env.ensure_defined("DOLCE_EVENTS")) {
-    const events = env.get_array("DOLCE_EVENTS");
-    const unknown_events = events.filter((event_name) => !CONTAINER_ACTIONS.includes(event_name as ContainerAction));
-
-    if (unknown_events.length > 0) {
-        logger.error(`unknown event names "${unknown_events.join(",")}" in DOLCE_EVENTS`);
-        Deno.exit(1);
-    }
-
-    events_of_interest = events as ContainerAction[];
-}
-
 const event_filters: DockerEventFilters = {
     type: ["container"],
-    event: events_of_interest,
+    event: Configuration.events,
 };
 
 // check if we encountered an unexpected shutdown since last start
@@ -169,12 +120,14 @@ const event_stream = await api.subscribe_events({
 });
 for await (const event of event_stream) {
     logger.info(`new container event received: <"${event.from}": ${event.Action}>`);
-    if (supervision_mode === "ALL" || event.Actor.Attributes[SUPERVISION_ENABLED_LABEL] === "true") {
+    if (
+        Configuration.supervision_mode === "ALL" || event.Actor.Attributes[Configuration.supervision_label] === "true"
+    ) {
         await add_event(event_registry, event as DockerContainerEvent);
         await lockfile.throttled_update();
     } else {
         logger.debug(
-            `container <"${event.from}"> does not have "${SUPERVISION_ENABLED_LABEL}" label set to true, skipping event`,
+            `container <"${event.from}"> does not have "${Configuration.supervision_label}" label set to true, skipping event`,
         );
     }
 }
