@@ -7,6 +7,9 @@ nav:
     - notifiers/smtp.md
     - notifiers/discord.md
     - notifiers/telegram.md
+    - notifiers/slack.md
+    - notifiers/mattermost.md
+    - notifiers/apprise.md
   - Advanced:
     - advanced/reduced-permissions.md
     - advanced/notification-backoff.md
