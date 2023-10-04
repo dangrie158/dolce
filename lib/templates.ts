@@ -118,3 +118,36 @@ export class TelegramTemplate extends Template {
         super("telegram", template_name);
     }
 }
+
+type AppriseFrontMatter = { title: string; format: string; type?: string };
+export class AppriseTemplate extends Template {
+    private frontmatter?: AppriseFrontMatter;
+
+    constructor(template_name: EventTemplateName) {
+        super("apprise", template_name);
+    }
+
+    async render(context: MessageContext) {
+        const template_path = this.path;
+        const template_contents = await Deno.readTextFile(template_path);
+        const { attrs, body } = extract_frontmatter<AppriseFrontMatter>(template_contents);
+        this.frontmatter = attrs;
+        this.text_content = await this.engine.renderStringAsync(body, context);
+        this.is_rendered = true;
+    }
+
+    get title(): string {
+        this.ensure_rendered();
+        return this.frontmatter!.title;
+    }
+
+    get type(): string | undefined {
+        this.ensure_rendered();
+        return this.frontmatter!.type;
+    }
+
+    get format(): string | undefined {
+        this.ensure_rendered();
+        return this.frontmatter!.format;
+    }
+}

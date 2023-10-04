@@ -1,5 +1,8 @@
 import { log, SmtpClient } from "../deps.ts";
+import { DockerContainerEvent } from "./docker-api.ts";
+import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./env.ts";
 import {
+    AppriseTemplate,
     ConcreteTemplate,
     DiscordTemplate,
     EMailTemplate,
@@ -7,8 +10,6 @@ import {
     TelegramTemplate,
     Template,
 } from "./templates.ts";
-import { DockerContainerEvent } from "./docker-api.ts";
-import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./env.ts";
 
 export type RestartInfo = Omit<RestartMessageContext, "hostname">;
 
@@ -188,6 +189,54 @@ class TelegramNotifier extends Notifier {
     }
 }
 
+@EnvironmentConfiguration
+export class AppriseNotifierConfiguration extends CheckedConfiguration {
+    @ConfigOption({ env_variable: "APPRISE_HOST", required: true })
+    static readonly host?: string;
+
+    @ConfigOption({ env_variable: "APPRISE_PROTOCOL", one_of: ["http", "https"] })
+    static readonly protocol: string = "http";
+
+    @ConfigOption({ env_variable: "APPRISE_URLS" })
+    static readonly urls: string;
+
+    @ConfigOption({ env_variable: "APPRISE_TAG" })
+    static readonly tag: string;
+
+    @ConfigOption({ env_variable: "APPRISE_TYPE", one_of: ["info", "success", "warning", "failure"] })
+    static readonly type: string = "info";
+}
+
+/**
+ * Notifier to send Messages via a the Telegram API
+ *
+ * this notifier can be configured using the following environment variables
+ *
+ * TELEGRAM_HTTP_TOKEN: string HTTP Token of your Bot
+ * TELEGRAM_RECIPIENT_IDS: string[] IDs of the recipient groups/users
+ */
+class AppriseNotifier extends Notifier {
+    static config = AppriseNotifierConfiguration;
+    static message_class = AppriseTemplate;
+
+    protected async send_message(message: AppriseTemplate) {
+        await fetch(`${AppriseNotifier.config.protocol}://${AppriseNotifier.config.host}/notify/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                urls: AppriseNotifier.config.urls,
+                body: message.text,
+                title: message.title,
+                type: message.type || AppriseNotifier.config.type,
+                format: message.format,
+                tag: AppriseNotifier.config.tag,
+            }),
+        });
+    }
+}
+
 export function try_create(
     notifier_class: ConcreteNotifier,
     hostname: string,
@@ -208,4 +257,5 @@ export const ALL_NOTIFIERS: ConcreteNotifier[] = [
     SmtpNotifier,
     DiscordNotifier,
     TelegramNotifier,
+    AppriseNotifier,
 ];

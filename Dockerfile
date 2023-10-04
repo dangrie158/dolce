@@ -21,7 +21,7 @@ CMD exec deno run \
 # /var/run/dolce/ => lockfile directory
     --allow-write="/var/run/dolce/,${DOCKER_HOST}" \
 # for SmtpNotifier
-    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${DOCKER_HOST}" \
+    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost},${DOCKER_HOST}" \
 # for lib/env.ts, obviously
     --allow-env \
 # for Deno.kill in lib/lockfile.ts
