@@ -36,10 +36,10 @@ services:
     environment:
       DOLCE_SUPERVISION_MODE: TAGGED
       DOLCE_SUPERVISION_LABEL: monitor.enable
-  importatntservice:
+  importantservice:
     labels:
       monitor.enable: true # (1)!
-  unimportatntservice:
+  unimportantservice:
     labels:
       monitor.enable: false # (2)!
   anotherunimportantservice:

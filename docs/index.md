@@ -31,7 +31,7 @@ into a restart loop.
 ```yaml
 version: "3"
 services:
-  importatntservice:
+  importantservice:
     image: "ubuntu:latest"
     command: "sleep 1; exit 0;"
     restart: unless-stopped

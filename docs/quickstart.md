@@ -10,7 +10,7 @@ You can simply add dolce as an additional service to your :simple-docker: `docke
 ```yaml title="docker-compose.yml"
 version: "3"
 services:
-  importatntservice: # (1)!
+  importantservice: # (1)!
     image: "ubuntu:latest"
     command: "sleep 1; exit 0;"
     restart: unless-stopped

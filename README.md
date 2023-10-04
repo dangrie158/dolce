@@ -28,7 +28,7 @@ versioned for [old versions](https://github.com/dangrie158/dolce/tags).
 ```yaml
 version: "3"
 services:
-  importatntservice:
+  importantservice:
     image: "ubuntu:latest"
     command: "sleep 1; exit 0;"
     restart: unless-stopped
