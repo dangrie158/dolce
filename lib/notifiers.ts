@@ -4,19 +4,29 @@ import {
     EMailTemplate,
     EventTemplateName,
     RestartMessageContext,
-    SimpleTemplate,
     TelegramTemplate,
+    Template,
 } from "./templates.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
-import * as env from "./env.ts";
+import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./env.ts";
 
 export type RestartInfo = Omit<RestartMessageContext, "hostname">;
+type Notifier<MessageClass extends Template, ConfigClass extends CheckedConfiguration> = {
+    new (
+        message_class: typeof Template,
+        config: { new (): CheckedConfiguration },
+        hostname: string,
+    ): Notifier<MessageClass, ConfigClass>;
+    get logger(): log.Logger;
+    config_class: typeof CheckedConfiguration;
+    message_class: typeof Template;
+};
 
-export abstract class Notifier<MessageClass extends SimpleTemplate> {
-    protected constructor(
+export abstract class BaseNotifier<MessageClass extends Template, ConfigClass extends CheckedConfiguration> {
+    public constructor(
         private message_class: { new (_: EventTemplateName): MessageClass },
+        protected config: ConfigClass,
         protected hostname: string,
-        ..._args: unknown[]
     ) {}
 
     async notify_about_events(events: DockerContainerEvent[], earliest_next_update: Date) {
@@ -38,14 +48,52 @@ export abstract class Notifier<MessageClass extends SimpleTemplate> {
         await this.send_message(message);
     }
 
-    protected abstract send_message(message: MessageClass): Promise<void>;
+    protected abstract send_message(_message: MessageClass): Promise<void>;
 
-    protected static get logger() {
+    public static get logger() {
         return log.getLogger("notifier");
     }
-    static try_create(_: string): Notifier<SimpleTemplate> | undefined {
-        throw new Error(`${this.name} does not implement try_create()`);
+}
+
+export function try_create<MessageClass extends Template, ConfigClass extends CheckedConfiguration>(
+    notifier_class: Notifier<MessageClass, ConfigClass>,
+    hostname: string,
+) {
+    notifier_class.logger.debug(`trying to create ${notifier_class.name}`);
+    if (!notifier_class.config_class.is_valid) {
+        notifier_class.logger.debug(`${notifier_class.name} configuration invalid, skipping creation`);
+        for (const error of Object.values(notifier_class.config_class.errors)) {
+            notifier_class.logger.debug(`\t${error}`);
+        }
+        return undefined;
     }
+
+    notifier_class.logger.info(`creating ${self.name}`);
+    return new notifier_class(notifier_class.message_class, notifier_class.config_class, hostname);
+}
+
+@EnvironmentConfiguration
+export class SmtpNotifierConfiguration extends CheckedConfiguration {
+    @ConfigOption({ env_variable: "SMTP_HOSTNAME", required: true })
+    static readonly hostname: string;
+
+    @ConfigOption({ env_variable: "SMTP_RECIPIENTS", required: true })
+    static readonly recipients: string[] = [];
+
+    @ConfigOption({ env_variable: "SMTP_PORT" })
+    static readonly port?: number;
+
+    @ConfigOption({ env_variable: "SMTP_USETLS" })
+    static readonly use_tls: boolean = false;
+
+    @ConfigOption({ env_variable: "SMTP_FROM" })
+    static readonly sender: string = "dolce";
+
+    @ConfigOption({ env_variable: "SMTP_USERNAME" })
+    static readonly username?: string;
+
+    @ConfigOption({ env_variable: "SMTP_PASSWORD" })
+    static readonly password?: string;
 }
 
 /**
@@ -60,29 +108,16 @@ export abstract class Notifier<MessageClass extends SimpleTemplate> {
  * SMTP_USETLS: boolean? (optional, default false)
  * SMTP_FROM: string? (optional, defaults to dolce@<hostname>)
  */
-export class SmtpNotifier extends Notifier<EMailTemplate> {
-    protected constructor(
-        hostname: string,
-        private sender: string,
-        private recipients: string[],
-        private use_ssl: boolean,
-        private smtp_hostname: string,
-        private smtp_port?: number,
-        private smtp_username?: string,
-        private smtp_password?: string,
-    ) {
-        super(EMailTemplate, hostname);
-    }
-
+export class SmtpNotifier extends BaseNotifier<EMailTemplate, typeof SmtpNotifierConfiguration> {
     private async connect(): Promise<SmtpClient> {
         const client = new SmtpClient({ content_encoding: "base64" });
         const connection_config = {
-            hostname: this.smtp_hostname,
-            port: this.smtp_port,
-            username: this.smtp_username,
-            password: this.smtp_password,
+            hostname: this.config.hostname,
+            port: this.config.port,
+            username: this.config.username,
+            password: this.config.password,
         };
-        if (this.use_ssl) {
+        if (this.config.use_tls) {
             await client.connectTLS(connection_config);
         } else {
             await client.connect(connection_config);
@@ -91,52 +126,26 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
     }
 
     protected async send_message(message: EMailTemplate) {
-        const send_promises = this.recipients.map(async (recipient) => {
+        const send_promises = this.config.recipients.map(async (recipient) => {
             SmtpNotifier.logger.info(`sending mail to ${recipient} via SMTP Notifier`);
             const client = await this.connect();
             await client.send({
                 content: message.text,
                 html: message.html,
                 subject: message.subject,
-                from: this.sender,
+                from: this.config.sender,
                 to: recipient,
             });
             await client.close();
         });
         await Promise.all(send_promises);
     }
+}
 
-    static try_create(hostname: string): SmtpNotifier | undefined {
-        SmtpNotifier.logger.debug("trying to create SMTP Notifier");
-        if (!env.ensure_defined("SMTP_HOSTNAME", "SMTP_RECIPIENTS")) {
-            SmtpNotifier.logger.debug("SMTP_HOSTNAME or SMTP_RECIPIENTS not set, skipping creation");
-            return undefined;
-        }
-
-        const smtp_sender = env.get_string("SMTP_FROM", `dolce@${hostname}`);
-        const recipients = env.get_array("SMTP_RECIPIENTS");
-        const use_ssl = env.get_bool("SMTP_USETLS");
-        const smtp_hostname = env.get_string("SMTP_HOSTNAME")!;
-        const smtp_port = env.get_number("SMTP_PORT");
-        const smtp_username = env.get_string("SMTP_USERNAME");
-        const smtp_password = env.get_string("SMTP_PASSWORD");
-
-        if (recipients.length === 0) {
-            TelegramNotifier.logger.warning("SMTP_HOSTNAME set but SMTP_RECIPIENTS is empty");
-        }
-
-        SmtpNotifier.logger.info(`creating SmtpNotifier for ${smtp_username}@${smtp_hostname}`);
-        return new this(
-            hostname,
-            smtp_sender,
-            recipients,
-            use_ssl,
-            smtp_hostname,
-            smtp_port,
-            smtp_username,
-            smtp_password,
-        );
-    }
+@EnvironmentConfiguration
+export class DiscordNotifierConfiguration extends CheckedConfiguration {
+    @ConfigOption({ env_variable: "DISCORD_WEBHOOK", required: true })
+    static readonly webhook_url?: string;
 }
 
 /**
@@ -146,16 +155,11 @@ export class SmtpNotifier extends Notifier<EMailTemplate> {
  *
  * DISCORD_WEBHOOK: string URL of the webhook (required to enable the notifier)
  */
-class DiscordNotifier extends Notifier<DiscordTemplate> {
-    protected constructor(
-        hostname: string,
-        private webhook_url: string,
-    ) {
-        super(DiscordTemplate, hostname);
-    }
+class DiscordNotifier extends BaseNotifier<DiscordTemplate, typeof DiscordNotifierConfiguration> {
+    // static readonly config = DiscordNotifierConfiguration;
 
     protected async send_message(message: DiscordTemplate) {
-        await fetch(this.webhook_url, {
+        await fetch(this.config.webhook_url!, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -163,18 +167,15 @@ class DiscordNotifier extends Notifier<DiscordTemplate> {
             body: message.text,
         });
     }
+}
 
-    static try_create(hostname: string): DiscordNotifier | undefined {
-        DiscordNotifier.logger.debug("trying to create DiscordNotifier");
-        if (!env.ensure_defined("DISCORD_WEBHOOK")) {
-            DiscordNotifier.logger.debug("DISCORD_WEBHOOK not set, skipping creation");
-            return undefined;
-        }
+@EnvironmentConfiguration
+export class TelegramNotifierConfiguration extends CheckedConfiguration {
+    @ConfigOption({ env_variable: "TELEGRAM_HTTP_TOKEN", required: true })
+    static readonly http_token?: string;
 
-        const webhook_url = env.get_string("DISCORD_WEBHOOK")!;
-        DiscordNotifier.logger.info("creating DiscordNotifier");
-        return new this(hostname, webhook_url);
-    }
+    @ConfigOption({ env_variable: "TELEGRAM_RECIPIENT_IDS" })
+    static readonly recipient_ids: string[] = [];
 }
 
 /**
@@ -185,18 +186,10 @@ class DiscordNotifier extends Notifier<DiscordTemplate> {
  * TELEGRAM_HTTP_TOKEN: string HTTP Token of your Bot
  * TELEGRAM_RECIPIENT_IDS: string[] IDs of the recipient groups/users
  */
-class TelegramNotifier extends Notifier<TelegramTemplate> {
-    protected constructor(
-        hostname: string,
-        private http_token: string,
-        private recipient_ids: string[],
-    ) {
-        super(TelegramTemplate, hostname);
-    }
-
+class TelegramNotifier extends BaseNotifier<TelegramTemplate, typeof TelegramNotifierConfiguration> {
     protected async send_message(message: TelegramTemplate) {
-        const send_promises = this.recipient_ids.map(async (recipient) =>
-            await fetch(`https://api.telegram.org/bot${this.http_token}/sendMessage`, {
+        const send_promises = this.config.recipient_ids.map(async (recipient) =>
+            await fetch(`https://api.telegram.org/bot${this.config.http_token!}/sendMessage`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -209,22 +202,6 @@ class TelegramNotifier extends Notifier<TelegramTemplate> {
             })
         );
         await Promise.all(send_promises);
-    }
-
-    static try_create(hostname: string): TelegramNotifier | undefined {
-        TelegramNotifier.logger.debug("trying to create TelegramNotifier");
-        if (!env.ensure_defined("TELEGRAM_HTTP_TOKEN", "TELEGRAM_RECIPIENT_IDS")) {
-            TelegramNotifier.logger.debug("TELEGRAM_HTTP_TOKEN or TELEGRAM_RECIPIENT_IDS not set, skipping creation");
-            return undefined;
-        }
-
-        const http_token = env.get_string("TELEGRAM_HTTP_TOKEN")!;
-        const recipient_ids = env.get_array("TELEGRAM_RECIPIENT_IDS")!;
-        if (recipient_ids.length === 0) {
-            TelegramNotifier.logger.warning("TELEGRAM_HTTP_TOKEN set but TELEGRAM_RECIPIENT_IDS is empty");
-        }
-        TelegramNotifier.logger.info("creating TelegramNotifier");
-        return new this(hostname, http_token, recipient_ids);
     }
 }
 
