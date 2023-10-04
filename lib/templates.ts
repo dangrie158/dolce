@@ -22,7 +22,7 @@ type MessageContext = EventMessageContext | RestartMessageContext;
 
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
-export class SimpleTemplate {
+export abstract class Template {
     protected engine: Eta;
     protected is_rendered = false;
     protected text_content?: string;
@@ -52,8 +52,14 @@ export class SimpleTemplate {
     }
 }
 
+export class SimpleTemplate extends Template {
+    constructor(template_name: EventTemplateName) {
+        super("simple", template_name);
+    }
+}
+
 type EMailFrontMatter = { subject: string };
-export class EMailTemplate extends SimpleTemplate {
+export class EMailTemplate extends Template {
     private html_content?: string;
     private frontmatter?: EMailFrontMatter;
 
@@ -96,13 +102,13 @@ export class EMailTemplate extends SimpleTemplate {
     }
 }
 
-export class DiscordTemplate extends SimpleTemplate {
+export class DiscordTemplate extends Template {
     constructor(template_name: EventTemplateName) {
         super("discord", template_name);
     }
 }
 
-export class TelegramTemplate extends SimpleTemplate {
+export class TelegramTemplate extends Template {
     constructor(template_name: EventTemplateName) {
         super("telegram", template_name);
     }

@@ -1,0 +1,16 @@
+<%
+    function newest_first(event_a, event_b){
+        return event_b.timeNano - event_a.timeNano;
+    }
+%>
+Hello,
+
+There are changes to the status of your containers. The last changes are (newest first):
+
+Time                    Action    Container
+<% it.events.toSorted(newest_first).forEach(event => { %>
+<%= new Date(event.time * 1000).toLocaleString() %>:    <%= event.Action %> <%= event.from %>
+<% }); %>
+
+
+If something new happens, you won't be bothered again with updates until <%= it.earliest_next_update.toLocaleString() %>.

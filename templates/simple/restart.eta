@@ -1,0 +1,19 @@
+<%
+    function newest_first(event_a, event_b){
+        return event_b.timeNano - event_a.timeNano;
+    }
+%>
+Hello,
+It appears that the Dolce service on <%= it.hostname %> restarted after not shutting down normally.
+This means it may missed some events, namely it was blind starting <%= it.downtime_start.toLocaleString() %> until <%= it.downtime_end.toLocaleString() %>.
+
+Here is a list of the events that happened in the meantime:
+
+Time                    Action    Container
+<% it.events_since_shutdown.toSorted(newest_first).forEach(event => { %>
+<%= new Date(event.time * 1000).toLocaleString() %> <%= event.Action %>	<%= event.from %>
+<% }); %>
+
+However, this may be incomplete if docker restarted during the downtime.
+
+If you knowingly killed the process you can ignore this message and use `docker stop <containername>` the next time to avoid this message.

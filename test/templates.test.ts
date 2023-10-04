@@ -18,11 +18,11 @@ const dummy_render_context: RestartMessageContext = {
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
 Deno.test("SimpleTemplate", async (test) => {
-    const template = new SimpleTemplate("email", "restart.eta");
+    const template = new SimpleTemplate("restart.eta");
 
     await test.step("`SimpleTemplate` resolves path", () => {
         const relative_path = path.relative(this_dir, template.path);
-        assertStrictEquals(relative_path, "../templates/email/restart.eta");
+        assertStrictEquals(relative_path, "../templates/simple/restart.eta");
     });
 
     await test.step("`SimpleTemplate` throws if accessing `text` before a render call", () => {
