@@ -1,11 +1,12 @@
-FROM denoland/deno:alpine
+FROM lukechannings/deno:latest
+
 ENV DOCKER_HOST /var/run/docker.sock
 
 WORKDIR /dolce
 
 # Cache the dependencies as a layer
 COPY deps.ts .
-RUN deno cache deps.ts
+RUN /bin/deno cache deps.ts
 
 COPY . .
 
@@ -13,6 +14,7 @@ RUN mkdir -p /var/run/dolce
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
 RUN deno cache main.ts
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD exec deno run \
 # unstable flag is needed for Deno.connect to a Unix Socket (lib/universal-http.ts)
     --unstable \
