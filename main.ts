@@ -8,7 +8,7 @@ import { Configuration } from "./configuration.ts";
 
 const startup_time = new Date();
 const logger = log.getLogger("main");
-logger.info(`starting dolce container monitor v2.3.0`);
+logger.info(`starting dolce container monitor v2.4.0`);
 
 if (!Configuration.is_valid) {
     logger.error(`configuration invalid found:`);
