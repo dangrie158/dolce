@@ -38,8 +38,15 @@
 .md-typeset .grid {
     grid-gap: .4rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
     margin: 1em 0;
+}
+
+.two-column {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.single-column {
+    grid-template-columns: repeat(auto-fit, 1fr);
 }
 
 .md-typeset .grid.cards>ul {
