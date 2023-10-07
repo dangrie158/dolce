@@ -11,6 +11,7 @@ nav:
     - notifiers/mattermost.md
     - notifiers/apprise.md
   - Advanced:
+    - advanced/custom-templates.md
     - advanced/reduced-permissions.md
     - advanced/notification-backoff.md
 

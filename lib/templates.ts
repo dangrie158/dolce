@@ -1,6 +1,6 @@
-import { DOMParser, Eta, extract_frontmatter, path } from "../deps.ts";
+import { DOMParser, Eta, EtaOptions, extract_frontmatter, path, resolve_template_path } from "../deps.ts";
 import { DockerContainerEvent } from "./docker-api.ts";
-
+import { Configuration } from "../configuration.ts";
 export type EventTemplateName = "event.eta" | "restart.eta";
 
 export type BaseMessageContext = {
@@ -22,13 +22,35 @@ type MessageContext = EventMessageContext | RestartMessageContext;
 
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
+class TemplateEngine extends Eta {
+    constructor(private notifier_name: string) {
+        super();
+    }
+
+    public resolvePath = (template_name: string, options?: Partial<EtaOptions>): string => {
+        const custom_template_folder = Configuration.custom_template_path;
+        if (custom_template_folder) {
+            this.configure({ views: path.join(custom_template_folder, this.notifier_name) });
+        } else {
+            this.configure({ views: path.join(this_dir, "../templates/", this.notifier_name) });
+        }
+
+        try {
+            return resolve_template_path.call(this, template_name, options);
+        } catch {
+            this.configure({ views: path.join(this_dir, "../templates/", this.notifier_name) });
+            return resolve_template_path.call(this, template_name, options);
+        }
+    };
+}
+
 export abstract class Template {
-    protected engine: Eta;
+    protected engine: TemplateEngine;
     protected is_rendered = false;
     protected text_content?: string;
 
     constructor(protected template_folder: string, protected template_name: EventTemplateName) {
-        this.engine = new Eta({ views: path.join(this_dir, "../templates/", template_folder) });
+        this.engine = new TemplateEngine(template_folder);
     }
 
     get path(): string {

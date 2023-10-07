@@ -44,6 +44,9 @@ export class Configuration extends CheckedConfiguration {
 
     @ConfigOption({ env_variable: "DOLCE_LOCKFILE" })
     static readonly lockfile_path: string = "/var/run/dolce/lockfile";
+
+    @ConfigOption({ env_variable: "DOLCE_CUSTOM_TEPLATE_PATH" })
+    static readonly custom_template_path?: string;
 }
 
 log.setup({
