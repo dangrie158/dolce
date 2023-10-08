@@ -9,19 +9,19 @@ Configuration of the service is done via environment variables.
 
 ## General Configuration
 
-| Name                        | Type                    | Default                        | Description                                                                          |
-| --------------------------- | ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
-| `DOLCE_LOG_LEVEL`           | Deno Log Level [^1]     | `INFO`                         | Loglevel of the service                                                              |
-| `DOCKER_HOST`               | `string?`               | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp` |
-| `DOCKER_TRANSPORT`          | `unix` \| `tcp`         | `unix`                         | Transport used to talk to docker                                                     |
-| `DOLCE_SUPERVISION_LABEL`   | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                            |
-| `DOLCE_SUPERVISION_MODE`    | `ALL` \| `TAGGED`       | `ALL`                          | See [Supervision Mode](#supervision-mode)                                            |
-| `DOLCE_EVENTS`              | Container Action[] [^2] | All available                  | See [Event Selection](#event-selection)                                              |
-| `DOLCE_MIN_TIMEOUT`         | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
-| `DOLCE_MAX_TIMEOUT`         | `number`                | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                       |
-| `DOLCE_MULTIPLIER`          | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
-| `DOLCE_LOCKFILE`            | `string`                | `/var/run/dolce/lockfile`      | See [Lockfile](#lockfile)                                                            |
-| `DOLCE_CUSTOM_TEPLATE_PATH` | `string?`               | `/var/dolce-custom-templates/` | See [Custom Templates](./advanced/custom-templates.md)                               |
+| Name                         | Type                    | Default                        | Description                                                                          |
+| ---------------------------- | ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| `DOLCE_LOG_LEVEL`            | Deno Log Level [^1]     | `INFO`                         | Loglevel of the service                                                              |
+| `DOCKER_HOST`                | `string?`               | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp` |
+| `DOCKER_TRANSPORT`           | `unix` \| `tcp`         | `unix`                         | Transport used to talk to docker                                                     |
+| `DOLCE_SUPERVISION_LABEL`    | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_SUPERVISION_MODE`     | `ALL` \| `TAGGED`       | `ALL`                          | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_EVENTS`               | Container Action[] [^2] | All available                  | See [Event Selection](#event-selection)                                              |
+| `DOLCE_MIN_TIMEOUT`          | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
+| `DOLCE_MAX_TIMEOUT`          | `number`                | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                       |
+| `DOLCE_MULTIPLIER`           | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
+| `DOLCE_LOCKFILE`             | `string`                | `/var/run/dolce/lockfile`      | See [Lockfile](#lockfile)                                                            |
+| `DOLCE_CUSTOM_TEMPLATE_PATH` | `string?`               | `/var/dolce-custom-templates/` | See [Custom Templates](./advanced/custom-templates.md)                               |
 
 [^1]: [Deno Log Level](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels)
 

@@ -11,7 +11,7 @@ the templates that are used to generate the notifications.
 
 ## Overriding a Template
 
-When rendering a message, Dolce first checks if the template file exists inside `DOLCE_CUSTOM_TEPLATE_PATH`. Only if
+When rendering a message, Dolce first checks if the template file exists inside `DOLCE_CUSTOM_TEMPLATE_PATH`. Only if
 this lookup fails the default template gets used, so to override the template for one or more notifier, create the
 following file:
 
@@ -24,8 +24,8 @@ where
 - `<notifier>` is one of the built-in notifiers (`smtp` | `discord` | `telegram` | `apprise`) and
 - `<eventtype>` is either `event` | `reboot`
 
-depending on which notification you want to customise. The mount this folder to where `DOLCE_CUSTOM_TEPLATE_PATH` points
-(by default this will be `/var/dolce-custom-templates/`):
+depending on which notification you want to customise. The mount this folder to where `DOLCE_CUSTOM_TEMPLATE_PATH`
+points (by default this will be `/var/dolce-custom-templates/`):
 
 ```yaml title="docker-compose.yml"
 version: "3"
@@ -40,7 +40,7 @@ services:
       ...
 ```
 
-1. change the target path if you set `DOLCE_CUSTOM_TEPLATE_PATH` to any other value.
+1. change the target path if you set `DOLCE_CUSTOM_TEMPLATE_PATH` to any other value.
 
 ## Designing the Templates
 
