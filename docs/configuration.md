@@ -11,7 +11,7 @@ Configuration of the service is done via environment variables.
 
 | Name                        | Type                    | Default                        | Description                                                                          |
 | --------------------------- | ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
-| `DOLCE_LOG_LEVEL`           | [Deno Log Level] [^1]   | `INFO`                         | Loglevel of the service                                                              |
+| `DOLCE_LOG_LEVEL`           | Deno Log Level [^1]     | `INFO`                         | Loglevel of the service                                                              |
 | `DOCKER_HOST`               | `string?`               | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp` |
 | `DOCKER_TRANSPORT`          | `unix` \| `tcp`         | `unix`                         | Transport used to talk to docker                                                     |
 | `DOLCE_SUPERVISION_LABEL`   | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                            |
