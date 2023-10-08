@@ -3,7 +3,7 @@
         "dev": "DOLCE_LOG_LEVEL=DEBUG deno run --unstable --allow-read=/var/run/docker.sock,./templates,/var/run/dolce/ --allow-write=/var/run/docker.sock,/var/run/dolce/ --allow-env --allow-run --watch main.ts",
         "bmp": "deno run --allow-read=. --allow-write=. --allow-run=git https://deno.land/x/bmp@v0.2.0/cli.ts",
         "test": "deno --unstable test --allow-read test/ --allow-net=127.0.0.1 --allow-write $TMPDIR --allow-env",
-        "changelog": "deno run --allow-read --allow-env --allow-run=git --allow-sys=uid --allow-write=CHANGELOG.md npm:auto-changelog --ignore-commit-pattern chore:"
+        "changelog": "deno run --allow-read --allow-env --allow-run=git --allow-sys=uid --allow-write=CHANGELOG.md npm:auto-changelog --ignore-commit-pattern chore: && deno fmt"
     },
     "fmt": {
         "indentWidth": 4,
