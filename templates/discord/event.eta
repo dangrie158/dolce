@@ -1,20 +1,4 @@
 <%-
-    function newest_first(event_a, event_b){
-        return event_b.timeNano - event_a.timeNano;
-    }
-    function get_event_color(event){
-        switch (event.Action) {
-        case "start": return "success"
-        case "die": return "error"
-        case "kill": return "error"
-        case "oom": return "error"
-        case "stop": return "warning"
-        case "pause": return "warning"
-        case "unpause": return "success"
-        case "health_status": return "warning"
-        default: return ""
-        }
-    }
     function color_text(text, color){
         switch (color) {
         case "success": return `\`\`\`diff\\n+${ text }\\n\`\`\``
@@ -34,10 +18,10 @@
             "description": "There are changes to the status of your containers. The last changes are (newest first):",
             "color": 14961766,
             "fields": [
-            <%~ it.events.toSorted(newest_first).slice(-10).map(event => `
+            <%~ it.events.toSorted(it.newest_first).slice(-10).map(event => `
                 {
                     "name": "${ new Date(event.time * 1000).toLocaleString() }",
-                    "value": "${ color_text(`${ event.from } -> ${ event.Action }`, get_event_color(event)) }"
+                    "value": "${ color_text(`${ event.from } -> ${ event.Action }`, it.get_event_class(event)) }"
                 }`).join(",")
             %>
             <%~ it.events.length > 10 ? `,{"name": "...and more", "value": "${it.events.length - 10} older events omitted"}` : ""%>

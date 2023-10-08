@@ -1,30 +1,11 @@
-<%-
-    function newest_first(event_a, event_b){
-        return event_b.timeNano - event_a.timeNano;
-    }
-    function get_event_symbol(event){
-        switch (event.Action) {
-        case "start": return "✅"
-        case "die": return "❌"
-        case "kill": return "❌"
-        case "oom": return "❌"
-        case "stop": return "⏹️"
-        case "pause": return "⏸️"
-        case "unpause": return "⏯️"
-        case "health_status": return "❓"
-        default: return ""
-        }
-    }
--%>
-
 *Hello,*
 
 There are changes to the status of your containers\. The last changes are \(newest first\)\:
 
 ```
 Time                    Action    Container
-<% it.events.toSorted(newest_first).forEach(event => { %>
-<%= new Date(event.time * 1000).toLocaleString() %> <%= get_event_symbol(event) %><%= event.Action %>	<%= event.from %>
+<% it.events.toSorted(it.newest_first).forEach(event => { %>
+<%= new Date(event.time * 1000).toLocaleString() %> <%= it.get_event_symbol(event) %><%= event.Action %>	<%= event.from %>
 
 <% }); %>
 ```

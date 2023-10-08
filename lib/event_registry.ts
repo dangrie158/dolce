@@ -64,9 +64,7 @@ export async function add_event(registry: EventRegistry, event: DockerContainerE
 async function schedule_next_delivery(registry: EventRegistry, backoff_iteration = 0): Promise<ScheduleResult> {
     const next_delay = exponential_backoff(backoff_iteration, registry.backoff_settings) * 1000;
     const earliest_next_update = new Date(Date.now() + next_delay);
-    const delivery_event: DeliveryEvent = {
-        backoff_iteration,
-    };
+    const delivery_event: DeliveryEvent = { backoff_iteration };
 
     // enqueue the event in an atomic operation with a check that NEXT_DELIVERY_KEY is unset. If NEXT_DELIVERY_KEY is set,
     // this is a noop and `ok` will be false, so it is safe to call this method all the time as long as NEXT_DELIVERY_KEY

@@ -1,6 +1,7 @@
 FROM lukechannings/deno:latest
 
 ENV DOCKER_HOST /var/run/docker.sock
+ENV DOLCE_CUSTOM_TEPLATE_PATH /var/dolce-custom-templates/
 
 WORKDIR /dolce
 
@@ -19,7 +20,7 @@ CMD deno run \
 # unstable flag is needed for Deno.connect to a Unix Socket (lib/universal-http.ts)
     --unstable \
 # /var/run/dolce/ => lockfile directory
-    --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST}" \
+    --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST},${DOLCE_CUSTOM_TEPLATE_PATH}" \
 # /var/run/dolce/ => lockfile directory
     --allow-write="/var/run/dolce/,${DOCKER_HOST}" \
 # for SmtpNotifier
