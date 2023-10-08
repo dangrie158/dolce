@@ -9,8 +9,10 @@
       
       
       
-        <link rel="prev" href="../reduced-permissions/">
+        <link rel="prev" href="../../notifiers/apprise/">
       
+      
+        <link rel="next" href="../reduced-permissions/">
       
       
       <link rel="icon" href="../../assets/logo_compact.png">
@@ -18,7 +20,7 @@
     
     
       
-        <title>Notification Backoff - Dolce Documentation</title>
+        <title>Custom Templates - Dolce Documentation</title>
       
     
     
@@ -77,7 +79,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-notification-backoff" class="md-skip">
+        <a href="#use-custom-notification-templates" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Notification Backoff
+              Custom Templates
             
           </span>
         </div>
@@ -501,9 +503,31 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../custom-templates/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.13c-.15.01-.29.06-.39.17l-1 1 2.05 2 1-1c.22-.21.22-.56 0-.77l-1.24-1.23a.557.557 0 0 0-.38-.17m-2 1.75L13 19.94V22h2.06l6.06-6.07M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7v-.89l8.24-8.22c.47-.49 1.12-.76 1.8-.76.34 0 .68.06 1 .19V6c0-1.12-.92-2-2.04-2m0 4-8 5-8-5V6l8 5 8-5"/></svg>
+  
+  <span class="md-ellipsis">
+    Custom Templates
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.13c-.15.01-.29.06-.39.17l-1 1 2.05 2 1-1c.22-.21.22-.56 0-.77l-1.24-1.23a.557.557 0 0 0-.38-.17m-2 1.75L13 19.94V22h2.06l6.06-6.07M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7v-.89l8.24-8.22c.47-.49 1.12-.76 1.8-.76.34 0 .68.06 1 .19V6c0-1.12-.92-2-2.04-2m0 4-8 5-8-5V6l8 5 8-5"/></svg>
@@ -514,6 +538,87 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overriding-a-template" class="md-nav__link">
+    Overriding a Template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#designing-the-templates" class="md-nav__link">
+    Designing the Templates
+  </a>
+  
+    <nav class="md-nav" aria-label="Designing the Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-context" class="md-nav__link">
+    Template Context
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helper-functions" class="md-nav__link">
+    Helper Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Helper Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#newest_first" class="md-nav__link">
+    newest_first
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_event_class" class="md-nav__link">
+    get_event_class
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_event_symbol" class="md-nav__link">
+    get_event_symbol
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -545,18 +650,9 @@
                 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../notification-backoff/" class="md-nav__link">
         
   
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 16c1.66 0 3-1.34 3-3 0-1.12-.61-2.1-1.5-2.61L3.79 4.77l5.53 9.58c.5.98 1.51 1.65 2.68 1.65m0-13c-1.81 0-3.5.5-4.97 1.32l2.1 1.21C10 5.19 11 5 12 5c4.42 0 8 3.58 8 8 0 2.21-.89 4.21-2.34 5.65h-.01a.996.996 0 0 0 0 1.41c.39.39 1.03.39 1.42.01A9.969 9.969 0 0 0 22 13c0-5.5-4.5-10-10-10M2 13c0 2.76 1.12 5.26 2.93 7.07.39.38 1.02.38 1.41-.01a.996.996 0 0 0 0-1.41A7.95 7.95 0 0 1 4 13c0-1 .19-2 .54-2.9L3.33 8C2.5 9.5 2 11.18 2 13Z"/></svg>
@@ -567,7 +663,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -600,6 +695,75 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overriding-a-template" class="md-nav__link">
+    Overriding a Template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#designing-the-templates" class="md-nav__link">
+    Designing the Templates
+  </a>
+  
+    <nav class="md-nav" aria-label="Designing the Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-context" class="md-nav__link">
+    Template Context
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helper-functions" class="md-nav__link">
+    Helper Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Helper Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#newest_first" class="md-nav__link">
+    newest_first
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_event_class" class="md-nav__link">
+    get_event_class
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_event_symbol" class="md-nav__link">
+    get_event_symbol
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -616,100 +780,243 @@
   
 
 
-<h1 id="configure-notification-backoff">Configure Notification Backoff</h1>
+<h1 id="use-custom-notification-templates">Use Custom Notification Templates</h1>
+<p>As with every other aspect, Dolce comes with great default templates that are tailored specifically for each notifier.
+If you however want to customize the look or contents of the default, Dolce provides you with an easy way to override
+the templates that are used to generate the notifications.</p>
+<h2 id="overriding-a-template">Overriding a Template</h2>
+<p>When rendering a message, Dolce first checks if the template file exists inside <code>DOLCE_CUSTOM_TEPLATE_PATH</code>. Only if
+this lookup fails the default template gets used, so to override the template for one or more notifier, create the
+following file:</p>
+<div class="highlight"><pre><span></span><code>./templates/&lt;notifier&gt;/&lt;eventtype&gt;.eta
+</code></pre></div>
+<p>where</p>
+<ul>
+<li><code>&lt;notifier&gt;</code> is one of the built-in notifiers (<code>smtp</code> | <code>discord</code> | <code>telegram</code> | <code>apprise</code>) and</li>
+<li><code>&lt;eventtype&gt;</code> is either <code>event</code> | <code>reboot</code></li>
+</ul>
+<p>depending on which notification you want to customise. The mount this folder to where <code>DOLCE_CUSTOM_TEPLATE_PATH</code> points
+(by default this will be <code>/var/dolce-custom-templates/</code>):</p>
+<div class="highlight"><span class="filename">docker-compose.yml</span><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dolce</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce:v2.4.2</span>
+<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/docker.sock:/var/run/docker.sock</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./templates:/var/dolce-custom-templates</span><span class="w"> </span><span class="c1"># (1)!</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</code></pre></div>
+<ol>
+<li>change the target path if you set <code>DOLCE_CUSTOM_TEPLATE_PATH</code> to any other value.</li>
+</ol>
+<h2 id="designing-the-templates">Designing the Templates</h2>
+<p>As you can probably guess from the file extension, Dolce uses <a href="https://eta.js.org">Eta</a> as a templating engine to render
+the notification bodies so you can leverage the full power of JavaScript to generate the massge of you so choose.</p>
+<p>Additionally some notifiers use the templates <a href="https://deno.land/std/front_matter/mod.ts">frontmatter</a> in JSON format to
+specify additional attributes (e.g. EMail subject for SMTP notifier).</p>
+<p>It is probably a good idea to to look at the
+<a href="https://github.com/dangrie158/dolce/tree/master/templates">default templates</a> to get a starting point and work from
+there.</p>
+<h3 id="template-context">Template Context</h3>
+<p>Each template has access to a context object <code>it</code> that is populated with information that can be used inside the
+template.</p>
+<p>Every template context contains the following global properties:</p>
 <table>
 <thead>
 <tr>
 <th>Name</th>
 <th>Type</th>
-<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>DOLCE_MIN_TIMEOUT</code></td>
-<td><code>number</code></td>
-<td><code>10</code></td>
-<td>Minimum number of seconds between notifications</td>
+<td><code>hostname</code></td>
+<td><code>string</code></td>
+<td>Hostname of the machine running Dolce</td>
 </tr>
 <tr>
-<td><code>DOLCE_MAX_TIMEOUT</code></td>
-<td><code>number</code></td>
-<td><code>60*60*24</code> (1 day)</td>
-<td>Maximum number of seconds between notifications</td>
+<td><code>newest_first</code></td>
+<td><code>(DockerContainerEvent, DockerContainerEvent): number</code></td>
+<td>See <a href="#newest_first"><code>newest_first</code></a></td>
 </tr>
 <tr>
-<td><code>DOLCE_MULTIPLIER</code></td>
-<td><code>number</code></td>
-<td><code>10</code></td>
-<td>Multiplier to increase the timeout with each message</td>
+<td><code>get_event_class</code></td>
+<td><code>(DockerContainerEvent): string</code></td>
+<td>See <a href="#get_event_class">get_event_class</a></td>
+</tr>
+<tr>
+<td><code>get_event_symbol</code></td>
+<td><code>(DockerContainerEvent): string</code></td>
+<td>See <a href="#get_event_symbol">get_event_symbol</a></td>
 </tr>
 </tbody>
 </table>
-<p>The delay between notifications is calculated as $delay(n) = min(m * f ^ n, M)$ where $n$ is the current iteration of
-the backoff algorithm.</p>
-<p>If you assume you have a container that has a problem and repeatetly restarts every second starting $t=0$, you will
-receive the following notifications with the default settings</p>
+<p>For <code>event</code> templates the context additionally contains the following properties:</p>
 <table>
 <thead>
 <tr>
-<th>$n$</th>
-<th style="text-align: right;">$delay$</th>
-<th></th>
-<th style="text-align: right;">$t$</th>
-<th>$t_n = t_(n-1) + delay$</th>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td style="text-align: right;">$10 * 10 ^ 0$</td>
-<td>10</td>
-<td style="text-align: right;">$0 + delay$</td>
-<td>10</td>
+<td><code>events</code></td>
+<td><code>DockerContainerEvent[]</code><sup id="fnref2:1"><a class="footnote-ref" href="#fn:1">1</a></sup></td>
+<td>Events since the last notification</td>
 </tr>
 <tr>
-<td>2</td>
-<td style="text-align: right;">$10 * 10 ^ 1$</td>
-<td>100</td>
-<td style="text-align: right;">$10 + delay$</td>
-<td>110</td>
-</tr>
-<tr>
-<td>3</td>
-<td style="text-align: right;">$10 * 10 ^ 2$</td>
-<td>1_000</td>
-<td style="text-align: right;">$110 + delay$</td>
-<td>1110</td>
-</tr>
-<tr>
-<td>4</td>
-<td style="text-align: right;">$10 * 10 ^ 3$</td>
-<td>10_000</td>
-<td style="text-align: right;">$1110 + delay$</td>
-<td>11110</td>
-</tr>
-<tr>
-<td>5</td>
-<td style="text-align: right;">$60 * 60 * 24$</td>
-<td>86_400</td>
-<td style="text-align: right;">$11110 + delay$</td>
-<td>97510</td>
-</tr>
-<tr>
-<td>6</td>
-<td style="text-align: right;">$60 * 60 * 24$</td>
-<td>86_400</td>
-<td style="text-align: right;">$97510 + delay$</td>
-<td>97510</td>
+<td><code>earliest_next_update</code></td>
+<td><code>Date</code></td>
+<td>Timestamp of the earliest next notification</td>
 </tr>
 </tbody>
 </table>
-<p>From this moment nothing changes anymore and you will receive a new message every 24h. $n$ wil be reset if the delay for
-the next notification passes and no events happen that would require a new notification. This means: if you fix the
-problem and everything is quiet for the next 24 hours and breaks again after that time, you will be notified within
-<code>DOLCE_MIN_TIMEOUT</code> seconds again.</p>
+<p>For <code>restart</code> templates the context additionally contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>events_since_shutdown</code></td>
+<td><code>DockerContainerEvent[]</code><sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></td>
+<td>Events that happened while Dolce was not running</td>
+</tr>
+<tr>
+<td><code>downtime_start</code></td>
+<td><code>Date</code></td>
+<td>Latest known timestamp where Dolce was still running</td>
+</tr>
+<tr>
+<td><code>downtime_end</code></td>
+<td><code>Date</code></td>
+<td>Timestamp at which Dolce started again</td>
+</tr>
+</tbody>
+</table>
+<h3 id="helper-functions">Helper Functions</h3>
+<h4 id="newest_first"><code>newest_first</code></h4>
+<p>This function takes two event arguments and returns the chronological order of the events so that newer events will be
+sorted first. This function is compatible with JavaScripts <code>Array.sort</code> and <code>Array.toSorted</code> which makes it perfect to
+iterate over a sorted array of events like this:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;%</span><span class="w"> </span><span class="nx">it</span><span class="p">.</span><span class="nx">events</span><span class="p">.</span><span class="nx">toSorted</span><span class="p">(</span><span class="nx">it</span><span class="p">.</span><span class="nx">newest_first</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">event</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">%&gt;</span>
+<span class="w">    </span><span class="o">&lt;%=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">time</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1000</span><span class="p">).</span><span class="nx">toLocaleString</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;:</span><span class="w"> </span><span class="o">&lt;%=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">Action</span><span class="w"> </span><span class="o">%&gt;</span><span class="w"> </span><span class="o">&lt;%=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="kr">from</span><span class="w"> </span><span class="o">%&gt;</span>
+<span class="o">&lt;%</span><span class="w"> </span><span class="p">});</span><span class="w"> </span><span class="o">%&gt;</span>
+</code></pre></div>
+<h4 id="get_event_class"><code>get_event_class</code></h4>
+<p>This function takes an event and returns one of <code>success</code> | <code>warning</code> | <code>error</code> depending on the event action. This is
+used to color the events in the default templates and can thus be used is custom templates to keep the same
+categorization that is used in the default templates:</p>
+<table>
+<thead>
+<tr>
+<th><code>event.Action</code></th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start</code></td>
+<td><code>success</code></td>
+</tr>
+<tr>
+<td><code>die</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td><code>kill</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td><code>oom</code></td>
+<td><code>error</code></td>
+</tr>
+<tr>
+<td><code>stop</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td><code>pause</code></td>
+<td><code>warning</code></td>
+</tr>
+<tr>
+<td><code>unpause</code></td>
+<td><code>success</code></td>
+</tr>
+<tr>
+<td><code>health_status</code></td>
+<td><code>warning</code></td>
+</tr>
+</tbody>
+</table>
+<p>Example usage:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;&lt;%= it.get_event_class(event) %&gt;&quot;</span><span class="p">&gt;</span><span class="err">&lt;</span>%= event.Action %&gt;<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+</code></pre></div>
+<h4 id="get_event_symbol"><code>get_event_symbol</code></h4>
+<p>This function takes an event an returns a single UTF-8 glyph that can be used to represent the event based on the event
+action:</p>
+<table>
+<thead>
+<tr>
+<th><code>event.Action</code></th>
+<th>Symbol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>die</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>kill</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>oom</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>stop</code></td>
+<td>⏹️</td>
+</tr>
+<tr>
+<td><code>pause</code></td>
+<td>⏸️</td>
+</tr>
+<tr>
+<td><code>unpause</code></td>
+<td>⏯️</td>
+</tr>
+<tr>
+<td><code>health_status</code></td>
+<td>❓</td>
+</tr>
+</tbody>
+</table>
+<p>Example usage:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&lt;%=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="kr">from</span><span class="w"> </span><span class="o">%&gt;:</span><span class="w"> </span><span class="o">&lt;%=</span><span class="w"> </span><span class="nx">it</span><span class="p">.</span><span class="nx">get_event_symbol</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;&lt;%=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">Action</span><span class="w"> </span><span class="o">%&gt;</span>
+</code></pre></div>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p><a href="https://github.com/dangrie158/dolce/blob/75136010aa673876ea02a86c981d27189ec9b803/lib/docker-api.ts#L90"><code>DockerContainerEvent</code></a>&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 
