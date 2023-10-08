@@ -785,7 +785,7 @@
 If you however want to customize the look or contents of the default, Dolce provides you with an easy way to override
 the templates that are used to generate the notifications.</p>
 <h2 id="overriding-a-template">Overriding a Template</h2>
-<p>When rendering a message, Dolce first checks if the template file exists inside <code>DOLCE_CUSTOM_TEPLATE_PATH</code>. Only if
+<p>When rendering a message, Dolce first checks if the template file exists inside <code>DOLCE_CUSTOM_TEMPLATE_PATH</code>. Only if
 this lookup fails the default template gets used, so to override the template for one or more notifier, create the
 following file:</p>
 <div class="highlight"><pre><span></span><code>./templates/&lt;notifier&gt;/&lt;eventtype&gt;.eta
@@ -795,8 +795,8 @@ following file:</p>
 <li><code>&lt;notifier&gt;</code> is one of the built-in notifiers (<code>smtp</code> | <code>discord</code> | <code>telegram</code> | <code>apprise</code>) and</li>
 <li><code>&lt;eventtype&gt;</code> is either <code>event</code> | <code>reboot</code></li>
 </ul>
-<p>depending on which notification you want to customise. The mount this folder to where <code>DOLCE_CUSTOM_TEPLATE_PATH</code> points
-(by default this will be <code>/var/dolce-custom-templates/</code>):</p>
+<p>depending on which notification you want to customise. The mount this folder to where <code>DOLCE_CUSTOM_TEMPLATE_PATH</code>
+points (by default this will be <code>/var/dolce-custom-templates/</code>):</p>
 <div class="highlight"><span class="filename">docker-compose.yml</span><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
 <span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">dolce</span><span class="p">:</span>
@@ -809,7 +809,7 @@ following file:</p>
 <span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 </code></pre></div>
 <ol>
-<li>change the target path if you set <code>DOLCE_CUSTOM_TEPLATE_PATH</code> to any other value.</li>
+<li>change the target path if you set <code>DOLCE_CUSTOM_TEMPLATE_PATH</code> to any other value.</li>
 </ol>
 <h2 id="designing-the-templates">Designing the Templates</h2>
 <p>As you can probably guess from the file extension, Dolce uses <a href="https://eta.js.org">Eta</a> as a templating engine to render
