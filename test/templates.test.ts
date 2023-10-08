@@ -1,4 +1,5 @@
 import {
+    AppriseTemplate,
     DiscordTemplate,
     EMailTemplate,
     RestartMessageContext,
@@ -86,5 +87,27 @@ Deno.test("TelegramTemplate", async (test) => {
 
     await test.step("`TelegramTemplate.text` returns a string after rendering", () => {
         assertStrictEquals(typeof template.text, "string");
+    });
+});
+
+Deno.test("AppriseTemplate", async (test) => {
+    const template = new AppriseTemplate("restart.eta");
+    await template.render(dummy_render_context);
+
+    await test.step("`AppriseTemplate` resolves to correct path", () => {
+        const relative_path = path.relative(this_dir, template.path);
+        assertStrictEquals(relative_path, "../templates/apprise/restart.eta");
+    });
+
+    await test.step("`AppriseTemplate.text` returns a string after rendering", () => {
+        assertStrictEquals(typeof template.text, "string");
+    });
+
+    await test.step("`AppriseTemplate.title` returns a string after rendering", () => {
+        assertStrictEquals(typeof template.title, "string");
+    });
+
+    await test.step("`AppriseTemplate.format` returns a string after rendering", () => {
+        assertStrictEquals(typeof template.format, "string");
     });
 });
