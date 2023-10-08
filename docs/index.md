@@ -46,7 +46,7 @@ easy fashion if you so desire:
 version: "3"
 services:
   dolce:
-    image: dangrie158/dolce:v2.3.0 # (1)!
+    image: dangrie158/dolce:v2.4.0 # (1)!
     restart: unless-stopped # (2)!
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # (3)!
