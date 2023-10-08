@@ -1,4 +1,4 @@
-version: 2.4.2
+version: 2.5.0
 commit: 'chore: bump to v%.%.%'
 files:
   README.md: v%.%.%
@@ -10,7 +10,7 @@ files:
   docs/notifiers/apprise.md: v%.%.%
   docs/notifiers/slack.md: v%.%.%
   docs/notifiers/mattermost.md: v%.%.%
-  docs/advanced/custom-templates.md:  v%.%.%
+  docs/advanced/custom-templates.md: v%.%.%
   docs/advanced/reduced-permissions.md: v%.%.%
   lib/universal-http.ts: const UA_VERSION = "%.%.%";
   main.ts: logger.info(`starting dolce container monitor v%.%.%`);
