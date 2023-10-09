@@ -5,10 +5,12 @@ icon: material/home
 
 ![Dolce logo](assets/logo_full.svg)
 
-![current release](https://img.shields.io/github/v/tag/dangrie158/dolce)
-![build status](https://img.shields.io/github/actions/workflow/status/dangrie158/dolce/ci.yml)
-![licence: MIT](https://img.shields.io/github/license/dangrie158/dolce?logo=reacthookform&logoColor=white)
-![docker pulls](https://img.shields.io/docker/pulls/dangrie158/dolce?logo=docker)
+[![documentation](https://img.shields.io/badge/%F0%9F%93%98-documentation-red)](https://dangrie158.github.io/dolce/)
+[![buy me a coffee](https://img.shields.io/badge/%E2%98%95%EF%B8%8F-buy_ma_a_coffee-orange)](https://www.buymeacoffee.com/dangrie158)
+[![current release](https://img.shields.io/github/v/tag/dangrie158/dolce)](https://github.com/dangrie158/dolce/releases)
+[![build status](https://img.shields.io/github/actions/workflow/status/dangrie158/dolce/ci.yml)](https://github.com/dangrie158/dolce/actions)
+[![licence: MIT](https://img.shields.io/github/license/dangrie158/dolce?logo=reacthookform&logoColor=white)](https://github.com/dangrie158/dolce/blob/master/LICENSE.md)
+[![docker pulls](https://img.shields.io/docker/pulls/dangrie158/dolce?logo=docker)](https://hub.docker.com/repository/docker/dangrie158/dolce/general)
 
 # **Do**cker **L**ive **C**ontainer **E**vents {: .hero-header }
 
