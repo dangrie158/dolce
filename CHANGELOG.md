@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.6.0](https://github.com/dangrie158/dolce/compare/v2.5.3...v2.6.0)
+
+> 12 October 2023
+
+- feat[notifier]: added DOLCE_ACTOR_IDENTIFIER and DOLCE_IDENTIFIER_LABEL options
+  [`06a9fc0`](https://github.com/dangrie158/dolce/commit/06a9fc00f6ca20ed0e005d2b674aae6fb889ab8a)
+- meta: fix automatic version deployment after version bump
+  [`bdd922a`](https://github.com/dangrie158/dolce/commit/bdd922ac97da7829fd315466f77dd279bba58e60)
+
 #### [v2.5.3](https://github.com/dangrie158/dolce/compare/v2.5.2...v2.5.3)
 
 > 9 October 2023
