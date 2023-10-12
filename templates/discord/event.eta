@@ -21,7 +21,7 @@
             <%~ it.events.toSorted(it.newest_first).slice(-10).map(event => `
                 {
                     "name": "${ new Date(event.time * 1000).toLocaleString() }",
-                    "value": "${ color_text(`${ event.from } -> ${ event.Action }`, it.get_event_class(event)) }"
+                    "value": "${ color_text(`${ event.identifier } -> ${ event.Action }`, it.get_event_class(event)) }"
                 }`).join(",")
             %>
             <%~ it.events.length > 10 ? `,{"name": "...and more", "value": "${it.events.length - 10} older events omitted"}` : ""%>

@@ -83,7 +83,8 @@ For `restart` templates the context additionally contains the following properti
 | `downtime_start`        | `Date`                       | Latest known timestamp where Dolce was still running |
 | `downtime_end`          | `Date`                       | Timestamp at which Dolce started again               |
 
-[^1]: [`DockerContainerEvent`](https://github.com/dangrie158/dolce/blob/75136010aa673876ea02a86c981d27189ec9b803/lib/docker-api.ts#L90)
+[^1]: [`DockerContainerEvent`](https://github.com/dangrie158/dolce/blob/master/lib/event_registry.ts#L4) and
+[`DockerApiContainerEvent`](https://github.com/dangrie158/dolce/blob/master/lib/docker-api.ts#L86)
 
 ### Helper Functions
 
@@ -95,7 +96,7 @@ iterate over a sorted array of events like this:
 
 ```js
 <% it.events.toSorted(it.newest_first).forEach(event => { %>
-    <%= new Date(event.time * 1000).toLocaleString() %>: <%= event.Action %> <%= event.from %>
+    <%= new Date(event.time * 1000).toLocaleString() %>: <%= event.Action %> <%= event.identifier %>
 <% }); %>
 ```
 
@@ -141,5 +142,5 @@ action:
 Example usage:
 
 ```js
-<%= event.from %>: <%= it.get_event_symbol(event) %><%= event.Action %>
+<%= event.identifier %>: <%= it.get_event_symbol(event) %><%= event.Action %>
 ```

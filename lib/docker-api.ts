@@ -87,7 +87,7 @@ export type ContainerAction = typeof CONTAINER_ACTIONS[number];
 type ImageAction = "delete" | "import" | "load" | "pull" | "push" | "save" | "tag" | "untag" | "prune";
 type VolumeAction = "create" | "mount" | "unmount" | "destroy" | "prune";
 type NetworkAction = "create" | "connect" | "disconnect" | "destroy" | "update" | "remove" | "prune";
-type GenericDockerEvent<Type, Actions> = {
+type GenericDockerApiEvent<Type, Actions> = {
     status: Actions;
     id: string;
     from: string;
@@ -95,22 +95,29 @@ type GenericDockerEvent<Type, Actions> = {
     Action: Actions;
     Actor: {
         ID: string;
-        Attributes: Record<string, string | null>;
+        Attributes: {
+            name: string;
+            image: string;
+        } & Record<string, string | null>;
     };
     scope: "local" | "swarm";
     time: number;
     timeNano: number;
 };
 
-export type DockerContainerEvent = GenericDockerEvent<"container", ContainerAction>;
-export type DockerImageEvent = GenericDockerEvent<"image", ImageAction>;
-export type DockerVolumeEvent = GenericDockerEvent<"volume", VolumeAction>;
-export type DockerNetworkEvent = GenericDockerEvent<"network", NetworkAction>;
-export type DockerEvent = DockerContainerEvent | DockerImageEvent | DockerVolumeEvent | DockerNetworkEvent;
+export type DockerApiContainerEvent = GenericDockerApiEvent<"container", ContainerAction>;
+export type DockerApiImageEvent = GenericDockerApiEvent<"image", ImageAction>;
+export type DockerApiVolumeEvent = GenericDockerApiEvent<"volume", VolumeAction>;
+export type DockerApiNetworkEvent = GenericDockerApiEvent<"network", NetworkAction>;
+export type DockerApiEvent =
+    | DockerApiContainerEvent
+    | DockerApiImageEvent
+    | DockerApiVolumeEvent
+    | DockerApiNetworkEvent;
 
-type DockerEventAction = DockerEvent["Action"];
-type DockerEventType = DockerEvent["Type"];
-export type DockerEventFilters = {
+type DockerEventAction = DockerApiEvent["Action"];
+type DockerEventType = DockerApiEvent["Type"];
+export type DockerApiEventFilters = {
     event?: DockerEventAction[];
     type?: DockerEventType[];
     container?: string[];
@@ -161,8 +168,8 @@ export class DockerApi {
     }
 
     async subscribe_events(
-        options: { since?: Date; until?: Date; filters?: DockerEventFilters } = {},
-    ): Promise<AsyncGenerator<DockerEvent>> {
+        options: { since?: Date; until?: Date; filters?: DockerApiEventFilters } = {},
+    ): Promise<AsyncGenerator<DockerApiEvent>> {
         const url = new URL(`http://localhost/${this.api_version}/events`);
         if (options.since !== undefined) {
             const date_param = options.since.getTime() / 1000;

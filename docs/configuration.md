@@ -15,7 +15,9 @@ Configuration of the service is done via environment variables.
 | `DOCKER_HOST`                | `string?`               | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp` |
 | `DOCKER_TRANSPORT`           | `unix` \| `tcp`         | `unix`                         | Transport used to talk to docker                                                     |
 | `DOLCE_SUPERVISION_LABEL`    | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_IDENTIFIER_LABEL`     | `string?`               | `dolce.identifier`             | See [Container Identifiers](#container-identifiers)                                  |
 | `DOLCE_SUPERVISION_MODE`     | `ALL` \| `TAGGED`       | `ALL`                          | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_ACTOR_IDENTIFIER`     | `name` \| `image`       | `name`                         | See [Container Identifiers](#container-identifiers)                                  |
 | `DOLCE_EVENTS`               | Container Action[] [^2] | All available                  | See [Event Selection](#event-selection)                                              |
 | `DOLCE_MIN_TIMEOUT`          | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
 | `DOLCE_MAX_TIMEOUT`          | `number`                | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                       |
@@ -54,6 +56,34 @@ services:
 1. will create notifications, the label is set to exactly "true"
 2. won't create notifications, the label is explicitly set to a value other than "true"
 3. won't create notifications, the label is not set at all
+
+## Container Identifiers
+
+By default Dolce will use the container name in notifications to identify the container that changed the state. If you
+set `DOLCE_ACTOR_IDENTIFIER` to `image`, the name of the dockerimage is used instead. You can also specify a custom
+identifier per container by adding a label with the key specified in `DOLCE_IDENTIFIER_LABEL` to your container.
+
+For example:
+
+```yaml title="Example using DOLCE_ACTOR_IDENTIFIER=image and a custom DOLCE_IDENTIFIER_LABEL"
+services:
+  dolce:
+    image: dangrie158/dolce
+    ...
+    environment:
+      DOLCE_ACTOR_IDENTIFIER: image
+      DOLCE_IDENTIFIER_LABEL: dolce.label # (1)!
+  importantservice:
+    labels:
+      dolce.label: "my_important_service_do_not_kill" # (2)!
+  anotherimportantservice:
+    ... # (3)!
+```
+
+1. `dolce.identifier` by default
+2. using the label specified in `DOLCE_IDENTIFIER_LABEL`, this container will be referred to as
+   `my_important_service_do_not_kill` in any notifications
+3. This container will be referred to by its image name due to the setting of `DOLCE_ACTOR_IDENTIFIER=image`
 
 ## Event Selection
 

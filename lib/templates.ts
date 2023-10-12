@@ -1,5 +1,5 @@
 import { DOMParser, Eta, EtaOptions, extract_frontmatter, path, resolve_template_path } from "../deps.ts";
-import { DockerContainerEvent } from "./docker-api.ts";
+import { DockerApiContainerEvent } from "./docker-api.ts";
 import { Configuration } from "../configuration.ts";
 export type EventTemplateName = "event.eta" | "restart.eta";
 
@@ -8,12 +8,12 @@ export type BaseMessageContext = {
 };
 
 export type EventMessageContext = BaseMessageContext & {
-    events: DockerContainerEvent[];
+    events: DockerApiContainerEvent[];
     earliest_next_update: Date;
 };
 
 export type RestartMessageContext = BaseMessageContext & {
-    events_since_shutdown: DockerContainerEvent[];
+    events_since_shutdown: DockerApiContainerEvent[];
     downtime_start: Date;
     downtime_end: Date;
 };
@@ -23,10 +23,10 @@ type MessageContext = EventMessageContext | RestartMessageContext;
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
 const context_functions = {
-    newest_first: (event_a: DockerContainerEvent, event_b: DockerContainerEvent): number => {
+    newest_first: (event_a: DockerApiContainerEvent, event_b: DockerApiContainerEvent): number => {
         return event_b.timeNano - event_a.timeNano;
     },
-    get_event_class: (event: DockerContainerEvent): string => {
+    get_event_class: (event: DockerApiContainerEvent): string => {
         switch (event.Action) {
             case "start":
                 return "success";
@@ -48,7 +48,7 @@ const context_functions = {
                 return "";
         }
     },
-    get_event_symbol: (event: DockerContainerEvent): string => {
+    get_event_symbol: (event: DockerApiContainerEvent): string => {
         switch (event.Action) {
             case "start":
                 return "✅";

@@ -6,7 +6,7 @@ Here is a list of the events that happened in the meantime\:
 ```
 Time                    Action    Container
 <% it.events_since_shutdown.toSorted(it.newest_first).forEach(event => { %>
-<%= new Date(event.time * 1000).toLocaleString() %> <%= it.get_event_symbol(event) %><%= event.Action %>	<%= event.from %>
+<%= new Date(event.time * 1000).toLocaleString() %> <%= it.get_event_symbol(event) %><%= event.Action %>	<%= event.identifier %>
 
 <% }); %>
 ```

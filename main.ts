@@ -1,6 +1,6 @@
 import { log } from "./deps.ts";
 
-import { DockerApi, DockerContainerEvent, DockerEventFilters } from "./lib/docker-api.ts";
+import { DockerApi, DockerApiContainerEvent, DockerApiEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier, try_create } from "./lib/notifiers.ts";
 import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
@@ -80,7 +80,7 @@ if (next_delivery !== null) {
 }
 
 // setup the event filter for all events we're interested in
-const event_filters: DockerEventFilters = {
+const event_filters: DockerApiEventFilters = {
     type: ["container"],
     event: Configuration.events,
 };
@@ -95,7 +95,7 @@ if (restart_time !== undefined) {
     });
 
     const missed_events = [];
-    for await (const event of missed_events_stream) missed_events.push(event as DockerContainerEvent);
+    for await (const event of missed_events_stream) missed_events.push(event as DockerApiContainerEvent);
     const restart_information = {
         downtime_start: restart_time,
         downtime_end: startup_time,
@@ -118,15 +118,22 @@ const event_stream = await api.subscribe_events({
     filters: event_filters,
 });
 for await (const event of event_stream) {
-    logger.info(`new container event received: <"${event.from}": ${event.Action}>`);
+    let event_identifier = event.Actor.Attributes[Configuration.actor_identifier];
+    if (Configuration.identifier_label in event.Actor.Attributes) {
+        event_identifier = event.Actor.Attributes[Configuration.identifier_label]!;
+    }
+    logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
     if (
         Configuration.supervision_mode === "ALL" || event.Actor.Attributes[Configuration.supervision_label] === "true"
     ) {
-        await add_event(event_registry, event as DockerContainerEvent);
+        await add_event(event_registry, {
+            "actor_name": event_identifier,
+            ...(event as DockerApiContainerEvent),
+        });
         await lockfile.throttled_update();
     } else {
         logger.debug(
-            `container <"${event.from}"> does not have "${Configuration.supervision_label}" label set to true, skipping event`,
+            `container <"${event_identifier}"> does not have "${Configuration.supervision_label}" label set to true, skipping event`,
         );
     }
 }

@@ -1,5 +1,5 @@
 import { log, SmtpClient } from "../deps.ts";
-import { DockerContainerEvent } from "./docker-api.ts";
+import { DockerApiContainerEvent } from "./docker-api.ts";
 import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./env.ts";
 import {
     AppriseTemplate,
@@ -16,7 +16,7 @@ export type RestartInfo = Omit<RestartMessageContext, "hostname">;
 export abstract class Notifier {
     public constructor(protected message_class: ConcreteTemplate, protected hostname: string) {}
 
-    async notify_about_events(events: DockerContainerEvent[], earliest_next_update: Date) {
+    async notify_about_events(events: DockerApiContainerEvent[], earliest_next_update: Date) {
         const message = new this.message_class("event.eta");
         await message.render({
             hostname: this.hostname,

@@ -1,5 +1,9 @@
-import { DockerContainerEvent } from "./docker-api.ts";
+import { DockerApiContainerEvent } from "./docker-api.ts";
 import { ulid } from "../deps.ts";
+
+type DockerContainerEvent = DockerApiContainerEvent & {
+    "actor_name": string;
+};
 
 type EventRegistry = {
     db: Deno.Kv;

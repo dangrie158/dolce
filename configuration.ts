@@ -3,6 +3,7 @@ import { log } from "./deps.ts";
 import { CONTAINER_ACTIONS, ContainerAction } from "./lib/docker-api.ts";
 
 type SupervisorMode = "ALL" | "TAGGED";
+type ActorIdentifier = "image" | "name";
 
 @EnvironmentConfiguration
 export class Configuration extends CheckedConfiguration {
@@ -18,8 +19,14 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_SUPERVISION_LABEL" })
     static readonly supervision_label: string = "dolce.enabled";
 
+    @ConfigOption({ env_variable: "DOLCE_IDENTIFIER_LABEL" })
+    static readonly identifier_label: string = "dolce.identifier";
+
     @ConfigOption({ env_variable: "DOLCE_SUPERVISION_MODE", one_of: ["TAGGED", "ALL"] })
     static readonly supervision_mode: SupervisorMode = "ALL";
+
+    @ConfigOption({ env_variable: "DOLCE_ACTOR_IDENTIFIER", one_of: ["image", "name"] })
+    static readonly actor_identifier: ActorIdentifier = "name";
 
     @ConfigOption({ env_variable: "DOLCE_EVENTS", array_of: CONTAINER_ACTIONS })
     static readonly events: ContainerAction[] = [
