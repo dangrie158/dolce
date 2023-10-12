@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   dolce:
-    image: dangrie158/dolce:v2.5.3
+    image: dangrie158/dolce:v2.6.0
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # (2)!
     environment: # (3)!
