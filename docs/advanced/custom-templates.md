@@ -96,7 +96,7 @@ iterate over a sorted array of events like this:
 
 ```js
 <% it.events.toSorted(it.newest_first).forEach(event => { %>
-    <%= new Date(event.time * 1000).toLocaleString() %>: <%= event.Action %> <%= event.identifier %>
+    <%= new Date(event.time * 1000).toLocaleString() %>: <%= event.Action %> <%= event.actor_name %>
 <% }); %>
 ```
 
@@ -142,5 +142,5 @@ action:
 Example usage:
 
 ```js
-<%= event.identifier %>: <%= it.get_event_symbol(event) %><%= event.Action %>
+<%= event.actor_name %>: <%= it.get_event_symbol(event) %><%= event.Action %>
 ```

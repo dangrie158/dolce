@@ -5,7 +5,7 @@ There are changes to the status of your containers\. The last changes are \(newe
 ```
 Time                    Action    Container
 <% it.events.toSorted(it.newest_first).forEach(event => { %>
-<%= new Date(event.time * 1000).toLocaleString() %> <%= it.get_event_symbol(event) %><%= event.Action %>	<%= event.identifier %>
+<%= new Date(event.time * 1000).toLocaleString() %> <%= it.get_event_symbol(event) %><%= event.Action %>	<%= event.actor_name %>
 
 <% }); %>
 ```
