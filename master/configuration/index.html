@@ -335,6 +335,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#container-identifiers" class="md-nav__link">
+    Container Identifiers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#event-selection" class="md-nav__link">
     Event Selection
   </a>
@@ -681,6 +688,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#container-identifiers" class="md-nav__link">
+    Container Identifiers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#event-selection" class="md-nav__link">
     Event Selection
   </a>
@@ -750,10 +764,22 @@
 <td>See <a href="#supervision-mode">Supervision Mode</a></td>
 </tr>
 <tr>
+<td><code>DOLCE_IDENTIFIER_LABEL</code></td>
+<td><code>string?</code></td>
+<td><code>dolce.identifier</code></td>
+<td>See <a href="#container-identifiers">Container Identifiers</a></td>
+</tr>
+<tr>
 <td><code>DOLCE_SUPERVISION_MODE</code></td>
 <td><code>ALL</code> | <code>TAGGED</code></td>
 <td><code>ALL</code></td>
 <td>See <a href="#supervision-mode">Supervision Mode</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_ACTOR_IDENTIFIER</code></td>
+<td><code>name</code> | <code>image</code></td>
+<td><code>name</code></td>
+<td>See <a href="#container-identifiers">Container Identifiers</a></td>
 </tr>
 <tr>
 <td><code>DOLCE_EVENTS</code></td>
@@ -817,6 +843,30 @@ supervised.</p>
 <li>will create notifications, the label is set to exactly "true"</li>
 <li>won't create notifications, the label is explicitly set to a value other than "true"</li>
 <li>won't create notifications, the label is not set at all</li>
+</ol>
+<h2 id="container-identifiers">Container Identifiers</h2>
+<p>By default Dolce will use the container name in notifications to identify the container that changed the state. If you
+set <code>DOLCE_ACTOR_IDENTIFIER</code> to <code>image</code>, the name of the dockerimage is used instead. You can also specify a custom
+identifier per container by adding a label with the key specified in <code>DOLCE_IDENTIFIER_LABEL</code> to your container.</p>
+<p>For example:</p>
+<div class="highlight"><span class="filename">Example using DOLCE_ACTOR_IDENTIFIER=image and a custom DOLCE_IDENTIFIER_LABEL</span><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dolce</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">DOLCE_ACTOR_IDENTIFIER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span>
+<span class="w">      </span><span class="nt">DOLCE_IDENTIFIER_LABEL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dolce.label</span><span class="w"> </span><span class="c1"># (1)!</span>
+<span class="w">  </span><span class="nt">importantservice</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">dolce.label</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my_important_service_do_not_kill&quot;</span><span class="w"> </span><span class="c1"># (2)!</span>
+<span class="w">  </span><span class="nt">anotherimportantservice</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"> </span><span class="c1"># (3)!</span>
+</code></pre></div>
+<ol>
+<li><code>dolce.identifier</code> by default</li>
+<li>using the label specified in <code>DOLCE_IDENTIFIER_LABEL</code>, this container will be referred to as
+   <code>my_important_service_do_not_kill</code> in any notifications</li>
+<li>This container will be referred to by its image name due to the setting of <code>DOLCE_ACTOR_IDENTIFIER=image</code></li>
 </ol>
 <h2 id="event-selection">Event Selection</h2>
 <p>By default you will get notified for a subset of all available events that are fired by the Docker Engine: <code>start</code></p>
