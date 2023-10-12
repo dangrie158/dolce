@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.6.2](https://github.com/dangrie158/dolce/compare/v2.6.1...v2.6.2)
+
+> 12 October 2023
+
+- fix:[templates}: use wrong property name for identifier
+  [`2d69d74`](https://github.com/dangrie158/dolce/commit/2d69d74f38c9feee7e24972694f175edd433cb02)
+
 #### [v2.6.1](https://github.com/dangrie158/dolce/compare/v2.6.0...v2.6.1)
 
 > 12 October 2023
