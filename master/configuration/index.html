@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo_compact.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.5">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.6a10b989.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.35e1ed30.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
@@ -331,6 +331,26 @@
   <a href="#supervision-mode" class="md-nav__link">
     Supervision Mode
   </a>
+  
+    <nav class="md-nav" aria-label="Supervision Mode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tagged-and-untagged" class="md-nav__link">
+    TAGGED and UNTAGGED
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefixed-and-notprefixed" class="md-nav__link">
+    PREFIXED and NOTPREFIXED
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -685,6 +705,26 @@
     Supervision Mode
   </a>
   
+    <nav class="md-nav" aria-label="Supervision Mode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tagged-and-untagged" class="md-nav__link">
+    TAGGED and UNTAGGED
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefixed-and-notprefixed" class="md-nav__link">
+    PREFIXED and NOTPREFIXED
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -758,12 +798,6 @@
 <td>Transport used to talk to docker</td>
 </tr>
 <tr>
-<td><code>DOLCE_SUPERVISION_LABEL</code></td>
-<td><code>string?</code></td>
-<td><code>dolce.enabled</code></td>
-<td>See <a href="#supervision-mode">Supervision Mode</a></td>
-</tr>
-<tr>
 <td><code>DOLCE_IDENTIFIER_LABEL</code></td>
 <td><code>string?</code></td>
 <td><code>dolce.identifier</code></td>
@@ -771,8 +805,20 @@
 </tr>
 <tr>
 <td><code>DOLCE_SUPERVISION_MODE</code></td>
-<td><code>ALL</code> | <code>TAGGED</code></td>
+<td>SupervisorMode <sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></td>
 <td><code>ALL</code></td>
+<td>See <a href="#supervision-mode">Supervision Mode</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_SUPERVISION_LABEL</code></td>
+<td><code>string?</code></td>
+<td><code>dolce.enabled</code></td>
+<td>See <a href="#supervision-mode">Supervision Mode</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_SUPERVISION_PREFIX</code></td>
+<td><code>string?</code></td>
+<td><code>temp-</code></td>
 <td>See <a href="#supervision-mode">Supervision Mode</a></td>
 </tr>
 <tr>
@@ -783,7 +829,7 @@
 </tr>
 <tr>
 <td><code>DOLCE_EVENTS</code></td>
-<td>Container Action[] <sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></td>
+<td>Container Action[] <sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup></td>
 <td>All available</td>
 <td>See <a href="#event-selection">Event Selection</a></td>
 </tr>
@@ -820,9 +866,17 @@
 </tbody>
 </table>
 <h2 id="supervision-mode">Supervision Mode</h2>
+<p>Using the <code>DOLCE_SUPERVISION_MODE</code> environment variable you can control which containers are supervised by Dolce. If set
+to any other value than <code>ALL</code> (the default), Dolce will ignore events by containers that do not match the rules
+described below:</p>
+<h3 id="tagged-and-untagged"><code>TAGGED</code> and <code>UNTAGGED</code></h3>
 <p>If the variable <code>DOLCE_SUPERVISION_MODE</code> is set to the string <code>TAGGED</code>, only containers with the tag specified in
-<code>DOLCE_SUPERVISION_LABEL</code> and a value of true will create events. If instead set to <code>ALL</code> or unset, all containers are
-supervised.</p>
+<code>DOLCE_SUPERVISION_LABEL</code> and a value of <strong>exactly</strong> <code>true</code> will create events (Note that docker tag values are always
+strings, so no YAML booleans and the (Norway problem)[https://hitchdev.com/strictyaml/why/implicit-typing-removed/]).</p>
+<p><code>UNTAGGED</code> is the logical inverse: only containers without the tag set to exactly <code>true</code> will create events. In this
+case it is useful to change the default value of <code>DOLCE_SUPERVISION_LABEL</code> to e.g. <code>dolce.disabled</code> to have a meaningful
+name for the tag, although this is not required. Go ahead and confuse yourself <img alt="😉" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f609.svg" title=":wink:" /></p>
+<p>The value of <code>DOLCE_SUPERVISION_PREFIX</code> and container names is in both cases irrelevant.</p>
 <div class="highlight"><span class="filename">Example using DOLCE_SUPERVISION_MODE=TAGGED</span><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">dolce</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce</span>
@@ -844,6 +898,12 @@ supervised.</p>
 <li>won't create notifications, the label is explicitly set to a value other than "true"</li>
 <li>won't create notifications, the label is not set at all</li>
 </ol>
+<h3 id="prefixed-and-notprefixed"><code>PREFIXED</code> and <code>NOTPREFIXED</code></h3>
+<p>If the variable <code>DOLCE_SUPERVISION_MODE</code> is set to the string <code>PREFIXED</code>, only containers with a name that starts with
+the value of <code>DOLCE_SUPERVISION_PREFIX</code> will create events. Events by all other containers are ignored.</p>
+<p><code>NOTPREFIXED</code> is the logical inverse: all containers will create events <strong>except</strong> they are prefixed with the value in
+<code>DOLCE_SUPERVISION_PREFIX</code>.</p>
+<p>The value of <code>DOLCE_SUPERVISION_LABEL</code> and any container tags is in both cases irrelevant.</p>
 <h2 id="container-identifiers">Container Identifiers</h2>
 <p>By default Dolce will use the container name in notifications to identify the container that changed the state. If you
 set <code>DOLCE_ACTOR_IDENTIFIER</code> to <code>image</code>, the name of the dockerimage is used instead. You can also specify a custom
@@ -902,7 +962,10 @@ mounted in a volume, no two different services access the same file.</p>
 <p><a href="https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels">Deno Log Level</a>&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
 </li>
 <li id="fn:2">
-<p><a href="https://docs.docker.com/engine/api/v1.27/#tag/System/operation/SystemEvents">Container Action</a>&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+<p><a href="https://github.com/search?q=repo%3Adangrie158/dolce%20SupervisorMode&amp;type=code">SupervisionMode</a>&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p><a href="https://docs.docker.com/engine/api/v1.27/#tag/System/operation/SystemEvents">Container Action</a>&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>
