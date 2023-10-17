@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.7.0](https://github.com/dangrie158/dolce/compare/v2.6.2...v2.7.0)
+
+> 17 October 2023
+
+- feat: add DOLCE_SUPERVISION_MODE s PREFIXED, NOTPREFIXED and UNTAGGED
+  [`ae4973c`](https://github.com/dangrie158/dolce/commit/ae4973c745f6acb93fa0da83ef9b8051cba48c5f)
+
 #### [v2.6.2](https://github.com/dangrie158/dolce/compare/v2.6.1...v2.6.2)
 
 > 12 October 2023
