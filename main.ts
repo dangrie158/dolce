@@ -1,6 +1,6 @@
 import { log } from "./deps.ts";
 
-import { DockerApi, DockerApiContainerEvent, DockerApiEventFilters } from "./lib/docker-api.ts";
+import { DockerApi, DockerApiContainerEvent, DockerApiEvent, DockerApiEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier, try_create } from "./lib/notifiers.ts";
 import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
@@ -59,14 +59,14 @@ logger.info(`connected to Docker ${docker_version.Version} (API: ${docker_versio
 logger.info(`supervision mode set to ${Configuration.supervision_mode}`);
 
 // create all the notifiers that are setup via the environment
-const installed_notifiers = ALL_NOTIFIERS
-    .map((notifier) => try_create(notifier, docker_host_info.Name))
-    .filter((posiibleNotifier) => posiibleNotifier !== undefined) as Notifier[];
+const installed_notifiers = ALL_NOTIFIERS.map((notifier) => try_create(notifier, docker_host_info.Name)).filter(
+    (posiibleNotifier) => posiibleNotifier !== undefined,
+) as Notifier[];
 
 const event_registry = await register_events(async (events, earliest_next_update) => {
     logger.info(`sending events notification to all registered notifiers with ${events.length} events`);
-    const notify_promises = installed_notifiers.map(async (notifier) =>
-        await notifier.notify_about_events(events, earliest_next_update)
+    const notify_promises = installed_notifiers.map(
+        async (notifier) => await notifier.notify_about_events(events, earliest_next_update),
     );
     await Promise.all(notify_promises);
     logger.info(`earliest next notification at ${earliest_next_update.toLocaleString()}`);
@@ -113,6 +113,24 @@ if (restart_time !== undefined) {
     });
 }
 
+/**
+ * checks if a container event should be handled by dolce given the current configuration of the supervision mode
+ */
+function log_event(event: DockerApiEvent): boolean {
+    switch (Configuration.supervision_mode) {
+        case "ALL":
+            return true;
+        case "TAGGED":
+            return event.Actor.Attributes[Configuration.supervision_label] === "true";
+        case "UNTAGGED":
+            return event.Actor.Attributes[Configuration.supervision_label] !== "true";
+        case "PREFIXED":
+            return event.Actor.Attributes.name.startsWith(Configuration.supervision_prefix);
+        case "NOTPREFIXED":
+            return !event.Actor.Attributes.name.startsWith(Configuration.supervision_prefix);
+    }
+}
+
 const event_stream = await api.subscribe_events({
     since: startup_time,
     filters: event_filters,
@@ -123,17 +141,16 @@ for await (const event of event_stream) {
         event_identifier = event.Actor.Attributes[Configuration.identifier_label]!;
     }
     logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
-    if (
-        Configuration.supervision_mode === "ALL" || event.Actor.Attributes[Configuration.supervision_label] === "true"
-    ) {
+
+    if (log_event(event)) {
         await add_event(event_registry, {
-            "actor_name": event_identifier,
+            actor_name: event_identifier,
             ...(event as DockerApiContainerEvent),
         });
         await lockfile.throttled_update();
     } else {
         logger.debug(
-            `container <"${event_identifier}"> does not have "${Configuration.supervision_label}" label set to true, skipping event`,
+            `container <"${event_identifier}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
         );
     }
 }

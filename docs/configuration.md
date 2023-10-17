@@ -14,11 +14,12 @@ Configuration of the service is done via environment variables.
 | `DOLCE_LOG_LEVEL`            | Deno Log Level [^1]     | `INFO`                         | Loglevel of the service                                                              |
 | `DOCKER_HOST`                | `string?`               | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp` |
 | `DOCKER_TRANSPORT`           | `unix` \| `tcp`         | `unix`                         | Transport used to talk to docker                                                     |
-| `DOLCE_SUPERVISION_LABEL`    | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                            |
 | `DOLCE_IDENTIFIER_LABEL`     | `string?`               | `dolce.identifier`             | See [Container Identifiers](#container-identifiers)                                  |
-| `DOLCE_SUPERVISION_MODE`     | `ALL` \| `TAGGED`       | `ALL`                          | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_SUPERVISION_MODE`     | SupervisorMode [^2]     | `ALL`                          | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_SUPERVISION_LABEL`    | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                            |
+| `DOLCE_SUPERVISION_PREFIX`   | `string?`               | `temp-`                        | See [Supervision Mode](#supervision-mode)                                            |
 | `DOLCE_ACTOR_IDENTIFIER`     | `name` \| `image`       | `name`                         | See [Container Identifiers](#container-identifiers)                                  |
-| `DOLCE_EVENTS`               | Container Action[] [^2] | All available                  | See [Event Selection](#event-selection)                                              |
+| `DOLCE_EVENTS`               | Container Action[] [^3] | All available                  | See [Event Selection](#event-selection)                                              |
 | `DOLCE_MIN_TIMEOUT`          | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
 | `DOLCE_MAX_TIMEOUT`          | `number`                | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                       |
 | `DOLCE_MULTIPLIER`           | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                       |
@@ -27,13 +28,27 @@ Configuration of the service is done via environment variables.
 
 [^1]: [Deno Log Level](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels)
 
-[^2]: [Container Action](https://docs.docker.com/engine/api/v1.27/#tag/System/operation/SystemEvents)
+[^2]: [SupervisionMode](https://github.com/search?q=repo%3Adangrie158/dolce%20SupervisorMode&type=code)
+
+[^3]: [Container Action](https://docs.docker.com/engine/api/v1.27/#tag/System/operation/SystemEvents)
 
 ## Supervision Mode
 
+Using the `DOLCE_SUPERVISION_MODE` environment variable you can control which containers are supervised by Dolce. If set
+to any other value than `ALL` (the default), Dolce will ignore events by containers that do not match the rules
+described below:
+
+### `TAGGED` and `UNTAGGED`
+
 If the variable `DOLCE_SUPERVISION_MODE` is set to the string `TAGGED`, only containers with the tag specified in
-`DOLCE_SUPERVISION_LABEL` and a value of true will create events. If instead set to `ALL` or unset, all containers are
-supervised.
+`DOLCE_SUPERVISION_LABEL` and a value of **exactly** `true` will create events (Note that docker tag values are always
+strings, so no YAML booleans and the (Norway problem)[https://hitchdev.com/strictyaml/why/implicit-typing-removed/]).
+
+`UNTAGGED` is the logical inverse: only containers without the tag set to exactly `true` will create events. In this
+case it is useful to change the default value of `DOLCE_SUPERVISION_LABEL` to e.g. `dolce.disabled` to have a meaningful
+name for the tag, although this is not required. Go ahead and confuse yourself :wink:
+
+The value of `DOLCE_SUPERVISION_PREFIX` and container names is in both cases irrelevant.
 
 ```yaml title="Example using DOLCE_SUPERVISION_MODE=TAGGED"
 services:
@@ -56,6 +71,16 @@ services:
 1. will create notifications, the label is set to exactly "true"
 2. won't create notifications, the label is explicitly set to a value other than "true"
 3. won't create notifications, the label is not set at all
+
+### `PREFIXED` and `NOTPREFIXED`
+
+If the variable `DOLCE_SUPERVISION_MODE` is set to the string `PREFIXED`, only containers with a name that starts with
+the value of `DOLCE_SUPERVISION_PREFIX` will create events. Events by all other containers are ignored.
+
+`NOTPREFIXED` is the logical inverse: all containers will create events **except** they are prefixed with the value in
+`DOLCE_SUPERVISION_PREFIX`.
+
+The value of `DOLCE_SUPERVISION_LABEL` and any container tags is in both cases irrelevant.
 
 ## Container Identifiers
 

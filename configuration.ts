@@ -2,7 +2,8 @@ import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./
 import { log } from "./deps.ts";
 import { CONTAINER_ACTIONS, ContainerAction } from "./lib/docker-api.ts";
 
-type SupervisorMode = "ALL" | "TAGGED";
+const SUPERVISION_MODES = ["TAGGED", "UNTAGGED", "PREFIXED", "NOTPREFIXED", "ALL"] as const;
+type SupervisorMode = (typeof SUPERVISION_MODES)[number];
 type ActorIdentifier = "image" | "name";
 
 @EnvironmentConfiguration
@@ -16,14 +17,20 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption()
     static readonly docker_transport: string = "unix";
 
-    @ConfigOption({ env_variable: "DOLCE_SUPERVISION_LABEL" })
-    static readonly supervision_label: string = "dolce.enabled";
-
     @ConfigOption({ env_variable: "DOLCE_IDENTIFIER_LABEL" })
     static readonly identifier_label: string = "dolce.identifier";
 
-    @ConfigOption({ env_variable: "DOLCE_SUPERVISION_MODE", one_of: ["TAGGED", "ALL"] })
+    @ConfigOption({
+        env_variable: "DOLCE_SUPERVISION_MODE",
+        one_of: SUPERVISION_MODES,
+    })
     static readonly supervision_mode: SupervisorMode = "ALL";
+
+    @ConfigOption({ env_variable: "DOLCE_SUPERVISION_LABEL" })
+    static readonly supervision_label: string = "dolce.enabled";
+
+    @ConfigOption({ env_variable: "DOLCE_SUPERVISION_PREFIX" })
+    static readonly supervision_prefix: string = "temp-";
 
     @ConfigOption({ env_variable: "DOLCE_ACTOR_IDENTIFIER", one_of: ["image", "name"] })
     static readonly actor_identifier: ActorIdentifier = "name";
