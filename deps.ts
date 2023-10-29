@@ -1,10 +1,10 @@
-export * as io from "https://deno.land/std@0.203.0/io/mod.ts";
-export * as log from "https://deno.land/std@0.203.0/log/mod.ts";
-export * as path from "https://deno.land/std@0.203.0/path/mod.ts";
-export { ulid } from "https://deno.land/std@0.203.0/ulid/mod.ts";
-export { DelimiterStream, TextLineStream } from "https://deno.land/std@0.203.0/streams/mod.ts";
+export * as io from "https://deno.land/std@0.204.0/io/mod.ts";
+export * as log from "https://deno.land/std@0.204.0/log/mod.ts";
+export * as path from "https://deno.land/std@0.204.0/path/mod.ts";
+export { ulid } from "https://deno.land/std@0.204.0/ulid/mod.ts";
+export { DelimiterStream, TextLineStream } from "https://deno.land/std@0.204.0/streams/mod.ts";
 
-import * as front_matter from "https://deno.land/std@0.203.0/front_matter/mod.ts";
+import * as front_matter from "https://deno.land/std@0.204.0/front_matter/mod.ts";
 export const extract_frontmatter = front_matter.createExtractor({
     [front_matter.Format.JSON]: JSON.parse as front_matter.Parser,
 });

@@ -1,6 +1,6 @@
 import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "../lib/env.ts";
 
-import { assert, assertEquals, assertStrictEquals } from "https://deno.land/std@0.203.0/assert/mod.ts";
+import { assert, assertEquals, assertStrictEquals } from "https://deno.land/std@0.204.0/assert/mod.ts";
 
 Deno.test("EnvironmentConfiguration", async (test) => {
     Deno.env.set("DOLCE_TEST_STRING", "TEST");

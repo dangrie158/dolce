@@ -6,7 +6,7 @@ import {
     assertObjectMatch,
     assertRejects,
     assertStrictEquals,
-} from "https://deno.land/std@0.203.0/assert/mod.ts";
+} from "https://deno.land/std@0.204.0/assert/mod.ts";
 
 ["tcp", "unix"].forEach((protocol) => {
     Deno.test(`fetch API with ${protocol} protocol`, async (test) => {
