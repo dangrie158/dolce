@@ -25,7 +25,7 @@ You can configure email notifications via SMTP using the following environment v
 version: "3"
 services:
   dolce:
-    image: dangrie158/dolce:v2.7.0
+    image: dangrie158/dolce:v2.8.0
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

@@ -1,6 +1,6 @@
 import { DelimiterStream } from "../deps.ts";
 
-const UA_VERSION = "2.7.0";
+const UA_VERSION = "2.8.0";
 const UA_STRING = `Dolce Container Monitor v${UA_VERSION}`;
 
 const CRLF = "\r\n";
