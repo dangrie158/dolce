@@ -20,11 +20,11 @@ const CONFIGURATION_ERRORSKEY = Symbol("errors");
 
 const env = Deno.env;
 
-function get_number<D extends (number | undefined)>(key: string, default_value?: D): number | D {
+function get_number<D extends number | undefined>(key: string, default_value?: D): number | D {
     return env.has(key) ? Number(env.get(key)!) : default_value!;
 }
 
-function get_string<D extends (string | undefined)>(key: string, default_value?: D): string | D {
+function get_string<D extends string | undefined>(key: string, default_value?: D): string | D {
     return env.has(key) ? env.get(key)! : default_value!;
 }
 
@@ -92,7 +92,7 @@ export function EnvironmentConfiguration<T extends { new (): InstanceType<T> }>(
                 }
                 break;
             case Array: {
-                value = env.has(env_variable_name) ? get_array(env_variable_name) : default_value as string[];
+                value = env.has(env_variable_name) ? get_array(env_variable_name) : (default_value as string[]);
                 break;
             }
             case String:
@@ -109,22 +109,26 @@ export function EnvironmentConfiguration<T extends { new (): InstanceType<T> }>(
         if (property_options.one_of !== undefined) {
             if (!property_options.one_of.includes(value)) {
                 const allowed_values = property_options.one_of.map((v) => JSON.stringify(v)).join(", ");
-                validation_errors[property_name] =
-                    `value for ${env_variable_name} not one of {${allowed_values}}, ${value} instead`;
+                validation_errors[
+                    property_name
+                ] = `value for ${env_variable_name} not one of {${allowed_values}}, ${value} instead`;
             }
         }
 
         if (property_options.array_of !== undefined) {
             if (!Array.isArray(value)) {
-                validation_errors[property_name] =
-                    `${constructor.name}.${property_name} has 'array_of' validation set, but value is not an array`;
+                validation_errors[
+                    property_name
+                ] = `${constructor.name}.${property_name} has 'array_of' validation set, but value is not an array`;
             } else {
                 const disallowed_values = value
                     .filter((v) => !property_options.array_of!.includes(v))
-                    .map((v) => JSON.stringify(v)).join(", ");
+                    .map((v) => JSON.stringify(v))
+                    .join(", ");
                 if (disallowed_values.length > 0) {
-                    validation_errors[property_name] =
-                        `disallowed values { ${disallowed_values} } in ${env_variable_name}`;
+                    validation_errors[
+                        property_name
+                    ] = `disallowed values { ${disallowed_values} } in ${env_variable_name}`;
                 }
             }
         }
@@ -133,6 +137,7 @@ export function EnvironmentConfiguration<T extends { new (): InstanceType<T> }>(
         Reflect.set(constructor, property_name, value);
     }
     Reflect.set(constructor, CONFIGURATION_ERRORSKEY, validation_errors);
+    return constructor;
 }
 
 export class CheckedConfiguration {

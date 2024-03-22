@@ -22,7 +22,7 @@ import {
 
         await test.step("`fetch` does not support `Connection: keep-alive`", () => {
             const response = socket_client.fetch("http://localhost/empty/", {
-                headers: { "Connection": "keep-alive" },
+                headers: { Connection: "keep-alive" },
             });
             assertRejects(() => response);
         });

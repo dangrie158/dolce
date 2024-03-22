@@ -6,63 +6,60 @@
 self.onmessage = async (message: MessageEvent<string>) => {
     const protocol = message.data;
 
-    let server: Deno.Listener<Deno.TcpConn | Deno.UnixConn>;
+    const request_handler = async (request: Request) => {
+        switch (new URL(request.url).pathname) {
+            case "/empty/":
+                return new Response("{}", { status: 200 });
+            case "/echojson/":
+                return new Response(JSON.stringify(await request.json()), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                });
+            case "/echoformdata/":
+                return new Response(await request.formData(), { status: 200 });
+            case "/echochunked/":
+                return new Response(request.body, { status: 200, headers: { "Transfer-Encoding": "chunked" } });
+            case "/getstream/": {
+                const stream = new ReadableStream({
+                    type: "bytes",
+                    start(controller: ReadableByteStreamController) {
+                        controller.enqueue(new TextEncoder().encode("event"));
+                        controller.close();
+                    },
+                });
+                return new Response(stream, { status: 200 });
+            }
+            default:
+                return new Response(undefined, { status: 404 });
+        }
+    };
+
     if (protocol === "tcp") {
-        server = Deno.listen({ hostname: "127.0.0.1" } as Deno.TcpListenOptions);
-        self.postMessage(
-            new URL(`tcp://${(server.addr as Deno.NetAddr).hostname}:${(server.addr as Deno.NetAddr).port} `)
-                .toString(),
+        Deno.serve(
+            {
+                hostname: "127.0.0.1",
+                onListen: ({ hostname, port }) => self.postMessage(new URL(`tcp://${hostname}:${port}`).toString()),
+            },
+            request_handler,
         );
     } else if (protocol === "unix") {
         const socket_dir = await Deno.makeTempDir();
         const socket_path = `${socket_dir}/dolce-test.sock`;
-        server = Deno.listen({ path: socket_path, transport: "unix" });
-        self.onbeforeunload = () => {
-            // cleanup when done
-            server.close();
+        const abort_controller = new AbortController();
+        abort_controller.signal.addEventListener("abort", () => {
             Deno.removeSync(socket_path);
-        };
+        });
+
+        Deno.serve(
+            {
+                path: socket_path,
+                signal: abort_controller.signal,
+                onListen: () => self.postMessage(new URL(`unix://${socket_path}`).toString()),
+            },
+            request_handler,
+        );
         self.postMessage(new URL(`unix://${socket_path}`).toString());
     } else {
         throw new Error(`unknown protocol: "${protocol}"`);
-    }
-
-    // tell the "client" that we're ready to accept connections
-
-    for await (const conn of server) {
-        (async () => {
-            const httpConn = Deno.serveHttp(conn);
-            for await (const requestEvent of httpConn) {
-                switch (new URL(requestEvent.request.url).pathname) {
-                    case "/empty/":
-                        return requestEvent.respondWith(new Response("{}", { status: 200 }));
-                    case "/echojson/":
-                        return requestEvent.respondWith(
-                            new Response(JSON.stringify(await requestEvent.request.json()), {
-                                status: 200,
-                                headers: { "Content-Type": "application/json" },
-                            }),
-                        );
-                    case "/echoformdata/":
-                        return requestEvent.respondWith(
-                            new Response(await requestEvent.request.formData(), { status: 200 }),
-                        );
-                    case "/echochunked/":
-                        return requestEvent.respondWith(new Response(await requestEvent.request.body, { status: 200 }));
-                    case "/getstream/": {
-                        const stream = new ReadableStream({
-                            type: "bytes",
-                            start(controller: ReadableByteStreamController) {
-                                controller.enqueue(new TextEncoder().encode("event"));
-                                controller.close();
-                            },
-                        });
-                        return requestEvent.respondWith(new Response(stream, { status: 200 }));
-                    }
-                    default:
-                        return requestEvent.respondWith(new Response(undefined, { status: 404 }));
-                }
-            }
-        })();
     }
 };
