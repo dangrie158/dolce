@@ -131,26 +131,41 @@ function log_event(event: DockerApiEvent): boolean {
     }
 }
 
-const event_stream = await api.subscribe_events({
-    since: startup_time,
-    filters: event_filters,
+const shutdown_requested = new AbortController();
+Deno.addSignalListener("SIGINT", () => {
+    logger.info(`received SIGINT, shutting down dolce container monitor`);
+    shutdown_requested.abort();
+    Deno.exit(0);
 });
-for await (const event of event_stream) {
-    let event_identifier = event.Actor.Attributes[Configuration.actor_identifier];
-    if (Configuration.identifier_label in event.Actor.Attributes) {
-        event_identifier = event.Actor.Attributes[Configuration.identifier_label]!;
-    }
-    logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
 
-    if (log_event(event)) {
-        await add_event(event_registry, {
-            actor_name: event_identifier,
-            ...(event as DockerApiContainerEvent),
-        });
-        await lockfile.throttled_update();
-    } else {
-        logger.debug(
-            `container <"${event_identifier}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
-        );
+while (!shutdown_requested.signal.aborted) {
+    let last_event_time: Date | undefined = undefined;
+    const event_stream = await api.subscribe_events({
+        since: last_event_time ?? startup_time,
+        filters: event_filters,
+    });
+    for await (const event of event_stream) {
+        let event_identifier = event.Actor.Attributes[Configuration.actor_identifier];
+        if (Configuration.identifier_label in event.Actor.Attributes) {
+            event_identifier = event.Actor.Attributes[Configuration.identifier_label]!;
+        }
+        logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
+
+        if (log_event(event)) {
+            await add_event(event_registry, {
+                actor_name: event_identifier,
+                ...(event as DockerApiContainerEvent),
+            });
+            await lockfile.throttled_update();
+            last_event_time = new Date();
+        } else {
+            logger.debug(
+                `container <"${event_identifier}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
+            );
+        }
     }
+    logger.info(`event stream closed unexpectedly, reconnecting in 5 seconds`);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 }
+
+logger.info(`dolce container monitor shutdown complete, quitting now.`);
