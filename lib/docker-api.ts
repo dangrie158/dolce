@@ -83,7 +83,7 @@ export const CONTAINER_ACTIONS = [
     "update",
     "health_status",
 ] as const;
-export type ContainerAction = typeof CONTAINER_ACTIONS[number];
+export type ContainerAction = (typeof CONTAINER_ACTIONS)[number];
 type ImageAction = "delete" | "import" | "load" | "pull" | "push" | "save" | "tag" | "untag" | "prune";
 type VolumeAction = "create" | "mount" | "unmount" | "destroy" | "prune";
 type NetworkAction = "create" | "connect" | "disconnect" | "destroy" | "update" | "remove" | "prune";
@@ -133,16 +133,13 @@ export class DockerApi {
     public static DEFAULT_VERSION = "v1.27";
     public static DEFAULT_SOCKET_PATH = new URL("unix:///var/run/docker.sock");
     public static DEFAULT_HEADERS = {
-        "Accept": "application/json",
+        Accept: "application/json",
         "Accept-Encoding": "identity",
     };
 
     private socket_client: HttpSocket;
 
-    constructor(
-        socket_path: URL = DockerApi.DEFAULT_SOCKET_PATH,
-        private api_version = DockerApi.DEFAULT_VERSION,
-    ) {
+    constructor(socket_path: URL = DockerApi.DEFAULT_SOCKET_PATH, private api_version = DockerApi.DEFAULT_VERSION) {
         this.socket_client = new HttpSocket(socket_path);
     }
 
@@ -172,7 +169,7 @@ export class DockerApi {
     ): Promise<AsyncGenerator<DockerApiEvent>> {
         const url = new URL(`http://localhost/${this.api_version}/events`);
         if (options.since !== undefined) {
-            const date_param = options.since.getTime() / 1000;
+            const date_param = options.since.getTime() / 1000 + 1;
             url.searchParams.append("since", date_param.toFixed());
         }
         if (options.until !== undefined) {
@@ -185,16 +182,16 @@ export class DockerApi {
         }
 
         const http_stream = await this.socket_client.fetch(url.toString(), { headers: DockerApi.DEFAULT_HEADERS });
-        const line_reader = http_stream.body!
-            .pipeThrough(new TextDecoderStream())
+        const line_reader = http_stream
+            .body!.pipeThrough(new TextDecoderStream())
             .pipeThrough(new TextLineStream())
             .getReader();
-        return async function* event_stream() {
+        return (async function* event_stream() {
             do {
                 const { done, value } = await line_reader.read();
                 if (done) return;
                 yield JSON.parse(value);
             } while (true);
-        }();
+        })();
     }
 }
