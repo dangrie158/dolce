@@ -138,10 +138,10 @@ Deno.addSignalListener("SIGINT", () => {
     Deno.exit(0);
 });
 
+let last_connection_lost_time: Date | undefined = undefined;
 while (!shutdown_requested.signal.aborted) {
-    let last_event_time: Date | undefined = undefined;
     const event_stream = await api.subscribe_events({
-        since: last_event_time ?? startup_time,
+        since: last_connection_lost_time ?? startup_time,
         filters: event_filters,
     });
     for await (const event of event_stream) {
@@ -157,15 +157,14 @@ while (!shutdown_requested.signal.aborted) {
                 ...(event as DockerApiContainerEvent),
             });
             await lockfile.throttled_update();
-            last_event_time = new Date();
         } else {
             logger.debug(
                 `container <"${event_identifier}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
             );
         }
     }
+    last_connection_lost_time = new Date();
     logger.info(`event stream closed unexpectedly, reconnecting in 5 seconds`);
     await new Promise((resolve) => setTimeout(resolve, 5000));
 }
-
 logger.info(`dolce container monitor shutdown complete, quitting now.`);

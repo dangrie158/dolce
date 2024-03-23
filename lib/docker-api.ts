@@ -169,7 +169,7 @@ export class DockerApi {
     ): Promise<AsyncGenerator<DockerApiEvent>> {
         const url = new URL(`http://localhost/${this.api_version}/events`);
         if (options.since !== undefined) {
-            const date_param = options.since.getTime() / 1000 + 1;
+            const date_param = options.since.getTime() / 1000;
             url.searchParams.append("since", date_param.toFixed());
         }
         if (options.until !== undefined) {
