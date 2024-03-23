@@ -75,8 +75,8 @@ export class Configuration extends CheckedConfiguration {
 
 log.setup({
     handlers: {
-        default: new log.handlers.ConsoleHandler(Configuration.loglevel, {
-            formatter: "{levelName}\t{loggerName}\t {msg}",
+        default: new log.ConsoleHandler(Configuration.loglevel, {
+            formatter: (record) => `${record.levelName}\t${record.loggerName}\t ${record.msg}`,
         }),
     },
     loggers: {

@@ -28,7 +28,7 @@ await lockfile.register((status, lock_file_path, lock_file_contents) => {
             logger.info(`created lockfile ${lock_file_path} for pid ${lock_file_contents!.pid}`);
             break;
         case LockFileRegisterStatus.SuccessOldLockfileFound:
-            logger.warning(
+            logger.warn(
                 `found old but stale lockfile ${lock_file_path} for pid \
                 ${lock_file_contents!.pid} that is no longer running. \
                 Last seen at ${lock_file_contents!.last_update.toLocaleString()}`,
