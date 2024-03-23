@@ -14,4 +14,4 @@ export { Eta } from "https://deno.land/x/eta@v3.4.0/src/index.ts";
 export { type Options as EtaOptions } from "https://deno.land/x/eta@v3.4.0/src/config.ts";
 export { resolvePath as resolve_template_path } from "https://deno.land/x/eta@v3.4.0/src/file-handling.ts";
 
-export { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
+export { DOMParser } from "https://deno.land/x/deno_dom@v0.1.45/deno-dom-wasm.ts";
