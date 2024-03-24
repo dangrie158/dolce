@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.9.0](https://github.com/dangrie158/dolce/compare/v2.8.0...v2.9.0)
+
+> 24 March 2024
+
+- fix: try to reconnect if the eventstream got unexpectedly closed
+  [`ee018a3`](https://github.com/dangrie158/dolce/commit/ee018a3d268e5a91841984f1f97e735441a26d08)
+- fix: off by one error that causes events to get delivered multiple times
+  [`3224e08`](https://github.com/dangrie158/dolce/commit/3224e08cceda26790a0159141f48ed8b94e3a53b)
+- fix: print active configuratoin on startup instead of defaults
+  [`56e0a01`](https://github.com/dangrie158/dolce/commit/56e0a01b9a84f640a3c5fe2191ec1414be4afb6e)
+
 #### [v2.8.0](https://github.com/dangrie158/dolce/compare/v2.7.0...v2.8.0)
 
 > 29 October 2023
