@@ -17,8 +17,10 @@ RUN deno cache main.ts
 
 ENTRYPOINT []
 CMD deno run \
-# unstable flag is needed for Deno.connect to a Unix Socket (lib/universal-http.ts)
-    --unstable \
+# flag is needed for Deno.connect to a Unix Socket (lib/universal-http.ts)
+    --unstable-http \
+# flag is needed for unstable KV storage
+    --unstable-kv \
 # /var/run/dolce/ => lockfile directory
     --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
 # /var/run/dolce/ => lockfile directory

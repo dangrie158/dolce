@@ -13,7 +13,8 @@
             "runtimeExecutable": "deno",
             "runtimeArgs": [
                 "run",
-                "--unstable",
+                "--unstable-http",
+                "--unstable-kv",
                 "--inspect-wait",
                 "--allow-all"
             ],

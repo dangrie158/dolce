@@ -1,4 +1,8 @@
 {
+    "unstable": [
+        "http",
+        "kv"
+    ],
     "tasks": {
         "dev": "DOLCE_LOG_LEVEL=DEBUG deno run --unstable-http --allow-read=/var/run/docker.sock,./templates,/var/run/dolce/ --allow-write=/var/run/docker.sock,/var/run/dolce/ --allow-env --allow-run --watch main.ts",
         "bmp": "deno run --allow-read=. --allow-write=. --allow-run=git https://deno.land/x/bmp@v0.2.0/cli.ts",
