@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.10.0](https://github.com/dangrie158/dolce/compare/v2.9.0...v2.10.0)
+
+> 2 April 2024
+
+- feat: use official denoland images which now support aarch64
+  [`bf53424`](https://github.com/dangrie158/dolce/commit/bf5342491533826dd7d9c21ef3d34e53264f4701)
+- fix: deprecation warning for not using fine-grained unstable flags
+  [`3bde9fa`](https://github.com/dangrie158/dolce/commit/3bde9fa862458c74c43ff4a862778565f1ffb329)
+
 #### [v2.9.0](https://github.com/dangrie158/dolce/compare/v2.8.0...v2.9.0)
 
 > 24 March 2024
