@@ -40,15 +40,12 @@ function stream_from_reader(input: ReadableStreamDefaultReader<Uint8Array>): Rea
 export class HttpSocket {
     private static DEFAULT_HEADERS = new Headers({
         "User-Agent": UA_STRING,
-        "Connection": "close", // keep the api much simpler by not allowing connection reuse
+        Connection: "close", // keep the api much simpler by not allowing connection reuse
     });
 
-    constructor(
-        private socket_url: URL,
-    ) {}
+    constructor(private socket_url: URL) {}
 
     private async get_connection(): Promise<Deno.UnixConn | Deno.TcpConn> {
-        // const socket_url = new URL(`${this.transport}://${this.socket_path}`);
         if (this.socket_url.protocol === "unix:") {
             return await Deno.connect({
                 path: this.socket_url.pathname,
@@ -101,14 +98,15 @@ export class HttpSocket {
     }
 
     private async read_response(connection: Deno.UnixConn): Promise<Response> {
-        const line_stream = connection.readable
-            .pipeThrough(new DelimiterStream(encoded_crlf, { disposition: "suffix" }));
-        let status = -1, status_text = "";
+        const line_stream = connection.readable.pipeThrough(
+            new DelimiterStream(encoded_crlf, { disposition: "suffix" }),
+        );
+        let status = -1,
+            status_text = "";
         const headers = new Headers();
         let response_part: "status" | "head" | "body" = "status";
 
-        reader:
-        for await (const response_line of line_stream.values({ preventCancel: true })) {
+        reader: for await (const response_line of line_stream.values({ preventCancel: true })) {
             // here it is safe to decode the data since we're either at the statusline or inside the headers
             // which can only contain ASCII an no other binary formats
             const decoded_response_line = ascii_decoder.decode(response_line);

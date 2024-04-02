@@ -1,6 +1,5 @@
-FROM lukechannings/deno:latest
+FROM denoland/deno:latest
 
-ENV DOCKER_HOST /var/run/docker.sock
 ENV DOLCE_CUSTOM_TEMPLATE_PATH /var/dolce-custom-templates/
 
 WORKDIR /dolce
@@ -21,12 +20,14 @@ CMD deno run \
     --unstable-http \
 # flag is needed for unstable KV storage
     --unstable-kv \
+# flag is needed for unstable Cron
+    --unstable-cron \
 # /var/run/dolce/ => lockfile directory
-    --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
+    --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
 # /var/run/dolce/ => lockfile directory
-    --allow-write="/var/run/dolce/,${DOCKER_HOST}" \
+    --allow-write="/var/run/dolce/,${DOCKER_HOST:-/var/run/docker.sock}" \
 # for SmtpNotifier
-    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost},${DOCKER_HOST}" \
+    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost},${DOCKER_HOST:-localhost}" \
 # for lib/env.ts, obviously
     --allow-env \
 # for Deno.kill in lib/lockfile.ts
