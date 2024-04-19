@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.10.1](https://github.com/dangrie158/dolce/compare/v2.10.0...v2.10.1)
+
+> 19 April 2024
+
+- fix: don't throw an error when explicitly setting a DOCKER_HOST with DOCKER_TRANSPORT=unix
+  [`19a83be`](https://github.com/dangrie158/dolce/commit/19a83bead1bccdb37cb533ed11417536f0b21d5a)
+
 #### [v2.10.0](https://github.com/dangrie158/dolce/compare/v2.9.0...v2.10.0)
 
 > 2 April 2024
