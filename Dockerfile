@@ -27,7 +27,7 @@ CMD deno run \
 # /var/run/dolce/ => lockfile directory
     --allow-write="/var/run/dolce/,${DOCKER_HOST:-/var/run/docker.sock}" \
 # for SmtpNotifier
-    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost},${DOCKER_HOST:-localhost}" \
+    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost}$( [ x${DOCKER_TRANSPORT:-unix} != 'xunix' ] && echo ,$DOCKER_HOST )" \
 # for lib/env.ts, obviously
     --allow-env \
 # for Deno.kill in lib/lockfile.ts
