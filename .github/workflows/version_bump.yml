@@ -54,7 +54,7 @@ jobs:
       - name: Create releasenotes
         id: releasenotes
         run: |
-          export NEW_VERSION="v$(deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --info | grep 'Current version:' | cut -c 23-27)"
+          export NEW_VERSION="v$(deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --info | grep 'Current version:' | cut -c 23-)"
           echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_OUTPUT
           deno run --allow-read --allow-write=${{ github.workspace }}/releasenotes.md --allow-env --allow-run=git --allow-sys=uid npm:auto-changelog --ignore-commit-pattern chore: --hide-credit --output ${{ github.workspace }}/releasenotes.md --starting-version ${NEW_VERSION:-0}
 
