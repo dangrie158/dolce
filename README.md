@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
 
   dolce:
-    image: dangrie158/dolce:v2.10.3
+    image: dangrie158/dolce:v2.10.4
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
