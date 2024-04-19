@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.10.2](https://github.com/dangrie158/dolce/compare/v2.10.1...v2.10.2)
+
+> 19 April 2024
+
+- fix: error when automatically generating release notes
+  [`a4debc3`](https://github.com/dangrie158/dolce/commit/a4debc318bb570260b96e9f2bad3b46fc64293a3)
+
 #### [v2.10.1](https://github.com/dangrie158/dolce/compare/v2.10.0...v2.10.1)
 
 > 19 April 2024
