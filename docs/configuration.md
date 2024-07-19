@@ -145,3 +145,19 @@ time. You can mount this path in a volume to detect unexpected shutdowns outside
 
 If you plan on using multiple instances of Dolce (e.g. to enable multiple configurations) make sure that if this is
 mounted in a volume, no two different services access the same file.
+
+## Use Local Timezone for Eventdates
+
+By default, dolce uses the UTC timezone for all eventdates. This is a good default because it is the same timezone that
+the docker API uses. However, if you want to use the local timezone of the host, you can set the `TZ` environment
+variable to the desired timezone.
+
+```yaml
+services:
+  dolce:
+    image: dangrie158/dolce:v2.10.7
+    restart: unless-stopped
+    environment:
+      ...
+      TZ: Europe/Berlin
+```
