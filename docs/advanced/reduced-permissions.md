@@ -22,7 +22,7 @@ which you can also use to hook up other services. Here is a sample configuration
 ```yaml
 services:
   dolce:
-    image: dangrie158/dolce:v2.10.8
+    image: dangrie158/dolce:v2.10.9
     restart: unless-stopped
     environment:
       DOCKER_HOST: docker-proxy:2375 # (1)!
