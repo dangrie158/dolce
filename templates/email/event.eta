@@ -3,13 +3,13 @@
 ---
 <% layout("./base.eta") %>
 
-<h1>Hello,</h1>
-<p>There are changes to the status of your containers. The last changes are (newest first):</p>
+<h1 style="color: #f73a63;">Hello,</h1>
+<p style="color: #757575; font-weight: bold;">There are changes to the status of your containers. The last changes are (newest first):</p>
 
-<table>
-    <tr><th>Container</th>&#009;<th>Action</th>&#009;<th>Time</th></tr>
-    <% it.events.toSorted(it.newest_first).forEach(event => { %>
-    <tr><td><p><%= event.actor_name %></p></td>&#009;<td><span class="<%= it.get_event_class(event) %>"><%= event.Action %></span></td>&#009;<td><%= new Date(event.time * 1000).toLocaleString() %></td></tr>
+<table style="width: 100%; border-collapse: collapse; font-family: Tahoma, Geneva, sans-serif;">
+    <tr style="background-color: #f73a63; color: white;"><th style="padding: 15px; background-color: #f73a63; color: white; font-weight: bold; font-size: 1em; border: 1px solid #757575;">Container</th>&#009;<th style="padding: 15px; background-color: #f73a63; color: white; font-weight: bold; font-size: 1em; border: 1px solid #757575;">Action</th>&#009;<th style="padding: 15px; background-color: #f73a63; color: white; font-weight: bold; font-size: 1em; border: 1px solid #757575;">Time</th></tr>
+    <% it.events.toSorted(it.newest_first).forEach((event, index) => { %>
+    <tr style="background-color: <%= index %2 === 0 ? '#fff6f2;' : 'white' %>"><td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><p><%= event.actor_name %></p></td>&#009;<td style="padding: 15px; padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><span style="<%= it.get_event_style(event) %>"><%= event.Action %></span></td>&#009;<td style="padding: 15px; padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><%= new Date(event.time * 1000).toLocaleString() %></td></tr>
     <% }); %>
 </table>
 

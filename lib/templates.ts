@@ -70,6 +70,28 @@ const context_functions = {
                 return "";
         }
     },
+    get_event_style: (event: DockerApiContainerEvent): string => {
+        switch (event.Action) {
+            case "start":
+                return "color: #3BB273;";
+            case "die":
+                return "color: #BA3B46;";
+            case "kill":
+                return "color: #BA3B46;";
+            case "oom":
+                return "color: #BA3B46;";
+            case "stop":
+                return "color: #FF9505;";
+            case "pause":
+                return "color: #FF9505;";
+            case "unpause":
+                return "color: #3BB273;";
+            case "health_status":
+                return "color: #FF9505;";
+            default:
+                return "";
+        }
+    },
 };
 
 class TemplateEngine extends Eta {

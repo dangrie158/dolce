@@ -3,19 +3,19 @@
 ---
 <% layout("./base.eta") %>
 
-<h1>Hello,</h1>
-<p>It appears that the Dolce service on <%= it.hostname %> restarted after not shutting down normally.</p>
+<h1 style="color: #f73a63;">Hello,</h1>
+<p style="color: #757575; font-weight: bold;">It appears that the Dolce service on <%= it.hostname %> restarted after not shutting down normally.</p>
 <p>This means it may missed some events, namely it was blind starting <%= it.downtime_start.toLocaleString() %> until <%= it.downtime_end.toLocaleString() %>.</p>
 
 <p>Here is a list of the events that happened in the meantime:</p>
-<table>
-    <tr><th>Container</th>&#009;<th>Action</th>&#009;<th>Time</th></tr>
-    <% it.events_since_shutdown.toSorted(it.newest_first).forEach(event => { %>
-    <tr><td><p><%= event.actor_name %></p></td>&#009;<td><span class="<%= it.get_event_class(event) %>"><%= event.Action %></span></td>&#009;<td><%= new Date(event.time * 1000).toLocaleString() %></td></tr>
+<table style="width: 100%; border-collapse: collapse; font-family: Tahoma, Geneva, sans-serif;">
+    <tr style="background-color: #f73a63; color: white;"><th>Container</th>&#009;<th>Action</th>&#009;<th>Time</th></tr>
+    <% it.events_since_shutdown.toSorted(it.newest_first).forEach((event, index) => { %>
+    <tr style="background-color: <%= index %2 === 0 ? '#fff6f2;' : 'white' %>"><td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><p><%= event.actor_name %></p></td>&#009;<td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><span style="<%= it.get_event_style(event) %>"><%= event.Action %></span></td>&#009;<td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><%= new Date(event.time * 1000).toLocaleString() %></td></tr>
     <% }); %>
 </table>
 <p>However, this may be incomplete if docker restarted during the downtime.</p>
 
 <p>If you knowingly killed the process you can ignore this message and use
-    <code>`docker stop &lt;containername&gt;`</code>
+    <code style="background-color: #fff6f2; border: 1px solid #f73a63; border-radius: 0.3rem; padding: 0.2rem; white-space: nowrap;">`docker stop &lt;containername&gt;`</code>
 the next time to avoid this message.</p>

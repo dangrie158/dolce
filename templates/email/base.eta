@@ -4,128 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <style>
-        :root {
-            --dolce-pink: #f73a63;
-            --dolce-yellow: #ffe5d9;
-            --dolce-light-yellow: #fff6f2;
-            --dolce-dark-gray: #757575;
-            --dolce-light-gray: #e0e0e0;
-            --dolce-success: #3BB273;
-            --dolce-warning: #FF9505;
-            --dolce-error: #BA3B46;
-        }
-
-        body {
-            font-family: system-ui, sans-serif;
-        }
-
-        body h1 {
-            color: var(--dolce-pink);
-        }
-
-        body a,
-        body a:hover {
-            text-decoration: none;
-            color: var(--dolce-pink);
-        }
-
-        main {
-            max-width: 700px;
-            margin: 0 1em;
-            padding: 1em 1em 5em 1em;
-        }
-
-        main strong {
-            color: var(--dolce-pink);
-            font-weight: bold;
-        }
-
-        main p:first-of-type {
-            color: var(--dolce-dark-gray);
-            font-weight: bold;
-        }
-
-        main table {
-            width: 100%;
-        }
-
-        main table {
-            border-collapse: collapse;
-            font-family: Tahoma, Geneva, sans-serif;
-        }
-
-        main table td {
-            padding: 15px;
-        }
-
-        main table th {
-            padding: 15px;
-            background-color: var(--dolce-pink);
-            color: white;
-            font-weight: bold;
-            font-size: 1em;
-            border: 1px solid var(--dolce-dark-gray);
-        }
-
-        main table td {
-            color: #636363;
-            border: 1px solid var(--dolce-light-gray);
-        }
-
-        main table tr {
-            background-color: var(--dolce-light-yellow);
-        }
-
-        main table tr:nth-child(odd) {
-            background-color: white;
-        }
-
-        main code {
-            background-color: var(--dolce-light-yellow);
-            border: 1px solid var(--dolce-pink);
-            border-radius: 0.3rem;
-            padding: 0.2rem;
-            white-space: nowrap;
-        }
-
-        .success {
-            color: var(--dolce-success);
-        }
-
-        .warning {
-            color: var(--dolce-warning);
-        }
-
-        .error {
-            color: var(--dolce-error);
-        }
-
-        footer {
-            color: var(--dolce-pink);
-            font-weight: bold;
-            background-color: var(--dolce-yellow);
-
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-        }
-
-        footer img {
-            margin-top: -4em;
-            max-width: 200px;
-        }
-    </style>
 </head>
 
-<body>
-    <main>
-        <!-- IMPORTANT: if you override this template, make sure to pack the body placeholder insice of a <main> section, otherwise the automatic text emails won't work -->
+<body style="font-family: system-ui, sans-serif;">
+    <main style="max-width: 700px; margin: 0 1em; padding: 1em 1em 5em 1em;">
+        <img style="max-height: 10em; float: right;" src="https://dangrie158.github.io/dolce/master/assets/logo_compact.png" alt="Dolce Logo">
+        <!-- IMPORTANT: if you override this template, make sure to pack the body placeholder inside of a <main> section, otherwise the automatic text emails won't work -->
         <%~ it.body %>
     </main>
-    <footer>
-        <p>brought to you by Dolce@<%= it.hostname %>, sorry for the inconvenience</p>
-        <img src="https://dangrie158.github.io/dolce/master/assets/logo_compact.png" alt="Dolce Logo">
+    <footer style="color: #f73a63; font-weight: bold;">
+        <span>brought to you by Dolce@<%= it.hostname %>, sorry for the inconvenience</span>
     </footer>
 </body>
 
