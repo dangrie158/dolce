@@ -97,7 +97,7 @@ export class HttpSocket {
         return response;
     }
 
-    private async read_response(connection: Deno.UnixConn): Promise<Response> {
+    private async read_response(connection: Deno.UnixConn | Deno.TcpConn): Promise<Response> {
         const line_stream = connection.readable.pipeThrough(
             new DelimiterStream(encoded_crlf, { disposition: "suffix" }),
         );
