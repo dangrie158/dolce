@@ -392,6 +392,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#use-local-timezone-for-eventdates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Local Timezone for Eventdates
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -786,6 +795,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#use-local-timezone-for-eventdates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Local Timezone for Eventdates
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -993,6 +1011,18 @@ in <code>die</code> and <code>start</code> events you can set:</p>
 time. You can mount this path in a volume to detect unexpected shutdowns outside of the lifetime of the container.</p>
 <p>If you plan on using multiple instances of Dolce (e.g. to enable multiple configurations) make sure that if this is
 mounted in a volume, no two different services access the same file.</p>
+<h2 id="use-local-timezone-for-eventdates">Use Local Timezone for Eventdates</h2>
+<p>By default, dolce uses the UTC timezone for all eventdates. This is a good default because it is the same timezone that
+the docker API uses. However, if you want to use the local timezone of the host, you can set the <code>TZ</code> environment
+variable to the desired timezone.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dolce</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce:v2.10.7</span>
+<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">TZ</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Europe/Berlin</span>
+</code></pre></div>
 <div class="footnote">
 <hr />
 <ol>
