@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.10.9](https://github.com/dangrie158/dolce/compare/v2.10.8...v2.10.9)
+
+> 19 July 2024
+
+- docs: add section for using local datetimes for event dates
+  [`8f3693b`](https://github.com/dangrie158/dolce/commit/8f3693b2aeb417a8678da72fb11460632c9a0b2c)
+- docs: remove deprecated version attribute from example configs
+  [`d87023a`](https://github.com/dangrie158/dolce/commit/d87023a954b1b21281cd70c5b5cb29a1d15b9c00)
+
 #### [v2.10.8](https://github.com/dangrie158/dolce/compare/v2.10.7...v2.10.8)
 
 > 19 July 2024
