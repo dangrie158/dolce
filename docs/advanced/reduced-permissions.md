@@ -23,7 +23,7 @@ which you can also use to hook up other services. Here is a sample configuration
 version: "3"
 services:
   dolce:
-    image: dangrie158/dolce:v2.10.7
+    image: dangrie158/dolce:v2.10.8
     restart: unless-stopped
     environment:
       DOCKER_HOST: docker-proxy:2375 # (1)!
