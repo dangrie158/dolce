@@ -45,7 +45,6 @@ easy fashion if you so desire:
 ## Example
 
 ```yaml title="docker-ompose.yml"
-version: "3"
 services:
   dolce:
     image: dangrie158/dolce:v2.4.0 # (1)!

@@ -28,7 +28,6 @@ versioned for [old versions](https://github.com/dangrie158/dolce/tags).
 ## Example
 
 ```yaml
-version: "3"
 services:
   importantservice:
     image: "ubuntu:latest"

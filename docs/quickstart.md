@@ -8,7 +8,6 @@ icon: material/clock-fast
 You can simply add dolce as an additional service to your :simple-docker: `docker-compose.yml`.
 
 ```yaml title="docker-compose.yml"
-version: "3"
 services:
   importantservice: # (1)!
     image: "ubuntu:latest"

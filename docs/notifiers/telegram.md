@@ -17,7 +17,6 @@ You can configure chat notifications using the following environment variables
 ## Example
 
 ```yaml
-version: "3"
 services:
   dolce:
     image: dangrie158/dolce:v2.10.8

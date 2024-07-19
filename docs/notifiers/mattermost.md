@@ -11,7 +11,6 @@ Mattermost is currently supported through [Apprise](./apprise.md). See
 An example configuration is:
 
 ```yaml
-version: "3"
 services:
   apprise: # (1)!
     image: caronc/apprise:latest

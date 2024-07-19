@@ -16,7 +16,6 @@ You can configure chat notifications via discord using the following environment
 ## Example
 
 ```yaml
-version: "3"
 services:
   dolce:
     image: dangrie158/dolce:v2.10.8

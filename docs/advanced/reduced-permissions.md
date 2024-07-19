@@ -20,7 +20,6 @@ means you only need to trust the
 which you can also use to hook up other services. Here is a sample configuration file to get you started:
 
 ```yaml
-version: "3"
 services:
   dolce:
     image: dangrie158/dolce:v2.10.8

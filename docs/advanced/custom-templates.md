@@ -28,7 +28,6 @@ depending on which notification you want to customise. The mount this folder to 
 points (by default this will be `/var/dolce-custom-templates/`):
 
 ```yaml title="docker-compose.yml"
-version: "3"
 services:
   dolce:
     image: dangrie158/dolce:v2.10.8

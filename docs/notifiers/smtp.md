@@ -22,7 +22,6 @@ You can configure email notifications via SMTP using the following environment v
 ## Example
 
 ```yaml
-version: "3"
 services:
   dolce:
     image: dangrie158/dolce:v2.10.8

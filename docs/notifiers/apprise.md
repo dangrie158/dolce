@@ -29,7 +29,6 @@ You can configure chat notifications using the following environment variables
 ## Example
 
 ```yaml
-version: "3"
 services:
   apprise: # (1)!
     image: caronc/apprise:latest
