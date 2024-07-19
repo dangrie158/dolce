@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v2.10.8](https://github.com/dangrie158/dolce/compare/v2.10.7...v2.10.8)
+
+> 19 July 2024
+
+- fix: use inline styles for mail template to improve mail client compatability
+  [`1257a61`](https://github.com/dangrie158/dolce/commit/1257a61b281938d37a4e8f4a988c81a3d6e409eb)
+- fix: improve typing for HttpSocket.read_response()
+  [`86485c0`](https://github.com/dangrie158/dolce/commit/86485c0afcf8351a32411f6fcb616a13a70e01a3)
+
 #### [v2.10.7](https://github.com/dangrie158/dolce/compare/v2.10.6...v2.10.7)
 
 > 19 April 2024
