@@ -27,7 +27,7 @@ services:
         DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
 
         # get notified via Telegram
-        TELEGRAM_HTTP_TOKEN: 123456789123456:AABBCCDDEEFFGGHHIIJJKKLLMM
+        TELEGRAM_HTTP_TOKEN: 123456789123456,AABBCCDDEEFFGGHHIIJJKKLLMM
         TELEGRAM_RECIPIENT_IDS: 12345678912:456789123
     restart: unless-stopped # (5)!
 ```

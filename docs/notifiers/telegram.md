@@ -12,7 +12,7 @@ You can configure chat notifications using the following environment variables
 | Name                     | Type       | Default         | Description                      |
 | ------------------------ | ---------- | --------------- | -------------------------------- |
 | `TELEGRAM_HTTP_TOKEN`    | `string`   | :material-null: | API token of the bot user        |
-| `TELEGRAM_RECIPIENT_IDS` | `string[]` | :material-null: | Colon-separated list of chat IDs |
+| `TELEGRAM_RECIPIENT_IDS` | `string[]` | :material-null: | Comma-separated list of chat IDs |
 
 ## Example
 
@@ -24,7 +24,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      TELEGRAM_HTTP_TOKEN: 123456789123456:AABBCCDDEEFFGGHHIIJJKKLLMM
+      TELEGRAM_HTTP_TOKEN: 123456789123456,AABBCCDDEEFFGGHHIIJJKKLLMM
       TELEGRAM_RECIPIENT_IDS: 12345678912:456789123
 ```
 

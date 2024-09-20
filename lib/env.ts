@@ -17,8 +17,8 @@ type ConfigurationParameterOptions = {
 const env = Deno.env;
 
 /**
- * get a array of values split at `:`
- * e.g. `EXAMPLE=test1:test2::last`
+ * get a array of values split at `,`
+ * e.g. `EXAMPLE=test1,test2,,last`
  * ```js
  * get_array("EXAMPLE")
  * ["test1", "test2", "last"]
@@ -26,11 +26,11 @@ const env = Deno.env;
  */
 function get_array(key: string): string[] {
     const string_value = env.has(key) ? env.get(key)! : "";
-    return string_value.split(":").filter((x) => x.length > 0);
+    return string_value.split(",").filter((x) => x.length > 0);
 }
 
 export function ConfigOption<T extends ConfigurationParameter>(
-    options: ConfigurationParameterOptions = { type: String },
+    options: ConfigurationParameterOptions = { type: String }
 ) {
     return function (_target: undefined, context: ClassFieldDecoratorContext) {
         if (context.static === false) {

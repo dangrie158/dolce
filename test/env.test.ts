@@ -5,7 +5,7 @@ import { assert, assertEquals, assertStrictEquals } from "https://deno.land/std@
 Deno.test("EnvironmentConfiguration", async (test) => {
     Deno.env.set("DOLCE_TEST_STRING", "TEST");
     Deno.env.set("DOLCE_TEST_NUMBER", "123");
-    Deno.env.set("DOLCE_TEST_ARRAY", "TEST1:TEST2::TEST3");
+    Deno.env.set("DOLCE_TEST_ARRAY", "TEST1,TEST2,,TEST3");
     Deno.env.set("DOLCE_TEST_BOOL_TRUE", "something");
     Deno.env.delete("DOLCE_TEST_BOOL_FALSE");
     Deno.env.set("TEST_AUTO_NAME", "TEST_AUTO_NAME");

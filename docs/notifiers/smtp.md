@@ -12,7 +12,7 @@ You can configure email notifications via SMTP using the following environment v
 | Name              | Type       |      Default       | Description                                                                |
 | ----------------- | ---------- | :----------------: | -------------------------------------------------------------------------- |
 | `SMTP_HOSTNAME`   | `string`   |  :material-null:   | FQDN or IP of the Sending Mailserver                                       |
-| `SMTP_RECIPIENTS` | `string[]` |  :material-null:   | A colon-separated list of recipient adresses                               |
+| `SMTP_RECIPIENTS` | `string[]` |  :material-null:   | A comma-separated list of recipient adresses                               |
 | `SMTP_PORT`       | `number?`  |     `25 / 465`     | Uses default ports depending on `SMTP_USETLS`                              |
 | `SMTP_USERNAME`   | `string?`  |  :material-null:   | No authentication is used if unset                                         |
 | `SMTP_PASSWORD`   | `string?`  |  :material-null:   | No authentication is used if unset                                         |
@@ -32,7 +32,7 @@ services:
       SMTP_HOSTNAME: smtp.example.com
       SMTP_USETLS: 1
       # SMTP_PORT: 465 # (1)
-      SMTP_RECIPIENTS: incidents@example.com:ondutyguy@gmail.com
+      SMTP_RECIPIENTS: incidents@example.com,ondutyguy@gmail.com
       # SMTP_USERNAME: # (2)
       # SMTP_PASSWORD:
       SMTP_FROM: "Dolce Container Monitor <dolce@example.com>"

@@ -131,7 +131,7 @@ dolce:
   image: dangrie158/dolce
   ...
   environment:
-    DOLCE_EVENTS: die:start
+    DOLCE_EVENTS: die,start
 ```
 
 This is the list of all available events:
