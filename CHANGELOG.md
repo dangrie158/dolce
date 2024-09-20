@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+### [v3.0.0](https://github.com/dangrie158/dolce/compare/v2.10.9...v3.0.0)
+
+> 20 September 2024
+
+- feat: implement DOLCE_BLACKOUT_WINDOWS function
+  [`763dd33`](https://github.com/dangrie158/dolce/commit/763dd334a1f446e4cb8d6e07374a1f40571aa45f)
+- feat: add transformers option to ConfigOption interface
+  [`fddbc4c`](https://github.com/dangrie158/dolce/commit/fddbc4c7d4bf778964a8c65dd95884f128d71cb5)
+- feat: introduce new DOLCE_RUN_DIRECTORY to make deno event registry path configurable
+  [`0f68ce5`](https://github.com/dangrie158/dolce/commit/0f68ce5cbb1f8e846496b2d3658b8a19d82c7e97)
+
 #### [v2.10.9](https://github.com/dangrie158/dolce/compare/v2.10.8...v2.10.9)
 
 > 19 July 2024
