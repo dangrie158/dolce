@@ -23,7 +23,7 @@ Configuration of the service is done via environment variables.
 | `DOLCE_MIN_TIMEOUT`          | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
 | `DOLCE_MAX_TIMEOUT`          | `number`                | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
 | `DOLCE_MULTIPLIER`           | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
-| `DOLCE_LOCKFILE`             | `string`                | `/var/run/dolce/lockfile`      | See [Lockfile](#lockfile)                                                                      |
+| `DOLCE_RUN_DIRECTORY`        | `string`                | `/var/run/dolce/`              | Path where the event registry and [lockfile](#lockfile) are stored                             |
 | `DOLCE_CUSTOM_TEMPLATE_PATH` | `string?`               | `/var/dolce-custom-templates/` | See [Custom Templates](./advanced/custom-templates.md)                                         |
 | `DOLCE_DEBUG`                | `boolean?`              | `false`                        | Set to `true` during development to avoid problems with the [Lockfile](#lockfile) in watchmode |
 
@@ -139,13 +139,16 @@ This is the list of all available events:
 `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`, `exec_create`, `exec_detach`, `exec_start`, `export`,
 `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`, `start`, `stop`, `top`, `unpause`, `update`.
 
-## Lockfile
-
-The lockfile is used to detect unexpected shutdowns and avoid mutliple instances of the service running at the same
-time. You can mount this path in a volume to detect unexpected shutdowns outside of the lifetime of the container.
+## Run Directory
 
 If you plan on using multiple instances of Dolce (e.g. to enable multiple configurations) make sure that if this is
 mounted in a volume, no two different services access the same file.
+
+### Lockfile
+
+The lockfile is used to detect unexpected shutdowns and avoid mutliple instances of the service running at the same
+time. It is located at `${DOLCE_RUN_DIRECTORY}/lockfile` You can mount this path in a volume to detect unexpected
+shutdowns outside of the lifetime of the container.
 
 ## Use Local Timezone for Eventdates
 
