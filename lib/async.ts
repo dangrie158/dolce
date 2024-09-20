@@ -1,3 +1,5 @@
+import { async } from "../deps.ts";
+
 export function wait(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -27,4 +29,24 @@ export function throttle<T extends Array<void>>(
         }
     };
     return throttled_fn;
+}
+
+export function DeadlinedReader<T>(
+    reader: ReadableStreamDefaultReader<T>,
+    deadline: number,
+): ReadableStreamDefaultReader<T> {
+    return {
+        ...reader,
+        read: async () => {
+            try {
+                return await async.deadline(reader.read(), deadline);
+            } catch (error) {
+                if (error instanceof async.DeadlineError) {
+                    reader.cancel();
+                    return { done: true, value: undefined };
+                }
+                throw error;
+            }
+        },
+    };
 }

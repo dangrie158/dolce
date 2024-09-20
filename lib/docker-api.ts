@@ -1,4 +1,5 @@
 import { TextLineStream } from "../deps.ts";
+import { DeadlinedReader } from "./async.ts";
 import { HttpSocket } from "./universal-http.ts";
 
 type DockerVersionReponse = {
@@ -169,11 +170,11 @@ export class DockerApi {
     ): Promise<AsyncGenerator<DockerApiEvent>> {
         const url = new URL(`http://localhost/${this.api_version}/events`);
         if (options.since !== undefined) {
-            const date_param = options.since.getTime() / 1000;
+            const date_param = options.since.getTime() / 1_000;
             url.searchParams.append("since", date_param.toFixed());
         }
         if (options.until !== undefined) {
-            const date_param = options.until.getTime() / 1000;
+            const date_param = options.until.getTime() / 1_000;
             url.searchParams.append("until", date_param.toFixed());
         }
         if (options.filters !== undefined) {
@@ -182,10 +183,19 @@ export class DockerApi {
         }
 
         const http_stream = await this.socket_client.fetch(url.toString(), { headers: DockerApi.DEFAULT_HEADERS });
-        const line_reader = http_stream
+        let line_reader = http_stream
             .body!.pipeThrough(new TextDecoderStream())
             .pipeThrough(new TextLineStream())
             .getReader();
+
+        if (options.until !== undefined && options.until.getTime() < Date.now()) {
+            // there is a known bug in the docker api that it doesn't end the stream
+            // when the until parameter is reached: https://github.com/moby/moby/issues/48536
+            // we add a deadline to the reader to prevent it from hanging forever
+            const deadline = options.until.getTime() - Date.now() + 1_000;
+            line_reader = DeadlinedReader(line_reader, deadline);
+        }
+
         return (async function* event_stream() {
             do {
                 const { done, value } = await line_reader.read();

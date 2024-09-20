@@ -1,6 +1,7 @@
 export * as io from "https://deno.land/std@0.220.1/io/mod.ts";
 export * as log from "https://deno.land/std@0.220.1/log/mod.ts";
 export * as path from "https://deno.land/std@0.220.1/path/mod.ts";
+export * as async from "https://deno.land/std@0.220.1/async/mod.ts";
 export { ulid } from "https://deno.land/std@0.220.1/ulid/mod.ts";
 export { DelimiterStream, TextLineStream } from "https://deno.land/std@0.220.1/streams/mod.ts";
 
