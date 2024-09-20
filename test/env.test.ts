@@ -1,4 +1,4 @@
-import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "../lib/env.ts";
+import { CheckedConfiguration, ConfigOption } from "../lib/env.ts";
 
 import { assert, assertEquals, assertStrictEquals } from "https://deno.land/std@0.204.0/assert/mod.ts";
 
@@ -11,7 +11,6 @@ Deno.test("EnvironmentConfiguration", async (test) => {
     Deno.env.set("TEST_AUTO_NAME", "TEST_AUTO_NAME");
 
     await test.step("EnvironmentConfiguration automatically finds environemnt variables", () => {
-        @EnvironmentConfiguration
         class TestConfiguration {
             @ConfigOption()
             static readonly test_auto_name: string;
@@ -20,17 +19,16 @@ Deno.test("EnvironmentConfiguration", async (test) => {
     });
 
     await test.step("EnvironmentConfiguration autodetects basic types", () => {
-        @EnvironmentConfiguration
         class TestConfiguration {
             @ConfigOption({ env_variable: "DOLCE_TEST_STRING" })
             static readonly test_string?: string;
-            @ConfigOption({ env_variable: "DOLCE_TEST_NUMBER" })
+            @ConfigOption({ type: Number, env_variable: "DOLCE_TEST_NUMBER" })
             static readonly test_number?: number;
-            @ConfigOption({ env_variable: "DOLCE_TEST_ARRAY" })
+            @ConfigOption({ type: Array, env_variable: "DOLCE_TEST_ARRAY" })
             static readonly test_array?: string[];
-            @ConfigOption({ env_variable: "DOLCE_TEST_BOOL_TRUE" })
+            @ConfigOption({ type: Boolean, env_variable: "DOLCE_TEST_BOOL_TRUE" })
             static readonly test_bool_true: boolean = false;
-            @ConfigOption({ env_variable: "DOLCE_TEST_BOOL_FALSE" })
+            @ConfigOption({ type: Boolean, env_variable: "DOLCE_TEST_BOOL_FALSE" })
             static readonly test_bool_false: boolean = true;
         }
 
@@ -51,7 +49,6 @@ Deno.test("EnvironmentConfiguration", async (test) => {
     });
 
     await test.step("ConfigOption.one_of", () => {
-        @EnvironmentConfiguration
         class TestConfiguration extends CheckedConfiguration {
             @ConfigOption({ env_variable: "DOLCE_TEST_STRING", one_of: ["TEST"] })
             static readonly test_oneof_true: string;
@@ -65,15 +62,18 @@ Deno.test("EnvironmentConfiguration", async (test) => {
     });
 
     await test.step("ConfigOption.array_of", () => {
-        @EnvironmentConfiguration
         class TestConfiguration extends CheckedConfiguration {
-            @ConfigOption({ env_variable: "DOLCE_TEST_ARRAY", array_of: ["TEST1", "TEST2", "TEST3"] })
+            @ConfigOption({ env_variable: "DOLCE_TEST_ARRAY", some_of: ["TEST1", "TEST2", "TEST3"] })
             static readonly test_arrayof_notanarray: string;
 
-            @ConfigOption({ env_variable: "DOLCE_TEST_ARRAY", array_of: ["TEST1", "TEST2", "TEST3", "TEST4"] })
+            @ConfigOption({
+                type: Array,
+                env_variable: "DOLCE_TEST_ARRAY",
+                some_of: ["TEST1", "TEST2", "TEST3", "TEST4"],
+            })
             static readonly test_arrayof_true: string[];
 
-            @ConfigOption({ env_variable: "DOLCE_TEST_ARRAY", one_of: ["TEST1", "TEST5"] })
+            @ConfigOption({ type: Array, env_variable: "DOLCE_TEST_ARRAY", one_of: ["TEST1", "TEST5"] })
             static readonly test_arrayof_false: string[];
         }
         assert("test_arrayof_notanarray" in TestConfiguration.errors);
@@ -82,7 +82,6 @@ Deno.test("EnvironmentConfiguration", async (test) => {
     });
 
     await test.step("ConfigOption.required", () => {
-        @EnvironmentConfiguration
         class TestConfiguration extends CheckedConfiguration {
             @ConfigOption({ env_variable: "DOLCE_TEST_BOOL_TRUE", required: true })
             static readonly test_required_true: string;

@@ -1,7 +1,7 @@
 import { SmtpClient } from "deno-smtp";
 import { getLogger } from "@std/log";
 import { DockerApiContainerEvent } from "./docker-api.ts";
-import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./env.ts";
+import { CheckedConfiguration, ConfigOption } from "./env.ts";
 import {
     AppriseTemplate,
     ConcreteTemplate,
@@ -50,18 +50,17 @@ type ConcreteNotifier = Omit<typeof Notifier, "new"> & {
     message_class: ConcreteTemplate;
 };
 
-@EnvironmentConfiguration
 export class SmtpNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "SMTP_HOSTNAME", required: true })
     static readonly hostname: string;
 
-    @ConfigOption({ env_variable: "SMTP_RECIPIENTS", required: true })
+    @ConfigOption({ type: Array, env_variable: "SMTP_RECIPIENTS", required: true })
     static readonly recipients: string[] = [];
 
-    @ConfigOption({ env_variable: "SMTP_PORT" })
+    @ConfigOption({ type: Number, env_variable: "SMTP_PORT" })
     static readonly port?: number;
 
-    @ConfigOption({ env_variable: "SMTP_USETLS" })
+    @ConfigOption({ type: Boolean, env_variable: "SMTP_USETLS" })
     static readonly use_tls: boolean = false;
 
     @ConfigOption({ env_variable: "SMTP_FROM" })
@@ -123,7 +122,6 @@ export class SmtpNotifier extends Notifier {
     }
 }
 
-@EnvironmentConfiguration
 export class DiscordNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DISCORD_WEBHOOK", required: true })
     static readonly webhook_url?: string;
@@ -151,12 +149,11 @@ class DiscordNotifier extends Notifier {
     }
 }
 
-@EnvironmentConfiguration
 export class TelegramNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "TELEGRAM_HTTP_TOKEN", required: true })
     static readonly http_token?: string;
 
-    @ConfigOption({ env_variable: "TELEGRAM_RECIPIENT_IDS" })
+    @ConfigOption({ type: Array, env_variable: "TELEGRAM_RECIPIENT_IDS" })
     static readonly recipient_ids: string[] = [];
 }
 
@@ -191,7 +188,6 @@ class TelegramNotifier extends Notifier {
     }
 }
 
-@EnvironmentConfiguration
 export class AppriseNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "APPRISE_HOST", required: true })
     static readonly host?: string;

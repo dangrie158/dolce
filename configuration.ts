@@ -1,20 +1,19 @@
 import * as log from "@std/log";
-import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./lib/env.ts";
+import { CheckedConfiguration, ConfigOption } from "./lib/env.ts";
 import { CONTAINER_ACTIONS, ContainerAction } from "./lib/docker-api.ts";
 
 const SUPERVISION_MODES = ["TAGGED", "UNTAGGED", "PREFIXED", "NOTPREFIXED", "ALL"] as const;
 type SupervisorMode = (typeof SUPERVISION_MODES)[number];
 type ActorIdentifier = "image" | "name";
 
-@EnvironmentConfiguration
 export class Configuration extends CheckedConfiguration {
-    @ConfigOption({ env_variable: "DOLCE_LOG_LEVEL" })
+    @ConfigOption({ env_variable: "DOLCE_LOG_LEVEL", one_of: log.LogLevelNames })
     static readonly loglevel: log.LevelName = "INFO";
 
     @ConfigOption()
     static readonly docker_host?: string;
 
-    @ConfigOption()
+    @ConfigOption({ one_of: ["unix", "tcp"] })
     static readonly docker_transport: string = "unix";
 
     @ConfigOption({ env_variable: "DOLCE_IDENTIFIER_LABEL" })
@@ -35,7 +34,7 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_ACTOR_IDENTIFIER", one_of: ["image", "name"] })
     static readonly actor_identifier: ActorIdentifier = "name";
 
-    @ConfigOption({ env_variable: "DOLCE_EVENTS", array_of: CONTAINER_ACTIONS })
+    @ConfigOption({ type: Array, env_variable: "DOLCE_EVENTS", some_of: CONTAINER_ACTIONS })
     static readonly events: ContainerAction[] = [
         "start",
         "die",
@@ -47,13 +46,13 @@ export class Configuration extends CheckedConfiguration {
         "health_status",
     ];
 
-    @ConfigOption({ env_variable: "DOLCE_MIN_TIMEOUT" })
+    @ConfigOption({ type: Number, env_variable: "DOLCE_MIN_TIMEOUT" })
     static readonly min_timeout: number = 10;
 
-    @ConfigOption({ env_variable: "DOLCE_MAX_TIMEOUT" })
+    @ConfigOption({ type: Number, env_variable: "DOLCE_MAX_TIMEOUT" })
     static readonly max_timeout: number = 60 * 60 * 24;
 
-    @ConfigOption({ env_variable: "DOLCE_MULTIPLIER" })
+    @ConfigOption({ type: Number, env_variable: "DOLCE_MULTIPLIER" })
     static readonly multiplier: number = 10;
 
     @ConfigOption({ env_variable: "DOLCE_RUN_DIRECTORY" })
@@ -62,7 +61,7 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_CUSTOM_TEMPLATE_PATH" })
     static readonly custom_template_path: string = "/var/dolce-custom-templates/";
 
-    @ConfigOption({ env_variable: "DOLCE_DEBUG" })
+    @ConfigOption({ type: Boolean, env_variable: "DOLCE_DEBUG" })
     static readonly debug: boolean = false;
 
     static toString() {
