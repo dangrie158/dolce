@@ -11,7 +11,7 @@ export class Configuration extends CheckedConfiguration {
     static readonly loglevel: log.LevelName = "INFO";
 
     @ConfigOption()
-    static readonly docker_host?: string;
+    static readonly docker_host?: string = "/var/run/docker.sock";
 
     @ConfigOption({ one_of: ["unix", "tcp"] })
     static readonly docker_transport: string = "unix";
