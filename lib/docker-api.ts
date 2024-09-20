@@ -1,5 +1,5 @@
 import { TextLineStream } from "@std/streams";
-import { DeadlinedReader } from "./async.ts";
+import { DeadlinedReader } from "./chrono.ts";
 import { HttpSocket } from "./universal-http.ts";
 
 type DockerVersionReponse = {

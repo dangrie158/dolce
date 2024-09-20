@@ -1,6 +1,6 @@
 import { getLogger } from "@std/log";
 import * as path from "@std/path";
-import { throttle } from "./async.ts";
+import { throttle } from "./chrono.ts";
 
 type LockFileInformation = {
     last_update: Date;

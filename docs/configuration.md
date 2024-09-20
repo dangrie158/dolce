@@ -9,23 +9,24 @@ Configuration of the service is done via environment variables.
 
 ## General Configuration
 
-| Name                         | Type                    | Default                        | Description                                                                                    |
-| ---------------------------- | ----------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `DOLCE_LOG_LEVEL`            | Deno Log Level [^1]     | `INFO`                         | Loglevel of the service                                                                        |
-| `DOCKER_HOST`                | `string?`               | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp`           |
-| `DOCKER_TRANSPORT`           | `unix` \| `tcp`         | `unix`                         | Transport used to talk to docker                                                               |
-| `DOLCE_IDENTIFIER_LABEL`     | `string?`               | `dolce.identifier`             | See [Container Identifiers](#container-identifiers)                                            |
-| `DOLCE_SUPERVISION_MODE`     | SupervisorMode [^2]     | `ALL`                          | See [Supervision Mode](#supervision-mode)                                                      |
-| `DOLCE_SUPERVISION_LABEL`    | `string?`               | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                                      |
-| `DOLCE_SUPERVISION_PREFIX`   | `string?`               | `temp-`                        | See [Supervision Mode](#supervision-mode)                                                      |
-| `DOLCE_ACTOR_IDENTIFIER`     | `name` \| `image`       | `name`                         | See [Container Identifiers](#container-identifiers)                                            |
-| `DOLCE_EVENTS`               | Container Action[] [^3] | All available                  | See [Event Selection](#event-selection)                                                        |
-| `DOLCE_MIN_TIMEOUT`          | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
-| `DOLCE_MAX_TIMEOUT`          | `number`                | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
-| `DOLCE_MULTIPLIER`           | `number`                | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
-| `DOLCE_RUN_DIRECTORY`        | `string`                | `/var/run/dolce/`              | Path where the event registry and [lockfile](#lockfile) are stored                             |
-| `DOLCE_CUSTOM_TEMPLATE_PATH` | `string?`               | `/var/dolce-custom-templates/` | See [Custom Templates](./advanced/custom-templates.md)                                         |
-| `DOLCE_DEBUG`                | `boolean?`              | `false`                        | Set to `true` during development to avoid problems with the [Lockfile](#lockfile) in watchmode |
+| Name                         | Type                          | Default                        | Description                                                                                    |
+| ---------------------------- | ----------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `DOLCE_LOG_LEVEL`            | Deno Log Level [^1]           | `INFO`                         | Loglevel of the service                                                                        |
+| `DOCKER_HOST`                | `string?`                     | `/var/run/docker.sock`         | Path to the docker socket or an `ip:port`-pair when used with `DOCKER_TRANSPORT=tcp`           |
+| `DOCKER_TRANSPORT`           | `unix` \| `tcp`               | `unix`                         | Transport used to talk to docker                                                               |
+| `DOLCE_IDENTIFIER_LABEL`     | `string?`                     | `dolce.identifier`             | See [Container Identifiers](#container-identifiers)                                            |
+| `DOLCE_SUPERVISION_MODE`     | SupervisorMode [^2]           | `ALL`                          | See [Supervision Mode](#supervision-mode)                                                      |
+| `DOLCE_SUPERVISION_LABEL`    | `string?`                     | `dolce.enabled`                | See [Supervision Mode](#supervision-mode)                                                      |
+| `DOLCE_SUPERVISION_PREFIX`   | `string?`                     | `temp-`                        | See [Supervision Mode](#supervision-mode)                                                      |
+| `DOLCE_ACTOR_IDENTIFIER`     | `name` \| `image`             | `name`                         | See [Container Identifiers](#container-identifiers)                                            |
+| `DOLCE_EVENTS`               | Container Action[] [^3]       | All available                  | See [Event Selection](#event-selection)                                                        |
+| `DOLCE_BLACKOUT_WINDOWS`     | [PlainTime, PlainTime][] [^3] | []                             | See [Blackout Times](#event-selection)                                                         |
+| `DOLCE_MIN_TIMEOUT`          | `number`                      | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
+| `DOLCE_MAX_TIMEOUT`          | `number`                      | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
+| `DOLCE_MULTIPLIER`           | `number`                      | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
+| `DOLCE_RUN_DIRECTORY`        | `string`                      | `/var/run/dolce/`              | Path where the event registry and [lockfile](#lockfile) are stored                             |
+| `DOLCE_CUSTOM_TEMPLATE_PATH` | `string?`                     | `/var/dolce-custom-templates/` | See [Custom Templates](./advanced/custom-templates.md)                                         |
+| `DOLCE_DEBUG`                | `boolean?`                    | `false`                        | Set to `true` during development to avoid problems with the [Lockfile](#lockfile) in watchmode |
 
 [^1]: [Deno Log Level](https://deno.land/std@0.202.0/log/mod.ts?s=LogLevels)
 
@@ -138,6 +139,20 @@ This is the list of all available events:
 
 `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`, `exec_create`, `exec_detach`, `exec_start`, `export`,
 `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`, `start`, `stop`, `top`, `unpause`, `update`.
+
+## Blackout Times
+
+You can specify a list of time ranges in which all events should be ignored. This is useful if you have a maintenance
+window or if you regularly stop and start containers for some reason. The format is `HH:[MM[:SS]]-HH:[MM[:SS]]` and you
+can specify multiple ranges by separating them with a comma.
+
+```yaml
+dolce:
+  image: dangrie158/dolce
+  ...
+  environment:
+    DOLCE_BLACKOUT_WINDOWS: 02:00-04:00,22:00-23:59
+```
 
 ## Run Directory
 

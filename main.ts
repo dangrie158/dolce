@@ -5,13 +5,14 @@ import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier, try_create } from "./lib/notifiers.ts";
 import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
 import { Configuration } from "./configuration.ts";
+import { timestamp_in_window } from "./lib/chrono.ts";
 
 const startup_time = new Date();
 const logger = log.getLogger("main");
 logger.info(`starting dolce container monitor v2.10.9`);
 
 if (!Configuration.is_valid) {
-    logger.error(`configuration invalid found:`);
+    logger.error(`invalid configuration found:`);
     for (const [key, error] of Object.entries(Configuration.errors)) {
         logger.error(`\t${key}: ${error}`);
     }
@@ -107,6 +108,10 @@ function get_event_identifier(event: DockerApiEvent): string {
     return event_identifier;
 }
 
+function event_was_during_blackout(event: DockerApiEvent): boolean {
+    return Configuration.blackout_windows.some((window) => timestamp_in_window(event.time, window));
+}
+
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {
     // send notification about the restart
@@ -118,10 +123,12 @@ if (restart_time !== undefined) {
 
     const missed_events = [];
     for await (const event of missed_events_stream) {
-        missed_events.push({
-            actor_name: get_event_identifier(event),
-            ...(event as DockerApiContainerEvent),
-        });
+        if (!event_was_during_blackout(event)) {
+            missed_events.push({
+                actor_name: get_event_identifier(event),
+                ...(event as DockerApiContainerEvent),
+            });
+        }
     }
 
     const restart_information = {
@@ -145,7 +152,7 @@ if (restart_time !== undefined) {
 /**
  * checks if a container event should be handled by dolce given the current configuration of the supervision mode
  */
-function log_event(event: DockerApiEvent): boolean {
+function event_statisfies_supervision_mode(event: DockerApiEvent): boolean {
     switch (Configuration.supervision_mode) {
         case "ALL":
             return true;
@@ -178,17 +185,23 @@ while (!shutdown_requested.signal.aborted) {
         Configuration.actor_identifier === "image" ? event.Actor.Attributes.image : event.Actor.Attributes.name;
         logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
 
-        if (log_event(event)) {
-            await add_event(event_registry, {
-                actor_name: event_identifier,
-                ...(event as DockerApiContainerEvent),
-            });
-            await lockfile.throttled_update();
-        } else {
+        if (!event_statisfies_supervision_mode(event)) {
             logger.debug(
                 `container <"${event_identifier}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
             );
+            continue;
         }
+
+        if (event_was_during_blackout(event)) {
+            logger.debug(`event happened during blackout window, skipping event`);
+            continue;
+        }
+
+        await add_event(event_registry, {
+            actor_name: event_identifier,
+            ...(event as DockerApiContainerEvent),
+        });
+        await lockfile.throttled_update();
     }
     last_connection_lost_time = new Date();
     logger.info(`event stream closed unexpectedly, reconnecting in 5 seconds`);

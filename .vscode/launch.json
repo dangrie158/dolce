@@ -15,6 +15,7 @@
                 "run",
                 "--unstable-http",
                 "--unstable-kv",
+                "--unstable-temporal",
                 "--inspect-wait",
                 "--allow-all"
             ],

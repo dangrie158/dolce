@@ -50,3 +50,23 @@ export function DeadlinedReader<T>(
         },
     };
 }
+
+export function timestamp_in_window(timestamp: number, window: [Temporal.PlainTime, Temporal.PlainTime]): boolean {
+    const timestamp_date = new Date(timestamp);
+    const timestamp_time = new Temporal.PlainTime(
+        timestamp_date.getHours(),
+        timestamp_date.getMinutes(),
+        timestamp_date.getSeconds(),
+    );
+    if (Temporal.PlainTime.compare(window[0], window[1]) < 0) {
+        return (
+            Temporal.PlainTime.compare(timestamp_time, window[0]) >= 0 &&
+            Temporal.PlainTime.compare(timestamp_time, window[1]) <= 0
+        );
+    } else {
+        return (
+            Temporal.PlainTime.compare(timestamp_time, window[0]) >= 0 ||
+            Temporal.PlainTime.compare(timestamp_time, window[1]) <= 0
+        );
+    }
+}

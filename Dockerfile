@@ -18,6 +18,8 @@ CMD deno run \
     --unstable-kv \
 # flag is needed for unstable Cron
     --unstable-cron \
+# flag is needed for unstable Temporal
+    --unstable-temporal
 # /var/run/dolce/ => lockfile directory
     --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
 # /var/run/dolce/ => lockfile directory

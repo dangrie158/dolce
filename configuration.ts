@@ -6,6 +6,14 @@ const SUPERVISION_MODES = ["TAGGED", "UNTAGGED", "PREFIXED", "NOTPREFIXED", "ALL
 type SupervisorMode = (typeof SUPERVISION_MODES)[number];
 type ActorIdentifier = "image" | "name";
 
+function timewindow_converter(value: string): [Temporal.PlainTime, Temporal.PlainTime] {
+    const [start, end] = value.split("-").map((time) => Temporal.PlainTime.from(time));
+    if (start === undefined || end === undefined) {
+        throw new Error(`Invalid time window format: ${value}, should be HH[:MM[:SS]]-HH:[:MM[:SS]]`);
+    }
+    return [start, end];
+}
+
 export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_LOG_LEVEL", one_of: log.LogLevelNames })
     static readonly loglevel: log.LevelName = "INFO";
@@ -61,8 +69,12 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_CUSTOM_TEMPLATE_PATH" })
     static readonly custom_template_path: string = "/var/dolce-custom-templates/";
 
-    @ConfigOption({ type: Array, env_variable: "DOLCE_BLACKOUT_TIMES" })
-    static readonly blackout_times: string[] = [];
+    @ConfigOption({
+        type: Array,
+        env_variable: "DOLCE_BLACKOUT_WINDOWS",
+        transformer: (values: string[]) => values.map((value: string) => timewindow_converter(value)),
+    })
+    static readonly blackout_windows: [Temporal.PlainTime, Temporal.PlainTime][] = [];
 
     @ConfigOption({ type: Boolean, env_variable: "DOLCE_DEBUG" })
     static readonly debug: boolean = false;
