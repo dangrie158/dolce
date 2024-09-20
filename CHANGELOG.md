@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v3.0.1](https://github.com/dangrie158/dolce/compare/v3.0.0...v3.0.1)
+
+> 20 September 2024
+
+- fix: use correct event timestamp in ms instead of seconds
+  [`08d80ce`](https://github.com/dangrie158/dolce/commit/08d80ced3b28b4b42ced1ee1963b01a0a66161dc)
+- docs: fix link to Blackout Times configuration section
+  [`6f14894`](https://github.com/dangrie158/dolce/commit/6f1489405ff43525b3896982f9af1569103319fa)
+
 ### [v3.0.0](https://github.com/dangrie158/dolce/compare/v2.10.9...v3.0.0)
 
 > 20 September 2024
