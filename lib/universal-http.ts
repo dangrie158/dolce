@@ -1,6 +1,6 @@
 import { DelimiterStream } from "@std/streams";
 
-const UA_VERSION = "2.10.9";
+const UA_VERSION = "3.0.0";
 const UA_STRING = `Dolce Container Monitor v${UA_VERSION}`;
 
 const CRLF = "\r\n";
