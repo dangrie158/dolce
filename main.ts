@@ -95,6 +95,14 @@ const event_filters: DockerApiEventFilters = {
     event: Configuration.events,
 };
 
+function get_event_identifier(event: DockerApiEvent): string {
+    let event_identifier = event.Actor.Attributes[Configuration.actor_identifier];
+    if (Configuration.identifier_label in event.Actor.Attributes) {
+        event_identifier = event.Actor.Attributes[Configuration.identifier_label]!;
+    }
+    return event_identifier;
+}
+
 // check if we encountered an unexpected shutdown since last start
 if (restart_time !== undefined) {
     // send notification about the restart
@@ -118,9 +126,7 @@ if (restart_time !== undefined) {
         events_since_shutdown: missed_events,
     };
     logger.info(
-        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${
-            missed_events.length
-        } missed events since then`
+        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`,
     );
 
     installed_notifiers.forEach(async (notifier) => {
@@ -164,10 +170,8 @@ while (!shutdown_requested.signal.aborted) {
         filters: event_filters,
     });
     for await (const event of event_stream) {
-        let event_identifier = event.Actor.Attributes[Configuration.actor_identifier];
-        if (Configuration.identifier_label in event.Actor.Attributes) {
-            event_identifier = event.Actor.Attributes[Configuration.identifier_label]!;
-        }
+        const event_identifier = get_event_identifier(event);
+        Configuration.actor_identifier === "image" ? event.Actor.Attributes.image : event.Actor.Attributes.name;
         logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
 
         if (log_event(event)) {
