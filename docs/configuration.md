@@ -20,7 +20,7 @@ Configuration of the service is done via environment variables.
 | `DOLCE_SUPERVISION_PREFIX`   | `string?`                     | `temp-`                        | See [Supervision Mode](#supervision-mode)                                                      |
 | `DOLCE_ACTOR_IDENTIFIER`     | `name` \| `image`             | `name`                         | See [Container Identifiers](#container-identifiers)                                            |
 | `DOLCE_EVENTS`               | Container Action[] [^3]       | All available                  | See [Event Selection](#event-selection)                                                        |
-| `DOLCE_BLACKOUT_WINDOWS`     | [PlainTime, PlainTime][] [^3] | []                             | See [Blackout Times](#event-selection)                                                         |
+| `DOLCE_BLACKOUT_WINDOWS`     | [PlainTime, PlainTime][] [^3] | []                             | See [Blackout Times](#blackout-times)                                                          |
 | `DOLCE_MIN_TIMEOUT`          | `number`                      | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
 | `DOLCE_MAX_TIMEOUT`          | `number`                      | 60*60*24                       | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
 | `DOLCE_MULTIPLIER`           | `number`                      | 10                             | See [Notification Backoff](./advanced/notification-backoff.md)                                 |
