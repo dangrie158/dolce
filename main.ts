@@ -22,7 +22,7 @@ if (!Configuration.is_valid) {
 
 // create and register the lockfile, also check if we are already running or experienced an unexpected shutdown
 let restart_time: Date | undefined;
-const lockfile = new LockFile(Configuration.lockfile_path);
+const lockfile = new LockFile(Configuration.run_directory);
 if (Configuration.debug) {
     log.info("Debug mode enabled, removing old lockfile if it exists");
     try {
@@ -73,14 +73,18 @@ const installed_notifiers = ALL_NOTIFIERS.map((notifier) => try_create(notifier,
     (posiibleNotifier) => posiibleNotifier !== undefined,
 ) as Notifier[];
 
-const event_registry = await register_events(async (events, earliest_next_update) => {
-    logger.info(`sending events notification to all registered notifiers with ${events.length} events`);
-    const notify_promises = installed_notifiers.map(
-        async (notifier) => await notifier.notify_about_events(events, earliest_next_update),
-    );
-    await Promise.all(notify_promises);
-    logger.info(`earliest next notification at ${earliest_next_update.toLocaleString()}`);
-}, Configuration);
+const event_registry = await register_events(
+    Configuration.run_directory,
+    async (events, earliest_next_update) => {
+        logger.info(`sending events notification to all registered notifiers with ${events.length} events`);
+        const notify_promises = installed_notifiers.map(
+            async (notifier) => await notifier.notify_about_events(events, earliest_next_update),
+        );
+        await Promise.all(notify_promises);
+        logger.info(`earliest next notification at ${earliest_next_update.toLocaleString()}`);
+    },
+    Configuration,
+);
 
 const next_delivery = await get_next_delivery(event_registry);
 if (next_delivery !== null) {

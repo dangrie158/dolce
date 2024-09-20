@@ -1,8 +1,8 @@
 import { DockerApiContainerEvent } from "./docker-api.ts";
-import { ulid } from "../deps.ts";
+import { path, ulid } from "../deps.ts";
 
 type DockerContainerEvent = DockerApiContainerEvent & {
-    "actor_name": string;
+    actor_name: string;
 };
 
 type EventRegistry = {
@@ -26,19 +26,20 @@ type BackoffSettings = {
     multiplier: number;
 };
 
-const DB_PATH = "/var/run/dolce/dolce.db";
 const MESSAGES_PREFIX = "messages";
 const NEXT_DELIVERY_KEY = ["next_delivery"];
 
 function exponential_backoff(iteration: number, options: BackoffSettings) {
-    return Math.floor(Math.min(options.max_timeout, options.min_timeout * (options.multiplier ** iteration)));
+    return Math.floor(Math.min(options.max_timeout, options.min_timeout * options.multiplier ** iteration));
 }
 
 export async function register(
+    run_directory: string,
     delivery_callback: DeliveryCallback,
     backoff_settings: BackoffSettings,
 ): Promise<EventRegistry> {
-    const db = await Deno.openKv(DB_PATH);
+    const db_path = path.join(run_directory, "dolce.db");
+    const db = await Deno.openKv(db_path);
     const registry: EventRegistry = { db, backoff_settings };
 
     db.listenQueue(async (value) => {
@@ -73,7 +74,8 @@ async function schedule_next_delivery(registry: EventRegistry, backoff_iteration
     // enqueue the event in an atomic operation with a check that NEXT_DELIVERY_KEY is unset. If NEXT_DELIVERY_KEY is set,
     // this is a noop and `ok` will be false, so it is safe to call this method all the time as long as NEXT_DELIVERY_KEY
     // is deleted once the messages are sent
-    const { ok, ..._ } = await registry.db.atomic()
+    const { ok, ..._ } = await registry.db
+        .atomic()
         .check({ key: NEXT_DELIVERY_KEY, versionstamp: null })
         .enqueue(delivery_event, { delay: next_delay })
         .set(NEXT_DELIVERY_KEY, earliest_next_update)
@@ -89,7 +91,8 @@ async function flush_events(registry: EventRegistry): Promise<DockerContainerEve
         events.push(event_entry.value);
         cleanup_operations.push({ type: "delete", key: event_entry.key });
     }
-    await registry.db.atomic()
+    await registry.db
+        .atomic()
         .delete(NEXT_DELIVERY_KEY)
         .mutate(...cleanup_operations)
         .commit();

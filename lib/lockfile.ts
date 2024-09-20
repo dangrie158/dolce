@@ -23,17 +23,11 @@ export class LockFile {
         return log.getLogger("lockfile");
     }
 
-    private terminate_handler: () => void = () => {
-        LockFile.logger.info("received SIGTERM or SIGINT, gracefully shutting down");
-        Deno.exit(0);
-    };
+    private lock_file_path: string;
 
-    private unload_handler: () => Promise<void> = async () => {
-        LockFile.logger.info(`removing lockfile "${this.lock_file_path}"`);
-        await this.remove();
-    };
-
-    constructor(private lock_file_path: string) {}
+    constructor(run_directory: string) {
+        this.lock_file_path = path.join(run_directory, "lockfile");
+    }
 
     async register(status_callback: LockFileRegisterCallback) {
         // check if another lockfile exists
@@ -98,6 +92,16 @@ export class LockFile {
     async remove() {
         await Deno.remove(this.lock_file_path);
     }
+
+    private terminate_handler: () => void = () => {
+        LockFile.logger.info("received SIGTERM or SIGINT, gracefully shutting down");
+        Deno.exit(0);
+    };
+
+    private unload_handler: () => Promise<void> = async () => {
+        LockFile.logger.info(`removing lockfile "${this.lock_file_path}"`);
+        await this.remove();
+    };
 
     private async read_contents(): Promise<LockFileInformation> {
         const lockfile_contents = await Deno.readTextFile(this.lock_file_path);

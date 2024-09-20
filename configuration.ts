@@ -56,8 +56,8 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_MULTIPLIER" })
     static readonly multiplier: number = 10;
 
-    @ConfigOption({ env_variable: "DOLCE_LOCKFILE" })
-    static readonly lockfile_path: string = "/var/run/dolce/lockfile";
+    @ConfigOption({ env_variable: "DOLCE_RUN_DIRECTORY" })
+    static readonly run_directory: string = "/var/run/dolce/";
 
     @ConfigOption({ env_variable: "DOLCE_CUSTOM_TEMPLATE_PATH" })
     static readonly custom_template_path: string = "/var/dolce-custom-templates/";
