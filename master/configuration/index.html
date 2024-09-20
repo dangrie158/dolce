@@ -384,6 +384,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#blackout-times" class="md-nav__link">
+    <span class="md-ellipsis">
+      Blackout Times
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#run-directory" class="md-nav__link">
     <span class="md-ellipsis">
       Run Directory
@@ -802,6 +811,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#blackout-times" class="md-nav__link">
+    <span class="md-ellipsis">
+      Blackout Times
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#run-directory" class="md-nav__link">
     <span class="md-ellipsis">
       Run Directory
@@ -915,9 +933,15 @@
 </tr>
 <tr>
 <td><code>DOLCE_EVENTS</code></td>
-<td>Container Action[] <sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup></td>
+<td>Container Action[] <sup id="fnref2:3"><a class="footnote-ref" href="#fn:3">3</a></sup></td>
 <td>All available</td>
 <td>See <a href="#event-selection">Event Selection</a></td>
+</tr>
+<tr>
+<td><code>DOLCE_BLACKOUT_WINDOWS</code></td>
+<td>[PlainTime, PlainTime][] <sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup></td>
+<td>[]</td>
+<td>See <a href="#event-selection">Blackout Times</a></td>
 </tr>
 <tr>
 <td><code>DOLCE_MIN_TIMEOUT</code></td>
@@ -1037,11 +1061,21 @@ in <code>die</code> and <code>start</code> events you can set:</p>
 <span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce</span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">DOLCE_EVENTS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">die:start</span>
+<span class="w">    </span><span class="nt">DOLCE_EVENTS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">die,start</span>
 </code></pre></div>
 <p>This is the list of all available events:</p>
 <p><code>attach</code>, <code>commit</code>, <code>copy</code>, <code>create</code>, <code>destroy</code>, <code>detach</code>, <code>die</code>, <code>exec_create</code>, <code>exec_detach</code>, <code>exec_start</code>, <code>export</code>,
 <code>health_status</code>, <code>kill</code>, <code>oom</code>, <code>pause</code>, <code>rename</code>, <code>resize</code>, <code>restart</code>, <code>start</code>, <code>stop</code>, <code>top</code>, <code>unpause</code>, <code>update</code>.</p>
+<h2 id="blackout-times">Blackout Times</h2>
+<p>You can specify a list of time ranges in which all events should be ignored. This is useful if you have a maintenance
+window or if you regularly stop and start containers for some reason. The format is <code>HH:[MM[:SS]]-HH:[MM[:SS]]</code> and you
+can specify multiple ranges by separating them with a comma.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">dolce</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dangrie158/dolce</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">DOLCE_BLACKOUT_WINDOWS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">02:00-04:00,22:00-23:59</span>
+</code></pre></div>
 <h2 id="run-directory">Run Directory</h2>
 <p>If you plan on using multiple instances of Dolce (e.g. to enable multiple configurations) make sure that if this is
 mounted in a volume, no two different services access the same file.</p>
@@ -1071,7 +1105,7 @@ variable to the desired timezone.</p>
 <p><a href="https://github.com/search?q=repo%3Adangrie158/dolce%20SupervisorMode&amp;type=code">SupervisionMode</a>&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
 </li>
 <li id="fn:3">
-<p><a href="https://docs.docker.com/engine/api/v1.27/#tag/System/operation/SystemEvents">Container Action</a>&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+<p><a href="https://docs.docker.com/engine/api/v1.27/#tag/System/operation/SystemEvents">Container Action</a>&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>

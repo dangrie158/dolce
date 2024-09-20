@@ -745,7 +745,7 @@
 <td><code>SMTP_RECIPIENTS</code></td>
 <td><code>string[]</code></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2c1.85 0 3.55.78 4.9 2.1l1.7-2.17 1.58 1.23-1.98 2.52C19.33 7.41 20 9.6 20 12c0 5.5-3.58 10-8 10-1.85 0-3.55-.78-4.9-2.1l-1.7 2.17-1.58-1.23 1.98-2.52C4.67 16.59 4 14.4 4 12 4 6.5 7.58 2 12 2m0 2c-3.31 0-6 3.58-6 8 0 1.73.41 3.33 1.11 4.64l8.56-10.97C14.66 4.62 13.38 4 12 4m0 16c3.31 0 6-3.58 6-8 0-1.73-.41-3.33-1.11-4.64L8.33 18.33C9.34 19.38 10.62 20 12 20"/></svg></span></td>
-<td>A colon-separated list of recipient adresses</td>
+<td>A comma-separated list of recipient adresses</td>
 </tr>
 <tr>
 <td><code>SMTP_PORT</code></td>
@@ -790,7 +790,7 @@
 <span class="w">      </span><span class="nt">SMTP_HOSTNAME</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">smtp.example.com</span>
 <span class="w">      </span><span class="nt">SMTP_USETLS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">      </span><span class="c1"># SMTP_PORT: 465 # (1)</span>
-<span class="w">      </span><span class="nt">SMTP_RECIPIENTS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">incidents@example.com:ondutyguy@gmail.com</span>
+<span class="w">      </span><span class="nt">SMTP_RECIPIENTS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">incidents@example.com,ondutyguy@gmail.com</span>
 <span class="w">      </span><span class="c1"># SMTP_USERNAME: # (2)</span>
 <span class="w">      </span><span class="c1"># SMTP_PASSWORD:</span>
 <span class="w">      </span><span class="nt">SMTP_FROM</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Dolce</span><span class="nv"> </span><span class="s">Container</span><span class="nv"> </span><span class="s">Monitor</span><span class="nv"> </span><span class="s">&lt;dolce@example.com&gt;&quot;</span>
