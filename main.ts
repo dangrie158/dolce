@@ -109,7 +109,7 @@ function get_event_identifier(event: DockerApiEvent): string {
 }
 
 function event_was_during_blackout(event: DockerApiEvent): boolean {
-    return Configuration.blackout_windows.some((window) => timestamp_in_window(event.time, window));
+    return Configuration.blackout_windows.some((window) => timestamp_in_window(event.time * 1_000, window));
 }
 
 // check if we encountered an unexpected shutdown since last start
