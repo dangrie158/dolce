@@ -20,10 +20,8 @@ CMD deno run \
     --unstable-cron \
 # flag is needed for unstable Temporal
     --unstable-temporal
-# /var/run/dolce/ => lockfile directory
-    --allow-read="./templates,/var/run/dolce/,${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
-# /var/run/dolce/ => lockfile directory
-    --allow-write="/var/run/dolce/,${DOCKER_HOST:-/var/run/docker.sock}" \
+    --allow-read="./templates,${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
+    --allow-write="${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock}" \
 # for SmtpNotifier
     --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost}$( [ x${DOCKER_TRANSPORT:-unix} != 'xunix' ] && echo ,$DOCKER_HOST )" \
 # for lib/env.ts, obviously
