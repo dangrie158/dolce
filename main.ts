@@ -19,9 +19,19 @@ if (!Configuration.is_valid) {
 } else {
     logger.debug(`loaded configurations: ${Configuration}`);
 }
+
 // create and register the lockfile, also check if we are already running or experienced an unexpected shutdown
 let restart_time: Date | undefined;
 const lockfile = new LockFile(Configuration.lockfile_path);
+if (Configuration.debug) {
+    log.info("Debug mode enabled, removing old lockfile if it exists");
+    try {
+        await lockfile.remove();
+    } catch (error) {
+        log.error(`Failed to remove old lockfile: ${error}`);
+    }
+}
+
 await lockfile.register((status, lock_file_path, lock_file_contents) => {
     switch (status) {
         case LockFileRegisterStatus.Success:
@@ -95,15 +105,24 @@ if (restart_time !== undefined) {
     });
 
     const missed_events = [];
-    for await (const event of missed_events_stream) missed_events.push(event as DockerApiContainerEvent);
+    for await (const event of missed_events_stream) {
+        missed_events.push({
+            actor_name: get_event_identifier(event),
+            ...(event as DockerApiContainerEvent),
+        });
+    }
+
     const restart_information = {
         downtime_start: restart_time,
         downtime_end: startup_time,
         events_since_shutdown: missed_events,
     };
     logger.info(
-        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`,
+        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${
+            missed_events.length
+        } missed events since then`
     );
+
     installed_notifiers.forEach(async (notifier) => {
         try {
             await notifier.notify_about_restart(restart_information);

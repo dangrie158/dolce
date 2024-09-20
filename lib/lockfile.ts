@@ -46,14 +46,8 @@ export class LockFile {
                 if (this.is_process_running(lock_file_information.pid)) {
                     status = LockFileRegisterStatus.FailAnotherProcessRunning;
                 }
-                // check if we're the running process. this may only happen in dev mode with the --watch flag
-                if (lock_file_information.pid === Deno.pid) {
-                    status = LockFileRegisterStatus.Success;
-                }
             } finally {
-                if (status !== LockFileRegisterStatus.Success) {
-                    status_callback(status, this.lock_file_path, lock_file_information);
-                }
+                status_callback(status, this.lock_file_path, lock_file_information);
             }
         }
 
@@ -101,9 +95,10 @@ export class LockFile {
         return true;
     }
 
-    private async remove() {
+    async remove() {
         await Deno.remove(this.lock_file_path);
     }
+
     private async read_contents(): Promise<LockFileInformation> {
         const lockfile_contents = await Deno.readTextFile(this.lock_file_path);
         const lock_file_information = JSON.parse(lockfile_contents);

@@ -62,6 +62,9 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_CUSTOM_TEMPLATE_PATH" })
     static readonly custom_template_path: string = "/var/dolce-custom-templates/";
 
+    @ConfigOption({ env_variable: "DOLCE_DEBUG" })
+    static readonly debug: boolean = false;
+
     static toString() {
         return `\nConfiguration {
             ${
