@@ -18,8 +18,8 @@ CMD deno run \
     --unstable-kv \
 # flag is needed for unstable Cron
     --unstable-cron \
-# flag is needed for unstable Temporal
-    --unstable-temporal
+# flag is needed for unstable Temporal API used in lib/chrono.ts and for blackout windows
+    --unstable-temporal \
     --allow-read="./templates,${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
     --allow-write="${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock}" \
 # for SmtpNotifier
