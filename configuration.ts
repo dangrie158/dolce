@@ -61,6 +61,9 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "DOLCE_CUSTOM_TEMPLATE_PATH" })
     static readonly custom_template_path: string = "/var/dolce-custom-templates/";
 
+    @ConfigOption({ type: Array, env_variable: "DOLCE_BLACKOUT_TIMES" })
+    static readonly blackout_times: string[] = [];
+
     @ConfigOption({ type: Boolean, env_variable: "DOLCE_DEBUG" })
     static readonly debug: boolean = false;
 

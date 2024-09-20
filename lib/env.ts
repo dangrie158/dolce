@@ -3,17 +3,19 @@
  * with a defaultvalue as fallback
  */
 
-type ConfigurationParameter = number | string | boolean | string[];
-type ConfigurationParameterConstructorType = typeof Number | typeof String | typeof Boolean | typeof Array;
-type ConfigurationParameterMetadata = Record<string | symbol, ConfigurationParameterOptions>;
-type ConfigurationParameterOptions = {
-    type?: ConfigurationParameterConstructorType;
+type ConstructorType<T> = T extends number ? typeof Number
+    : T extends string ? typeof String
+    : T extends boolean ? typeof Boolean
+    : T extends unknown[] ? typeof Array
+    : undefined;
+type ConfigurationParameterOptions<T> = {
+    type?: ConstructorType<T>;
     env_variable?: string;
     required?: boolean;
-    one_of?: readonly ConfigurationParameter[];
-    some_of?: readonly ConfigurationParameter[];
+    one_of?: T extends unknown[] ? never : readonly unknown[];
+    some_of?: T extends unknown[] ? readonly T[number][] : never;
+    transformer?: (value: T extends unknown[] ? string[] : string) => T;
 };
-
 const env = Deno.env;
 
 /**
@@ -29,9 +31,7 @@ function get_array(key: string): string[] {
     return string_value.split(",").filter((x) => x.length > 0);
 }
 
-export function ConfigOption<T extends ConfigurationParameter>(
-    options: ConfigurationParameterOptions = { type: String }
-) {
+export function ConfigOption<T = string>(options: ConfigurationParameterOptions<T> = {}) {
     return function (_target: undefined, context: ClassFieldDecoratorContext) {
         if (context.static === false) {
             throw new Error("ConfigOption can only be used on static fields");
@@ -39,41 +39,51 @@ export function ConfigOption<T extends ConfigurationParameter>(
 
         const property_name = context.name.toString();
         const env_variable_name = options.env_variable || property_name.toUpperCase();
-        return (initial: T | undefined): T => {
+        return (initial: T): T => {
             const validation_errors: string[] = [];
 
             if (!env.has(env_variable_name) && initial === undefined) {
                 validation_errors.push(`${env_variable_name} is not set and no default value provided`);
             }
 
-            let value: ConfigurationParameter;
+            let raw_value;
+
             switch (options.type) {
                 case Boolean:
-                    value = env.has(env_variable_name) as T;
+                    raw_value = env.has(env_variable_name) as T;
                     break;
                 case Number:
-                    value = env.has(env_variable_name) ? Number(env.get(env_variable_name)) : initial!;
-                    if (isNaN(value as number)) {
+                    raw_value = env.has(env_variable_name) ? Number(env.get(env_variable_name)) : initial!;
+                    if (isNaN(raw_value as number)) {
                         validation_errors.push(`failed to parse ${env.get(env_variable_name)} as number`);
-                        value = initial!;
+                        raw_value = initial!;
                     }
                     break;
                 case Array: {
-                    value = env.has(env_variable_name) ? get_array(env_variable_name) : initial!;
+                    raw_value = env.has(env_variable_name) ? get_array(env_variable_name) : initial!;
                     break;
                 }
                 case String:
                 default:
-                    value = env.has(env_variable_name) ? env.get(env_variable_name)! : initial!;
+                    raw_value = env.has(env_variable_name) ? env.get(env_variable_name)! : initial!;
                     break;
             }
 
-            if (options.required && !value) {
+            if (options.required && !raw_value) {
                 validation_errors.push(`${env_variable_name} is not set`);
             }
 
+            let value: T = raw_value as T;
+            if (options.transformer !== undefined) {
+                try {
+                    value = options.transformer(value as T extends unknown[] ? string[] : string) as T;
+                } catch (transformation_error) {
+                    validation_errors.push(`failed to transform ${value} using transformer: ${transformation_error}`);
+                }
+            }
+
             if (options.one_of !== undefined) {
-                if (!options.one_of.includes(value!)) {
+                if (!options.one_of.includes(value)) {
                     const allowed_values = options.one_of.map((v) => JSON.stringify(v)).join(", ");
                     validation_errors.push(
                         `value for ${env_variable_name} not one of {${allowed_values}}, ${value} instead`,
@@ -98,7 +108,7 @@ export function ConfigOption<T extends ConfigurationParameter>(
                 context.metadata[context.name] = validation_errors;
             }
 
-            return value as T;
+            return value;
         };
     };
 }

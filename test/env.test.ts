@@ -9,6 +9,9 @@ Deno.test("EnvironmentConfiguration", async (test) => {
     Deno.env.set("DOLCE_TEST_BOOL_TRUE", "something");
     Deno.env.delete("DOLCE_TEST_BOOL_FALSE");
     Deno.env.set("TEST_AUTO_NAME", "TEST_AUTO_NAME");
+    Deno.env.set("DOLCE_TEST_TRANSFORM_URLS", "http://example.com,https://example.com");
+    Deno.env.set("DOLCE_TEST_TRANSFORM_URL", "http://example.com");
+    Deno.env.set("DOLCE_TEST_MALFORMED_URLS", "make,me,an,url");
 
     await test.step("EnvironmentConfiguration automatically finds environemnt variables", () => {
         class TestConfiguration {
@@ -63,22 +66,14 @@ Deno.test("EnvironmentConfiguration", async (test) => {
 
     await test.step("ConfigOption.array_of", () => {
         class TestConfiguration extends CheckedConfiguration {
-            @ConfigOption({ env_variable: "DOLCE_TEST_ARRAY", some_of: ["TEST1", "TEST2", "TEST3"] })
-            static readonly test_arrayof_notanarray: string;
-
             @ConfigOption({
                 type: Array,
                 env_variable: "DOLCE_TEST_ARRAY",
                 some_of: ["TEST1", "TEST2", "TEST3", "TEST4"],
             })
             static readonly test_arrayof_true: string[];
-
-            @ConfigOption({ type: Array, env_variable: "DOLCE_TEST_ARRAY", one_of: ["TEST1", "TEST5"] })
-            static readonly test_arrayof_false: string[];
         }
-        assert("test_arrayof_notanarray" in TestConfiguration.errors);
         assert(!("test_arrayof_true" in TestConfiguration.errors));
-        assert("test_arrayof_false" in TestConfiguration.errors);
     });
 
     await test.step("ConfigOption.required", () => {
@@ -91,5 +86,32 @@ Deno.test("EnvironmentConfiguration", async (test) => {
         }
         assert(!("test_required_true" in TestConfiguration.errors));
         assert("test_required_false" in TestConfiguration.errors);
+    });
+
+    await test.step("ConfigOption.transformer", () => {
+        class TestConfiguration extends CheckedConfiguration {
+            @ConfigOption({
+                env_variable: "DOLCE_TEST_TRANSFORM_URL",
+                transformer: (value: string) => new URL(value),
+            })
+            static readonly test_url: URL;
+
+            @ConfigOption({
+                type: Array,
+                env_variable: "DOLCE_TEST_TRANSFORM_URLS",
+                transformer: (values: string[]) => values.map((value) => new URL(value)),
+            })
+            static readonly test_urls: URL[];
+
+            @ConfigOption({
+                type: Array,
+                env_variable: "DOLCE_TEST_MALFORMED_URLS",
+                transformer: (values: string[]) => values.map((value) => new URL(value)),
+            })
+            static readonly malformed_urls: URL[];
+        }
+        assertEquals(TestConfiguration.test_url, new URL("http://example.com"));
+        assertEquals(TestConfiguration.test_urls, [new URL("http://example.com"), new URL("https://example.com")]);
+        assert("malformed_urls" in TestConfiguration.errors);
     });
 });
