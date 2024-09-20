@@ -1,4 +1,5 @@
-import { log, SmtpClient } from "../deps.ts";
+import { SmtpClient } from "deno-smtp";
+import { getLogger } from "@std/log";
 import { DockerApiContainerEvent } from "./docker-api.ts";
 import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./env.ts";
 import {
@@ -38,7 +39,7 @@ export abstract class Notifier {
     protected abstract send_message(_message: Template): Promise<void>;
 
     public static get logger() {
-        return log.getLogger("notifier");
+        return getLogger("notifier");
     }
 }
 
@@ -172,18 +173,19 @@ class TelegramNotifier extends Notifier {
     static message_class = TelegramTemplate;
 
     protected async send_message(message: TelegramTemplate) {
-        const send_promises = TelegramNotifier.config.recipient_ids.map(async (recipient) =>
-            await fetch(`https://api.telegram.org/bot${TelegramNotifier.config.http_token!}/sendMessage`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    chat_id: recipient,
-                    text: message.text,
-                    parse_mode: "MarkdownV2",
+        const send_promises = TelegramNotifier.config.recipient_ids.map(
+            async (recipient) =>
+                await fetch(`https://api.telegram.org/bot${TelegramNotifier.config.http_token!}/sendMessage`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        chat_id: recipient,
+                        text: message.text,
+                        parse_mode: "MarkdownV2",
+                    }),
                 }),
-            })
         );
         await Promise.all(send_promises);
     }
@@ -253,9 +255,4 @@ export function try_create(
     notifier_class.logger.info(`creating ${notifier_class.name}`);
     return new notifier_class(notifier_class.message_class, hostname);
 }
-export const ALL_NOTIFIERS: ConcreteNotifier[] = [
-    SmtpNotifier,
-    DiscordNotifier,
-    TelegramNotifier,
-    AppriseNotifier,
-];
+export const ALL_NOTIFIERS: ConcreteNotifier[] = [SmtpNotifier, DiscordNotifier, TelegramNotifier, AppriseNotifier];

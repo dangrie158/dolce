@@ -1,6 +1,10 @@
-import { DOMParser, Eta, EtaOptions, extract_frontmatter, path, resolve_template_path } from "../deps.ts";
+import * as front_matter from "@std/front-matter";
+import * as path from "@std/path";
+import { DOMParser } from "@b-fuze/deno-dom";
+import { Eta, type Options as EtaOptions } from "eta";
 import { DockerApiContainerEvent } from "./docker-api.ts";
 import { Configuration } from "../configuration.ts";
+import { resolvePath as resolve_template_path } from "eta/file-handling";
 export type EventTemplateName = "event.eta" | "restart.eta";
 
 export type BaseMessageContext = {
@@ -172,7 +176,7 @@ export class EMailTemplate extends Template {
     async render(context: MessageContext) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
-        const { attrs, body } = extract_frontmatter<EMailFrontMatter>(template_contents);
+        const { attrs, body } = front_matter.extractJson<EMailFrontMatter>(template_contents);
         this.frontmatter = attrs;
         this.html_content = await this.engine.renderStringAsync(body, {
             ...context,
@@ -230,7 +234,7 @@ export class AppriseTemplate extends Template {
     async render(context: MessageContext) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
-        const { attrs, body } = extract_frontmatter<AppriseFrontMatter>(template_contents);
+        const { attrs, body } = front_matter.extractJson<AppriseFrontMatter>(template_contents);
         this.frontmatter = attrs;
         this.text_content = await this.engine.renderStringAsync(body, {
             ...context,

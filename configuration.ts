@@ -1,5 +1,5 @@
+import * as log from "@std/log";
 import { CheckedConfiguration, ConfigOption, EnvironmentConfiguration } from "./lib/env.ts";
-import { log } from "./deps.ts";
 import { CONTAINER_ACTIONS, ContainerAction } from "./lib/docker-api.ts";
 
 const SUPERVISION_MODES = ["TAGGED", "UNTAGGED", "PREFIXED", "NOTPREFIXED", "ALL"] as const;

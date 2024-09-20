@@ -1,4 +1,5 @@
-import { log, path } from "../deps.ts";
+import { getLogger } from "@std/log";
+import * as path from "@std/path";
 import { throttle } from "./async.ts";
 
 type LockFileInformation = {
@@ -20,7 +21,7 @@ export enum LockFileRegisterStatus {
 export class LockFile {
     static UPDATE_THROTTLE_INTERVAL = 1000;
     static get logger() {
-        return log.getLogger("lockfile");
+        return getLogger("lockfile");
     }
 
     private lock_file_path: string;

@@ -1,4 +1,4 @@
-import { log } from "./deps.ts";
+import * as log from "@std/log";
 
 import { DockerApi, DockerApiContainerEvent, DockerApiEvent, DockerApiEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";

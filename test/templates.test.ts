@@ -7,7 +7,7 @@ import {
     TelegramTemplate,
 } from "../lib/templates.ts";
 import { assert, assertStrictEquals, assertThrows } from "https://deno.land/std@0.204.0/assert/mod.ts";
-import { path } from "../deps.ts";
+import * as path from "@std/path";
 
 const dummy_render_context: RestartMessageContext = {
     downtime_start: new Date(),

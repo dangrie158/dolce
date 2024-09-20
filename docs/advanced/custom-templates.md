@@ -83,7 +83,7 @@ For `restart` templates the context additionally contains the following properti
 | `downtime_end`          | `Date`                       | Timestamp at which Dolce started again               |
 
 [^1]: [`DockerContainerEvent`](https://github.com/dangrie158/dolce/blob/master/lib/event_registry.ts#L4) and
-[`DockerApiContainerEvent`](https://github.com/dangrie158/dolce/blob/master/lib/docker-api.ts#L86)
+    [`DockerApiContainerEvent`](https://github.com/dangrie158/dolce/blob/master/lib/docker-api.ts#L86)
 
 ### Helper Functions
 
@@ -133,9 +133,9 @@ action:
 | `die`           | ❌     |
 | `kill`          | ❌     |
 | `oom`           | ❌     |
-| `stop`          | ⏹️      |
-| `pause`         | ⏸️      |
-| `unpause`       | ⏯️      |
+| `stop`          | ⏹️     |
+| `pause`         | ⏸️     |
+| `unpause`       | ⏯️     |
 | `health_status` | ❓     |
 
 Example usage:

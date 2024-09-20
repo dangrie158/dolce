@@ -1,4 +1,4 @@
-import { ReflectMetadata } from "../deps.ts";
+import { Reflect as ReflectMetadata } from "@dx/reflect";
 /**
  * Convenience functions to get values from the environment in the requestst type
  * with a defaultvalue as fallback

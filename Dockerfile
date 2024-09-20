@@ -4,15 +4,11 @@ ENV DOLCE_CUSTOM_TEMPLATE_PATH /var/dolce-custom-templates/
 
 WORKDIR /dolce
 
-# Cache the dependencies as a layer
-COPY deps.ts .
-RUN /bin/deno cache deps.ts
-
 COPY . .
 
 RUN mkdir -p /var/run/dolce
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
-RUN deno cache main.ts
+RUN deno cache main.ts lib/*.ts
 
 ENTRYPOINT []
 CMD deno run \

@@ -1,4 +1,4 @@
-import { TextLineStream } from "../deps.ts";
+import { TextLineStream } from "@std/streams";
 import { DeadlinedReader } from "./async.ts";
 import { HttpSocket } from "./universal-http.ts";
 

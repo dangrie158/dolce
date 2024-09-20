@@ -1,5 +1,6 @@
+import { ulid } from "@std/ulid";
+import { join as join_path } from "@std/path";
 import { DockerApiContainerEvent } from "./docker-api.ts";
-import { path, ulid } from "../deps.ts";
 
 type DockerContainerEvent = DockerApiContainerEvent & {
     actor_name: string;
@@ -38,7 +39,7 @@ export async function register(
     delivery_callback: DeliveryCallback,
     backoff_settings: BackoffSettings,
 ): Promise<EventRegistry> {
-    const db_path = path.join(run_directory, "dolce.db");
+    const db_path = join_path(run_directory, "dolce.db");
     const db = await Deno.openKv(db_path);
     const registry: EventRegistry = { db, backoff_settings };
 

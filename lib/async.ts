@@ -1,4 +1,4 @@
-import { async } from "../deps.ts";
+import { deadline } from "@std/async";
 
 export function wait(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -33,15 +33,15 @@ export function throttle<T extends Array<void>>(
 
 export function DeadlinedReader<T>(
     reader: ReadableStreamDefaultReader<T>,
-    deadline: number,
+    timeout: number,
 ): ReadableStreamDefaultReader<T> {
     return {
         ...reader,
         read: async () => {
             try {
-                return await async.deadline(reader.read(), deadline);
+                return await deadline(reader.read(), timeout);
             } catch (error) {
-                if (error instanceof async.DeadlineError) {
+                if (error instanceof DOMException && error.name === "TimeoutError") {
                     reader.cancel();
                     return { done: true, value: undefined };
                 }
