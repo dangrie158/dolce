@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v3.0.2](https://github.com/dangrie158/dolce/compare/v3.0.1...v3.0.2)
+
+> 4 October 2024
+
+- fix: make SMTP_USER and SMTP_PASSWORD optional again
+  [`b4b45f0`](https://github.com/dangrie158/dolce/commit/b4b45f088c6ab56d153dd31feb3829cc68a48edd)
+
 #### [v3.0.1](https://github.com/dangrie158/dolce/compare/v3.0.0...v3.0.1)
 
 > 20 September 2024
