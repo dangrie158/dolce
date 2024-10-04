@@ -9,7 +9,7 @@ import { timestamp_in_window } from "./lib/chrono.ts";
 
 const startup_time = new Date();
 const logger = log.getLogger("main");
-logger.info(`starting dolce container monitor v3.0.2`);
+logger.info(`starting dolce container monitor v3.1.0`);
 
 if (!Configuration.is_valid) {
     logger.error(`invalid configuration found:`);

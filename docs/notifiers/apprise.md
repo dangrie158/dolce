@@ -34,7 +34,7 @@ services:
     image: caronc/apprise:latest
 
   dolce:
-    image: dangrie158/dolce:v3.0.2
+    image: dangrie158/dolce:v3.1.0
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
