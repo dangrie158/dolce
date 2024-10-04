@@ -19,6 +19,7 @@
                 "--inspect-wait",
                 "--allow-all"
             ],
+            "envFile": "${workspaceFolder}/.env",
             "attachSimplePort": 9229
         }
     ]
