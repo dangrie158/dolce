@@ -54,7 +54,7 @@ export class SmtpNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "SMTP_HOSTNAME", required: true })
     static readonly hostname: string;
 
-    @ConfigOption({ type: Array, env_variable: "SMTP_RECIPIENTS", required: true })
+    @ConfigOption({ type: Array, env_variable: "SMTP_RECIPIENTS" })
     static readonly recipients: string[] = [];
 
     @ConfigOption({ type: Number, env_variable: "SMTP_PORT" })
@@ -151,7 +151,7 @@ class DiscordNotifier extends Notifier {
 
 export class TelegramNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "TELEGRAM_HTTP_TOKEN", required: true })
-    static readonly http_token?: string;
+    static readonly http_token: string;
 
     @ConfigOption({ type: Array, env_variable: "TELEGRAM_RECIPIENT_IDS" })
     static readonly recipient_ids: string[] = [];
@@ -195,10 +195,10 @@ export class AppriseNotifierConfiguration extends CheckedConfiguration {
     @ConfigOption({ env_variable: "APPRISE_PROTOCOL", one_of: ["http", "https"] })
     static readonly protocol: string = "http";
 
-    @ConfigOption({ env_variable: "APPRISE_URLS" })
+    @ConfigOption({ env_variable: "APPRISE_URLS", required: true })
     static readonly urls: string;
 
-    @ConfigOption({ env_variable: "APPRISE_TAG" })
+    @ConfigOption({ env_variable: "APPRISE_TAG", required: true })
     static readonly tag: string;
 
     @ConfigOption({ env_variable: "APPRISE_TYPE", one_of: ["info", "success", "warning", "failure"] })

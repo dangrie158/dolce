@@ -42,12 +42,7 @@ export function ConfigOption<T = string>(options: ConfigurationParameterOptions<
         return (initial: T): T => {
             const validation_errors: string[] = [];
 
-            if (!env.has(env_variable_name) && initial === undefined) {
-                validation_errors.push(`${env_variable_name} is not set and no default value provided`);
-            }
-
             let raw_value;
-
             switch (options.type) {
                 case Boolean:
                     raw_value = env.has(env_variable_name) as T;
