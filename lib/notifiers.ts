@@ -1,4 +1,4 @@
-import { SmtpClient } from "deno-smtp";
+import { SmtpClient } from "./smtp.ts";
 import { getLogger } from "@std/log";
 import { DockerApiContainerEvent } from "./docker-api.ts";
 import { CheckedConfiguration, ConfigOption } from "./env.ts";
@@ -98,9 +98,9 @@ export class SmtpNotifier extends Notifier {
             password: SmtpNotifier.config.password,
         };
         if (SmtpNotifier.config.use_tls) {
-            await client.connectTLS(connection_config);
+            await client.connect_tls(connection_config);
         } else {
-            await client.connect(connection_config);
+            await client.connect_plain(connection_config);
         }
         return client;
     }
@@ -116,7 +116,7 @@ export class SmtpNotifier extends Notifier {
                 from: SmtpNotifier.config.sender,
                 to: recipient,
             });
-            await client.close();
+            client.close();
         });
         await Promise.all(send_promises);
     }
