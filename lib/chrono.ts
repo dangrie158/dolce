@@ -51,7 +51,8 @@ export function DeadlinedReader<T>(
     };
 }
 
-export function timestamp_in_window(timestamp: number, window: [Temporal.PlainTime, Temporal.PlainTime]): boolean {
+export type TimeWindow = [Temporal.PlainTime, Temporal.PlainTime];
+export function timestamp_in_window(timestamp: number, window: TimeWindow): boolean {
     const timestamp_date = new Date(timestamp);
     const timestamp_time = new Temporal.PlainTime(
         timestamp_date.getHours(),
@@ -69,4 +70,15 @@ export function timestamp_in_window(timestamp: number, window: [Temporal.PlainTi
             Temporal.PlainTime.compare(timestamp_time, window[1]) <= 0
         );
     }
+}
+
+export function time_until_end_of_window(window: TimeWindow): Temporal.Duration {
+    const now = Temporal.Now.plainTimeISO();
+    const end_of_blackout = window[1];
+
+    const duration_until = now.until(end_of_blackout);
+    if (duration_until.sign === -1) {
+        return new Temporal.Duration();
+    }
+    return duration_until;
 }

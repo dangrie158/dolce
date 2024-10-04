@@ -10,6 +10,7 @@ Here is a list of the events that happened in the meantime:
 Time                    Action    Container
 <% it.events_since_shutdown.toSorted(it.newest_first).forEach(event => { %>
 <%= new Date(event.time * 1000).toLocaleString() %> <%= event.Action %>	<%= event.actor_name %>
+
 <% }); %>
 
 However, this may be incomplete if docker restarted during the downtime.

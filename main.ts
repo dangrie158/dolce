@@ -3,9 +3,17 @@ import * as log from "@std/log";
 import { DockerApi, DockerApiContainerEvent, DockerApiEvent, DockerApiEventFilters } from "./lib/docker-api.ts";
 import { LockFile, LockFileRegisterStatus } from "./lib/lockfile.ts";
 import { ALL_NOTIFIERS, Notifier, try_create } from "./lib/notifiers.ts";
-import { add_event, get_next_delivery, register as register_events } from "./lib/event_registry.ts";
+import {
+    add_event_for_delivery,
+    DockerContainerEvent,
+    DockerStateChangeEvent,
+    flush_state_changes_not_delivered,
+    get_next_delivery,
+    register as register_events,
+    track_container_state_change,
+} from "./lib/event_registry.ts";
 import { Configuration } from "./configuration.ts";
-import { timestamp_in_window } from "./lib/chrono.ts";
+import { time_until_end_of_window, timestamp_in_window, TimeWindow } from "./lib/chrono.ts";
 
 const startup_time = new Date();
 const logger = log.getLogger("main");
@@ -87,6 +95,19 @@ const event_registry = await register_events(
     Configuration,
 );
 
+async function notify_state_changes(state_changes: DockerStateChangeEvent[], blackout_window: TimeWindow) {
+    logger.info(`sending notification about ${state_changes.length} state changes after blackout window`);
+    await Promise.all(
+        installed_notifiers.map(async (notifier) => {
+            try {
+                await notifier.notify_about_state_changes(state_changes, blackout_window);
+            } catch (error) {
+                logger.error(`failed to send notification with ${notifier.constructor.name}: ${error}`);
+            }
+        }),
+    );
+}
+
 const next_delivery = await get_next_delivery(event_registry);
 if (next_delivery !== null) {
     logger.info(`next delivery is scheduled for ${next_delivery?.toLocaleString()}`);
@@ -112,41 +133,8 @@ function event_was_during_blackout(event: DockerApiEvent): boolean {
     return Configuration.blackout_windows.some((window) => timestamp_in_window(event.time * 1_000, window));
 }
 
-// check if we encountered an unexpected shutdown since last start
-if (restart_time !== undefined) {
-    // send notification about the restart
-    const missed_events_stream = await api.subscribe_events({
-        since: restart_time,
-        until: startup_time,
-        filters: event_filters,
-    });
-
-    const missed_events = [];
-    for await (const event of missed_events_stream) {
-        if (!event_was_during_blackout(event)) {
-            missed_events.push({
-                actor_name: get_event_identifier(event),
-                ...(event as DockerApiContainerEvent),
-            });
-        }
-    }
-
-    const restart_information = {
-        downtime_start: restart_time,
-        downtime_end: startup_time,
-        events_since_shutdown: missed_events,
-    };
-    logger.info(
-        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`,
-    );
-
-    installed_notifiers.forEach(async (notifier) => {
-        try {
-            await notifier.notify_about_restart(restart_information);
-        } catch (error) {
-            logger.error(`failed to send notification with ${notifier.constructor.name}: ${error}`);
-        }
-    });
+function blackout_window_for_event(event: DockerApiEvent): TimeWindow | undefined {
+    return Configuration.blackout_windows.find((window) => timestamp_in_window(event.time * 1_000, window));
 }
 
 /**
@@ -167,12 +155,68 @@ function event_statisfies_supervision_mode(event: DockerApiEvent): boolean {
     }
 }
 
+// check if we encountered an unexpected shutdown since last start
+if (restart_time !== undefined) {
+    // send notification about the restart
+    const missed_events_stream = await api.subscribe_events({
+        since: restart_time,
+        until: startup_time,
+        filters: event_filters,
+    });
+
+    const missed_events: DockerContainerEvent[] = [];
+    for await (const event of missed_events_stream) {
+        const docker_event = {
+            actor_name: get_event_identifier(event),
+            ...(event as DockerApiContainerEvent),
+        };
+        if (!event_statisfies_supervision_mode(event)) {
+            logger.debug(
+                `container <"${docker_event.actor_name}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
+            );
+            continue;
+        }
+
+        if (event_was_during_blackout(event)) {
+            await track_container_state_change(event_registry, docker_event, { registered_for_delivery: false });
+        } else {
+            missed_events.push(docker_event);
+            await track_container_state_change(event_registry, docker_event, { registered_for_delivery: true });
+        }
+    }
+
+    // we condese the state changes that happened during blackout windows to the last observed state only
+    const state_change_events_during_shutdown = await flush_state_changes_not_delivered(event_registry);
+    const condensed_events_during_blackout = state_change_events_during_shutdown.flat().filter((event) =>
+        event !== null
+    );
+    missed_events.push(...condensed_events_during_blackout);
+
+    const restart_information = {
+        downtime_start: restart_time,
+        downtime_end: startup_time,
+        events_since_shutdown: missed_events,
+    };
+    logger.info(
+        `sending notification about unexpected shutdown at ${restart_time.toLocaleString()} with ${missed_events.length} missed events since then`,
+    );
+
+    installed_notifiers.forEach(async (notifier) => {
+        try {
+            await notifier.notify_about_restart(restart_information);
+        } catch (error) {
+            logger.error(`failed to send notification with ${notifier.constructor.name}: ${error}`);
+        }
+    });
+}
+
 const shutdown_requested = new AbortController();
 Deno.addSignalListener("SIGINT", () => {
     logger.info(`received SIGINT, shutting down dolce container monitor`);
     shutdown_requested.abort();
     Deno.exit(0);
 });
+let blackout_timeout: number | undefined = undefined;
 
 let last_connection_lost_time: Date | undefined = undefined;
 while (!shutdown_requested.signal.aborted) {
@@ -185,6 +229,11 @@ while (!shutdown_requested.signal.aborted) {
         Configuration.actor_identifier === "image" ? event.Actor.Attributes.image : event.Actor.Attributes.name;
         logger.info(`new container event received: <"${event_identifier}": ${event.Action}>`);
 
+        const docker_with_identifier = {
+            actor_name: event_identifier,
+            ...(event as DockerApiContainerEvent),
+        };
+
         if (!event_statisfies_supervision_mode(event)) {
             logger.debug(
                 `container <"${event_identifier}"> is ignored in current configuration with DOLCE_SUPERVISION_MODE=${Configuration.supervision_mode}, skipping event`,
@@ -193,14 +242,31 @@ while (!shutdown_requested.signal.aborted) {
         }
 
         if (event_was_during_blackout(event)) {
+            await track_container_state_change(event_registry, docker_with_identifier, {
+                registered_for_delivery: false,
+            });
+
+            const active_window = blackout_window_for_event(event);
+            if (active_window !== undefined && blackout_timeout === undefined) {
+                blackout_timeout = setTimeout(async () => {
+                    blackout_timeout = undefined;
+                    logger.info(`blackout window ended, processing events again`);
+
+                    const state_change_events_during_shutdown = await flush_state_changes_not_delivered(event_registry);
+                    if (state_change_events_during_shutdown.length > 0) {
+                        await notify_state_changes(state_change_events_during_shutdown, active_window);
+                    }
+                }, time_until_end_of_window(active_window).total("millisecond"));
+            }
             logger.debug(`event happened during blackout window, skipping event`);
             continue;
+        } else {
+            await track_container_state_change(event_registry, docker_with_identifier, {
+                registered_for_delivery: true,
+            });
         }
 
-        await add_event(event_registry, {
-            actor_name: event_identifier,
-            ...(event as DockerApiContainerEvent),
-        });
+        await add_event_for_delivery(event_registry, docker_with_identifier);
         await lockfile.throttled_update();
     }
     last_connection_lost_time = new Date();

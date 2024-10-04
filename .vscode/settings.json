@@ -1,9 +1,13 @@
 {
     "deno.enable": true,
     "deno.lint": true,
-    "deno.unstable": true,
+    "deno.unstable": [
+        "cron",
+        "kv",
+        "http",
+        "temporal"
+    ],
     "editor.defaultFormatter": "denoland.vscode-deno",
-    // for mkdocs-material
     "yaml.schemas": {
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
     },
@@ -14,7 +18,7 @@
         "tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji",
         "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format"
     ],
-    "[ts]": {
+    "[typescript]": {
         "editor.defaultFormatter": "denoland.vscode-deno"
     }
 }

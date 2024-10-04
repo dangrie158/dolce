@@ -132,6 +132,7 @@ export class SmtpClient {
 
         this.assert_code(await this.read_command(), CommandCode.OK);
     }
+
     private assert_code(cmd: Command | null, code: number, msg?: string) {
         if (cmd === null) {
             throw new Error(`invalid command`);

@@ -1,0 +1,12 @@
+*Hello,*
+
+There are changes to the status of your containers after the Blackoutwindow from <%= it.blackout_window[0].toLocaleString() %> until <%= it.blackout_window[1].toLocaleString() %> ended\. The following containers changed state\:
+
+Here is a list of the events that happened in the meantime\:
+```
+Container       Old Status  New Status  New Status since
+<% it.state_changes.forEach(state_change => { %>
+<%= state_change[1].actor_name %>    <%= state_change[0].status || "n/a" %> <%= state_change[1].status %> <%= new Date(state_change[1].time * 1000).toLocaleString() %>
+
+<% }); %>
+```

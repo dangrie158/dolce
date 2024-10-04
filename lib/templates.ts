@@ -5,7 +5,9 @@ import { Eta, type Options as EtaOptions } from "eta";
 import { DockerApiContainerEvent } from "./docker-api.ts";
 import { Configuration } from "../configuration.ts";
 import { resolvePath as resolve_template_path } from "eta/file-handling";
-export type EventTemplateName = "event.eta" | "restart.eta";
+import { DockerStateChangeEvent } from "./event_registry.ts";
+import { TimeWindow } from "./chrono.ts";
+export type EventTemplateName = "event.eta" | "restart.eta" | "state_change_after_blackout.eta";
 
 export type BaseMessageContext = {
     hostname: string;
@@ -16,13 +18,21 @@ export type EventMessageContext = BaseMessageContext & {
     earliest_next_update: Date;
 };
 
+export type StateChangeAfterBlackoutMessageContext = BaseMessageContext & {
+    state_changes: DockerStateChangeEvent[];
+    blackout_window: TimeWindow;
+};
+
 export type RestartMessageContext = BaseMessageContext & {
     events_since_shutdown: DockerApiContainerEvent[];
     downtime_start: Date;
     downtime_end: Date;
 };
 
-type MessageContext = EventMessageContext | RestartMessageContext;
+type MessageContext<TemplateName> = TemplateName extends "event.eta" ? EventMessageContext
+    : TemplateName extends "restart.eta" ? RestartMessageContext
+    : TemplateName extends "state_change_after_blackout.eta" ? StateChangeAfterBlackoutMessageContext
+    : never;
 
 const this_dir = path.dirname(path.fromFileUrl(import.meta.url));
 
@@ -120,12 +130,12 @@ class TemplateEngine extends Eta {
     };
 }
 
-export abstract class Template {
+export class BaseTemplate<TemplateName extends EventTemplateName = EventTemplateName> {
     protected engine: TemplateEngine;
     protected is_rendered = false;
     protected text_content?: string;
 
-    constructor(protected template_folder: string, protected template_name: EventTemplateName) {
+    constructor(protected template_folder: string, protected template_name: TemplateName) {
         this.engine = new TemplateEngine(template_folder);
     }
 
@@ -139,7 +149,7 @@ export abstract class Template {
         }
     }
 
-    public async render(context: MessageContext): Promise<void> {
+    public async render(context: MessageContext<TemplateName>): Promise<void> {
         this.text_content = await this.engine.renderAsync(this.template_name, {
             ...context,
             ...context_functions,
@@ -152,28 +162,30 @@ export abstract class Template {
         return this.text_content!;
     }
 }
-
-// this type is statisfied by all concrete implementations of the Template class
-export type ConcreteTemplate = Omit<typeof Template, "new"> & {
-    new (_: EventTemplateName): Template;
+export type TemplateClass = {
+    new <TemplateName extends EventTemplateName>(template_name: TemplateName): BaseTemplate<TemplateName>;
 };
 
-export class SimpleTemplate extends Template {
-    constructor(template_name: EventTemplateName) {
+export class SimpleTemplate<
+    TemplateName extends EventTemplateName = EventTemplateName,
+> extends BaseTemplate<TemplateName> {
+    constructor(template_name: TemplateName) {
         super("simple", template_name);
     }
 }
 
 type EMailFrontMatter = { subject: string };
-export class EMailTemplate extends Template {
+export class EMailTemplate<
+    TemplateName extends EventTemplateName = EventTemplateName,
+> extends BaseTemplate<TemplateName> {
     private html_content?: string;
     private frontmatter?: EMailFrontMatter;
 
-    constructor(protected template_name: EventTemplateName) {
+    constructor(protected template_name: TemplateName) {
         super("email", template_name);
     }
 
-    async render(context: MessageContext) {
+    async render(context: MessageContext<TemplateName>) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
         const { attrs, body } = front_matter.extractJson<EMailFrontMatter>(template_contents);
@@ -211,27 +223,33 @@ export class EMailTemplate extends Template {
     }
 }
 
-export class DiscordTemplate extends Template {
-    constructor(template_name: EventTemplateName) {
+export class DiscordTemplate<
+    TemplateName extends EventTemplateName = EventTemplateName,
+> extends BaseTemplate<TemplateName> {
+    constructor(template_name: TemplateName) {
         super("discord", template_name);
     }
 }
 
-export class TelegramTemplate extends Template {
-    constructor(template_name: EventTemplateName) {
+export class TelegramTemplate<
+    TemplateName extends EventTemplateName = EventTemplateName,
+> extends BaseTemplate<TemplateName> {
+    constructor(template_name: TemplateName) {
         super("telegram", template_name);
     }
 }
 
 type AppriseFrontMatter = { title: string; format: string; type?: string };
-export class AppriseTemplate extends Template {
+export class AppriseTemplate<
+    TemplateName extends EventTemplateName = EventTemplateName,
+> extends BaseTemplate<TemplateName> {
     private frontmatter?: AppriseFrontMatter;
 
-    constructor(template_name: EventTemplateName) {
+    constructor(template_name: TemplateName) {
         super("apprise", template_name);
     }
 
-    async render(context: MessageContext) {
+    async render(context: MessageContext<TemplateName>) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
         const { attrs, body } = front_matter.extractJson<AppriseFrontMatter>(template_contents);

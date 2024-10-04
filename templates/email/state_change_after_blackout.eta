@@ -1,0 +1,16 @@
+---json
+{"subject": "Container Status Changed after Blackout Window"}
+---
+<% layout("./base.eta") %>
+
+<h1 style="color: #f73a63;">Hello,</h1>
+<p style="color: #757575; font-weight: bold;">There are changes to the status of your containers after the Blackoutwindow
+from <%= it.blackout_window[0].toLocaleString() %> until <%= it.blackout_window[1].toLocaleString() %> ended.</p>
+
+<p>The following containers changed state:</p>
+<table style="width: 100%; border-collapse: collapse; font-family: Tahoma, Geneva, sans-serif;">
+    <tr style="background-color: #f73a63; color: white;"><th>Container</th>&#009;<th>Old State</th>&#009;<th>New State</th>&#009;<th>Time since new state:</th></tr>
+    <% it.state_changes.forEach((state_change, index) => { %>
+    <tr style="background-color: <%= index %2 === 0 ? '#fff6f2;' : 'white' %>"><td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><p><%= state_change[1].actor_name %></p></td>&#009;<td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><span style="<%= it.get_event_style(state_change[0]) %>"><%= state_change[0].status || "n/a" %></span></td>&#009;<td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><span style="<%= it.get_event_style(state_change[1]) %>"><%= state_change[1].status %></span></td>&#009;<td style="padding: 15px; color: #636363; border: 1px solid #e0e0e0;"><%= new Date(state_change[1].time * 1000).toLocaleString() %></td></tr>
+    <% }); %>
+</table>

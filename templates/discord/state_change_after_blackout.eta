@@ -1,0 +1,39 @@
+<%-
+    function color_text(text, color){
+        switch (color) {
+        case "success": return `\`\`\`diff\\n+${ text }\\n\`\`\``
+        case "warning": return `\`\`\`fix\\n${ text }\\n\`\`\``
+        case "error": return `\`\`\`diff\\n-${ text }\\n\`\`\``
+        default: return `\`\`\`\\n${ text }\\n\`\`\``
+        }
+    }
+-%>
+{
+    "content": "",
+    "tts": false,
+    "embeds": [
+        {
+            "type": "rich",
+            "title": "Container Status Changed after Blackout Window",
+            "description": "There are changes to the status of your containers after the Blackoutwindow from <%= it.blackout_window[0].toLocaleString() %> until <%= it.blackout_window[1].toLocaleString() %> ended. The following containers changed state:",
+            "color": 14961766,
+            "fields": [
+            <%~ it.state_changes.map(state_change => `
+                {
+                    "name": "${ state_change[1].actor_name }",
+                    "value": "${ color_text(`${ state_change[0].status || "n/a" } -> ${ state_change[1].status }`, it.get_event_class(state_change[1])) }"
+                }`).join(",")
+            %>
+            ],
+            "thumbnail": {
+                "url": "https://dangrie158.github.io/dolce/master/assets/logo_compact.png",
+                "height": 0,
+                "width": 0
+            },
+            "author": {
+                "name": "Dolce@<%= it.hostname %>",
+                "url": "https://github.com/dangrie158/dolce/tree/master"
+            }
+        }
+    ]
+}

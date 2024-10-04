@@ -4,18 +4,19 @@ import { DockerApiContainerEvent } from "./docker-api.ts";
 import { CheckedConfiguration, ConfigOption } from "./env.ts";
 import {
     AppriseTemplate,
-    ConcreteTemplate,
     DiscordTemplate,
     EMailTemplate,
     RestartMessageContext,
     TelegramTemplate,
-    Template,
+    TemplateClass,
 } from "./templates.ts";
+import { DockerStateChangeEvent } from "./event_registry.ts";
+import { TimeWindow } from "./chrono.ts";
 
 export type RestartInfo = Omit<RestartMessageContext, "hostname">;
 
 export abstract class Notifier {
-    public constructor(protected message_class: ConcreteTemplate, protected hostname: string) {}
+    public constructor(protected message_class: TemplateClass, protected hostname: string) {}
 
     async notify_about_events(events: DockerApiContainerEvent[], earliest_next_update: Date) {
         const message = new this.message_class("event.eta");
@@ -23,6 +24,16 @@ export abstract class Notifier {
             hostname: this.hostname,
             earliest_next_update,
             events,
+        });
+        await this.send_message(message);
+    }
+
+    async notify_about_state_changes(state_changes: DockerStateChangeEvent[], blackout_window: TimeWindow) {
+        const message = new this.message_class("state_change_after_blackout.eta");
+        await message.render({
+            hostname: this.hostname,
+            state_changes,
+            blackout_window,
         });
         await this.send_message(message);
     }
@@ -36,7 +47,7 @@ export abstract class Notifier {
         await this.send_message(message);
     }
 
-    protected abstract send_message(_message: Template): Promise<void>;
+    protected abstract send_message(_message: InstanceType<TemplateClass>): Promise<void>;
 
     public static get logger() {
         return getLogger("notifier");
@@ -45,9 +56,9 @@ export abstract class Notifier {
 
 // this type is statisfied by all concrete implementations of the BaseNotifier class
 type ConcreteNotifier = Omit<typeof Notifier, "new"> & {
-    new (message_class: ConcreteTemplate, hostname: string): Notifier;
+    new (message_class: TemplateClass, hostname: string): Notifier;
     config: typeof CheckedConfiguration;
-    message_class: ConcreteTemplate;
+    message_class: TemplateClass;
 };
 
 export class SmtpNotifierConfiguration extends CheckedConfiguration {
@@ -67,7 +78,7 @@ export class SmtpNotifierConfiguration extends CheckedConfiguration {
     static readonly sender: string = "dolce";
 
     @ConfigOption({ env_variable: "SMTP_USERNAME" })
-    static readonly username?: string;
+    static readonly username: string;
 
     @ConfigOption({ env_variable: "SMTP_PASSWORD" })
     static readonly password?: string;

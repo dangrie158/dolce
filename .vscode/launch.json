@@ -16,6 +16,7 @@
                 "--unstable-http",
                 "--unstable-kv",
                 "--unstable-temporal",
+                "--unstable-cron",
                 "--inspect-wait",
                 "--allow-all"
             ],
