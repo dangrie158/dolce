@@ -30,7 +30,7 @@ points (by default this will be `/var/dolce-custom-templates/`):
 ```yaml title="docker-compose.yml"
 services:
   dolce:
-    image: dangrie158/dolce:v3.0.1
+    image: dangrie158/dolce:v3.0.2
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
