@@ -36,7 +36,7 @@ Dolce comes with sensible defaults so you can use it out of the box but also let
 easy fashion if you so desire:
 
 <div class="grid cards single-column" markdown>
-- [:material-cog: **Configurable** via Environment Variables](./configuration.md)
+- [:material-eye-off: **Blackout Windows** so you can schedule automatic updates](./configuration.md#blackout-times)
 - [:material-database-clock: **Notification Backoff** so you don't get spammed.](./advanced/notification-backoff.md)
 - [:material-database-lock: **Graceful Error Handling** No events are lost, even if the service gets shut down](./configuration.md)
 - [:material-email-edit: **Custom Templates** for your notifications with your design](./advanced/custom-templates.md)

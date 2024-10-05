@@ -154,6 +154,10 @@ dolce:
     DOLCE_BLACKOUT_WINDOWS: 02:00-04:00,22:00-23:59
 ```
 
+If the blackout window ends, the status of all containers is compared to the last known state and notifications are sent
+if any container is in a different state than before. This enables you to schedule automatic container updates in a
+specified window and still get notified if something goes wrong during the update process.
+
 ## Run Directory
 
 If you plan on using multiple instances of Dolce (e.g. to enable multiple configurations) make sure that if this is
