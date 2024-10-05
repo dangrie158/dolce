@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v3.2.0](https://github.com/dangrie158/dolce/compare/v3.1.0...v3.2.0)
+
+> 5 October 2024
+
+- feat: notifiy about state changes during blackout windows
+  [`5832cfe`](https://github.com/dangrie158/dolce/commit/5832cfe9ac492dec731366bd241258c66c547a04)
+- docs: better documentation for blackout window feature
+  [`5cdfbba`](https://github.com/dangrie158/dolce/commit/5cdfbba7330a20e49b61a13c5e5bc01f3bbde2ed)
+- feat: add docs task to deno.jsonc
+  [`2ccaac2`](https://github.com/dangrie158/dolce/commit/2ccaac2e125eb63ae59ec7d378f0ed4928575b44)
+
 #### [v3.1.0](https://github.com/dangrie158/dolce/compare/v3.0.2...v3.1.0)
 
 > 4 October 2024
