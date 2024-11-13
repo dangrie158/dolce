@@ -1,4 +1,4 @@
-import { SmtpClient } from "./smtp.ts";
+import { ConnectConfigWithAuthentication, SmtpClient } from "./smtp.ts";
 import { getLogger } from "@std/log";
 import { DockerApiContainerEvent } from "./docker-api.ts";
 import { CheckedConfiguration, ConfigOption } from "./env.ts";
@@ -107,8 +107,10 @@ export class SmtpNotifier extends Notifier {
             port: SmtpNotifier.config.port,
             username: SmtpNotifier.config.username,
             password: SmtpNotifier.config.password,
-        };
-        if (SmtpNotifier.config.use_tls) {
+        } as ConnectConfigWithAuthentication;
+        if (!SmtpNotifier.config.use_tls && connection_config.username !== undefined) {
+            await client.connect_starttls(connection_config);
+        } else if (SmtpNotifier.config.use_tls) {
             await client.connect_tls(connection_config);
         } else {
             await client.connect_plain(connection_config);
