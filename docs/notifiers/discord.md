@@ -18,7 +18,7 @@ You can configure chat notifications via discord using the following environment
 ```yaml
 services:
   dolce:
-    image: dangrie158/dolce:v3.2.0
+    image: dangrie158/dolce:v3.3.0
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
