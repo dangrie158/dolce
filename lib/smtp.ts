@@ -94,7 +94,7 @@ export class SmtpClient {
         }
 
         if (this.use_authentication(config)) {
-            if (!this.isTlsConn(this.connection)) {
+            if (!this.is_tls_conn(this.connection)) {
                 if (!supports_starttls) {
                     throw new Error("STARTTLS is not supported by the server");
                 }
@@ -119,7 +119,7 @@ export class SmtpClient {
         }
     }
 
-    isTlsConn(arg: Deno.Conn): arg is Deno.TlsConn {
+    is_tls_conn(arg: Deno.Conn): arg is Deno.TlsConn {
         return (arg as Deno.TlsConn).handshake !== undefined;
     }
 
