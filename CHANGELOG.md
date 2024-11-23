@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v3.3.0](https://github.com/dangrie158/dolce/compare/v3.2.0...v3.3.0)
+
+> 23 November 2024
+
+- feat: Switch to alpine distro [`#28`](https://github.com/dangrie158/dolce/pull/28)
+- Add support for STARTTLS [`#26`](https://github.com/dangrie158/dolce/pull/26)
+- docs: explain usage of `SMTP_USETLS` to use `STARTTLS`
+  [`11561b4`](https://github.com/dangrie158/dolce/commit/11561b4fed5d0dc310b1074546fbf391b0553a50)
+- Switch to alpine distro
+  [`7b5870a`](https://github.com/dangrie158/dolce/commit/7b5870a678a38f518b18ac5f5f499dcd69dd510c)
+- Apply method naming convention
+  [`68c7450`](https://github.com/dangrie158/dolce/commit/68c7450c178d5fbee1209bcd3d10ece08b95360b)
+
 #### [v3.2.0](https://github.com/dangrie158/dolce/compare/v3.1.0...v3.2.0)
 
 > 5 October 2024
