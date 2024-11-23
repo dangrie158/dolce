@@ -39,6 +39,20 @@ type Message = {
 
 type SmtpClientOptions = { content_encoding: ContentTransferEncoding };
 
+function is_tls_conn(arg: Deno.Conn): arg is Deno.TlsConn {
+    return (arg as Deno.TlsConn).handshake !== undefined;
+}
+
+function has_authentication(
+    config: ConnectConfig | ConnectConfigWithAuthentication,
+): config is ConnectConfigWithAuthentication {
+    return (config as ConnectConfigWithAuthentication).username !== undefined;
+}
+
+function parse_email_address(email: string): [string, string] {
+    const m = email.toString().match(/(.*)\s<(.*)>/);
+    return m?.length === 3 ? [`<${m[2]}>`, email] : [`<${email}>`, `<${email}>`];
+}
 export class SmtpClient {
     private connection: Deno.Conn | null = null;
     private reader: ReadableStreamDefaultReader<string> | null = null;
@@ -84,17 +98,18 @@ export class SmtpClient {
         await this.write_command(`EHLO ${config.hostname}\r\n`);
 
         let supports_starttls = false;
-
         while (true) {
             const command = await this.read_command();
-            if (!command || !command.args.startsWith("-")) break;
+            if (!command || !command.args.startsWith("-")) {
+                break;
+            }
             if (command.args.includes("STARTTLS")) {
                 supports_starttls = true;
             }
         }
 
-        if (this.use_authentication(config)) {
-            if (!this.is_tls_conn(this.connection)) {
+        if (has_authentication(config)) {
+            if (!is_tls_conn(this.connection)) {
                 if (!supports_starttls) {
                     throw new Error("STARTTLS is not supported by the server");
                 }
@@ -119,10 +134,6 @@ export class SmtpClient {
         }
     }
 
-    is_tls_conn(arg: Deno.Conn): arg is Deno.TlsConn {
-        return (arg as Deno.TlsConn).handshake !== undefined;
-    }
-
     close() {
         if (!this.connection) {
             return;
@@ -133,8 +144,8 @@ export class SmtpClient {
     }
 
     async send(config: Message) {
-        const [from, from_data] = this.parse_address(config.from);
-        const [to, to_data] = this.parse_address(config.to);
+        const [from, from_data] = parse_email_address(config.from);
+        const [to, to_data] = parse_email_address(config.to);
 
         await this.write_command(`MAIL FROM: ${from}\r\n`);
         this.assert_code(await this.read_command(), CommandCode.OK);
@@ -195,16 +206,5 @@ export class SmtpClient {
         }
         const data = encoder.encode(cmd);
         await writeAll(this.connection, data);
-    }
-
-    private use_authentication(
-        config: ConnectConfig | ConnectConfigWithAuthentication,
-    ): config is ConnectConfigWithAuthentication {
-        return (config as ConnectConfigWithAuthentication).username !== undefined;
-    }
-
-    private parse_address(email: string): [string, string] {
-        const m = email.toString().match(/(.*)\s<(.*)>/);
-        return m?.length === 3 ? [`<${m[2]}>`, email] : [`<${email}>`, `<${email}>`];
     }
 }
