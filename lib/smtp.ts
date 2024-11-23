@@ -24,7 +24,7 @@ type ConnectConfig = {
     port?: number;
 };
 
-type ConnectConfigWithAuthentication = ConnectConfig & {
+export type ConnectConfigWithAuthentication = ConnectConfig & {
     username: string;
     password: string;
 };
@@ -64,6 +64,14 @@ export class SmtpClient {
         await this.connect(connection, config);
     }
 
+    async connect_starttls(config: ConnectConfigWithAuthentication) {
+        const connection = await Deno.connect({
+            hostname: config.hostname,
+            port: config.port || 587,
+        });
+        await this.connect(connection, config);
+    }
+
     private async connect(connection: Deno.Conn, config: ConnectConfig) {
         this.connection = connection;
         this.reader = this.connection.readable
@@ -74,11 +82,32 @@ export class SmtpClient {
         this.assert_code(await this.read_command(), CommandCode.READY);
 
         await this.write_command(`EHLO ${config.hostname}\r\n`);
+
+        let supports_starttls = false;
+
         while (true) {
             const command = await this.read_command();
             if (!command || !command.args.startsWith("-")) break;
+            if (command.args.includes("STARTTLS")) {
+                supports_starttls = true;
+            }
         }
+
         if (this.use_authentication(config)) {
+            if (!this.is_tls_conn(this.connection)) {
+                if (!supports_starttls) {
+                    throw new Error("STARTTLS is not supported by the server");
+                }
+                await this.write_command(`STARTTLS\r\n`);
+                this.assert_code(await this.read_command(), CommandCode.READY);
+                this.reader.cancel();
+                this.connection = await Deno.startTls(this.connection as Deno.TcpConn, { hostname: config.hostname });
+                this.reader = this.connection.readable
+                    .pipeThrough(new TextDecoderStream())
+                    .pipeThrough(new TextLineStream())
+                    .getReader();
+            }
+
             await this.write_command(`AUTH LOGIN\r\n`);
             this.assert_code(await this.read_command(), CommandCode.SERVER_CHALLENGE);
 
@@ -88,6 +117,10 @@ export class SmtpClient {
             await this.write_command(`${btoa(config.password)}\r\n`);
             this.assert_code(await this.read_command(), CommandCode.AUTHO_SUCCESS);
         }
+    }
+
+    is_tls_conn(arg: Deno.Conn): arg is Deno.TlsConn {
+        return (arg as Deno.TlsConn).handshake !== undefined;
     }
 
     close() {
