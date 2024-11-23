@@ -401,6 +401,24 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#use-implicit-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use implicit TLS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-starttls-explicit-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use STARTTLS / explicit TLS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#setup-gmail-as-your-smtp-server" class="md-nav__link">
     <span class="md-ellipsis">
       Setup GMail as your SMTP Server
@@ -696,6 +714,24 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#use-implicit-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use implicit TLS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-starttls-explicit-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use STARTTLS / explicit TLS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#setup-gmail-as-your-smtp-server" class="md-nav__link">
     <span class="md-ellipsis">
       Setup GMail as your SMTP Server
@@ -750,8 +786,8 @@
 <tr>
 <td><code>SMTP_PORT</code></td>
 <td><code>number?</code></td>
-<td style="text-align: center;"><code>25 / 465</code></td>
-<td>Uses default ports depending on <code>SMTP_USETLS</code></td>
+<td style="text-align: center;"><code>25 / 465 / 587</code></td>
+<td>Uses default ports depending on <code>SMTP_USETLS</code> and <code>SMTP_USERNAME</code></td>
 </tr>
 <tr>
 <td><code>SMTP_USERNAME</code></td>
@@ -769,7 +805,7 @@
 <td><code>SMTP_USETLS</code></td>
 <td><code>boolean?</code></td>
 <td style="text-align: center;">false</td>
-<td>Uses a secure connection to the mailserver if set</td>
+<td>See <a href="#use-implicit-tls">Use implicit TLS</a> and <a href="#use-starttls-explicit-tls">Use STARTTLS</a></td>
 </tr>
 <tr>
 <td><code>SMTP_FROM</code></td>
@@ -799,6 +835,14 @@
 <li>set automatically because of <code>SMTP_USETLS</code></li>
 <li>If unset wont authenticate to the mailserver</li>
 </ol>
+<h2 id="use-implicit-tls">Use implicit TLS</h2>
+<p>If you want to use an implicit TLS connection to your SMTP server, you can set the <code>SMTP_USETLS</code> variable and set
+<code>SMTP_USERNAME</code> and <code>SMTP_PASSWORD</code> variables.</p>
+<p><code>SMTP_PORT</code> will default to <code>465</code>.</p>
+<h2 id="use-starttls-explicit-tls">Use STARTTLS / explicit TLS</h2>
+<p>If you want to use an explicit TLS connection using the <code>STARTTLS</code> command, you can leave <code>SMTP_USETLS</code> unset and set
+the <code>SMTP_USERNAME</code> and <code>SMTP_PASSWORD</code> variables.</p>
+<p><code>SMTP_PORT</code> will default to <code>587</code> in this case.</p>
 <h2 id="setup-gmail-as-your-smtp-server">Setup GMail as your SMTP Server</h2>
 <p>If you don't have a SMTP Server handy that you can use to send your notifications, using the GMail SMTP server may be a
 handy alternative for small setups. For this you need to setup the service as follows:</p>
