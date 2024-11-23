@@ -9,15 +9,15 @@ icon: material/email
 
 You can configure email notifications via SMTP using the following environment variables
 
-| Name              | Type       |      Default       | Description                                                                |
-| ----------------- | ---------- | :----------------: | -------------------------------------------------------------------------- |
-| `SMTP_HOSTNAME`   | `string`   |  :material-null:   | FQDN or IP of the Sending Mailserver                                       |
-| `SMTP_RECIPIENTS` | `string[]` |  :material-null:   | A comma-separated list of recipient adresses                               |
-| `SMTP_PORT`       | `number?`  |     `25 / 465`     | Uses default ports depending on `SMTP_USETLS`                              |
-| `SMTP_USERNAME`   | `string?`  |  :material-null:   | No authentication is used if unset                                         |
-| `SMTP_PASSWORD`   | `string?`  |  :material-null:   | No authentication is used if unset                                         |
-| `SMTP_USETLS`     | `boolean?` |       false        | Uses a secure connection to the mailserver if set                          |
-| `SMTP_FROM`       | `string?`  | `dolce@<hostname>` | Supports mailbox format as specified in RFC 5322 (see [Example](#example)) |
+| Name              | Type       |      Default       | Description                                                                              |
+| ----------------- | ---------- | :----------------: | ---------------------------------------------------------------------------------------- |
+| `SMTP_HOSTNAME`   | `string`   |  :material-null:   | FQDN or IP of the Sending Mailserver                                                     |
+| `SMTP_RECIPIENTS` | `string[]` |  :material-null:   | A comma-separated list of recipient adresses                                             |
+| `SMTP_PORT`       | `number?`  |  `25 / 465 / 587`  | Uses default ports depending on `SMTP_USETLS` and `SMTP_USERNAME`                        |
+| `SMTP_USERNAME`   | `string?`  |  :material-null:   | No authentication is used if unset                                                       |
+| `SMTP_PASSWORD`   | `string?`  |  :material-null:   | No authentication is used if unset                                                       |
+| `SMTP_USETLS`     | `boolean?` |       false        | See [Use implicit TLS](#use-implicit-tls) and [Use STARTTLS](#use-starttls-explicit-tls) |
+| `SMTP_FROM`       | `string?`  | `dolce@<hostname>` | Supports mailbox format as specified in RFC 5322 (see [Example](#example))               |
 
 ## Example
 
@@ -40,6 +40,20 @@ services:
 
 1. set automatically because of `SMTP_USETLS`
 2. If unset wont authenticate to the mailserver
+
+## Use implicit TLS
+
+If you want to use an implicit TLS connection to your SMTP server, you can set the `SMTP_USETLS` variable and set
+`SMTP_USERNAME` and `SMTP_PASSWORD` variables.
+
+`SMTP_PORT` will default to `465`.
+
+## Use STARTTLS / explicit TLS
+
+If you want to use an explicit TLS connection using the `STARTTLS` command, you can leave `SMTP_USETLS` unset and set
+the `SMTP_USERNAME` and `SMTP_PASSWORD` variables.
+
+`SMTP_PORT` will default to `587` in this case.
 
 ## Setup GMail as your SMTP Server
 
