@@ -1,66 +1,66 @@
 name: Bump Version Number
 on:
-  workflow_dispatch:
-    inputs:
-      releaseKind:
-        description: "Kind of version bump"
-        default: "patch"
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-        required: true
+    workflow_dispatch:
+        inputs:
+            releaseKind:
+                description: "Kind of version bump"
+                default: "patch"
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
+                required: true
 
 jobs:
-  build:
-    name: version bump
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    build:
+        name: version bump
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
 
-    steps:
-      - name: Configure git
-        run: |
-          git config --global core.symlinks true
-          git config --global fetch.parallel 32
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+        steps:
+            - name: Configure git
+              run: |
+                  git config --global core.symlinks true
+                  git config --global fetch.parallel 32
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --global user.name "github-actions[bot]"
 
-      - name: Clone repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.RELEASE_TOKEN }}
-          fetch-depth: 0
+            - name: Clone repository
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.RELEASE_TOKEN }}
+                  fetch-depth: 0
 
-      - name: Install deno
-        uses: denoland/setup-deno@v1
+            - name: Install deno
+              uses: denoland/setup-deno@v1
 
-      - name: Run version bump
-        run: |
-          deno task bmp --${{github.event.inputs.releaseKind}} --commit
+            - name: Run version bump
+              run: |
+                  deno task bmp --${{github.event.inputs.releaseKind}} --commit
 
-      - name: Update CHANGELOG.md
-        run: |
-          deno task changelog
-          git add CHANGELOG.md
-          git commit -m "chore: update changelog"
+            - name: Update CHANGELOG.md
+              run: |
+                  deno task changelog
+                  git add CHANGELOG.md
+                  git commit -m "chore: update changelog"
 
-      - name: Commit new version
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/${{ github.repository }}
-          git push
-          git push --tags
+            - name: Commit new version
+              run: |
+                  git remote set-url origin https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/${{ github.repository }}
+                  git push
+                  git push --tags
 
-      - name: Create releasenotes
-        id: releasenotes
-        run: |
-          export NEW_VERSION="v$(NO_COLOR=1 deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --info | grep 'Current version:' | cut -s -d' ' -f3)"
-          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_OUTPUT
-          deno run --allow-read --allow-write=${{ github.workspace }}/releasenotes.md --allow-env --allow-run=git --allow-sys=uid npm:auto-changelog --ignore-commit-pattern chore: --hide-credit --output ${{ github.workspace }}/releasenotes.md --starting-version ${NEW_VERSION:-0}
+            - name: Create releasenotes
+              id: releasenotes
+              run: |
+                  export NEW_VERSION="v$(NO_COLOR=1 deno run --allow-read=. --allow-write=. https://deno.land/x/bmp@v0.2.0/cli.ts --info | grep 'Current version:' | cut -s -d' ' -f3)"
+                  echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_OUTPUT
+                  deno run --allow-read --allow-write=${{ github.workspace }}/releasenotes.md --allow-env --allow-run=git --allow-sys=uid npm:auto-changelog --ignore-commit-pattern chore: --hide-credit --output ${{ github.workspace }}/releasenotes.md --starting-version ${NEW_VERSION:-0}
 
-      - name: Create new release
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: ${{ github.workspace }}/releasenotes.md
-          token: ${{ secrets.RELEASE_TOKEN }}
-          tag_name: ${{ steps.releasenotes.outputs.NEW_VERSION }}
+            - name: Create new release
+              uses: softprops/action-gh-release@v1
+              with:
+                  body_path: ${{ github.workspace }}/releasenotes.md
+                  token: ${{ secrets.RELEASE_TOKEN }}
+                  tag_name: ${{ steps.releasenotes.outputs.NEW_VERSION }}

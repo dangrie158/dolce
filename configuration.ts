@@ -79,7 +79,7 @@ export class Configuration extends CheckedConfiguration {
     @ConfigOption({ type: Boolean, env_variable: "DOLCE_DEBUG" })
     static readonly debug: boolean = false;
 
-    static toString() {
+    override toString() {
         return `\nConfiguration {
             ${
             Object.entries(Configuration)

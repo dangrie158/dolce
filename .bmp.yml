@@ -1,16 +1,16 @@
 version: 3.3.0
-commit: 'chore: bump to v%.%.%'
+commit: "chore: bump to v%.%.%"
 files:
-  README.md: v%.%.%
-  docs/index.md: v%.%.%
-  docs/quickstart.md: v%.%.%
-  docs/notifiers/smtp.md: v%.%.%
-  docs/notifiers/telegram.md: v%.%.%
-  docs/notifiers/discord.md: v%.%.%
-  docs/notifiers/apprise.md: v%.%.%
-  docs/notifiers/slack.md: v%.%.%
-  docs/notifiers/mattermost.md: v%.%.%
-  docs/advanced/custom-templates.md: v%.%.%
-  docs/advanced/reduced-permissions.md: v%.%.%
-  lib/universal-http.ts: const UA_VERSION = "%.%.%";
-  main.ts: logger.info(`starting dolce container monitor v%.%.%`);
+    README.md: v%.%.%
+    docs/index.md: v%.%.%
+    docs/quickstart.md: v%.%.%
+    docs/notifiers/smtp.md: v%.%.%
+    docs/notifiers/telegram.md: v%.%.%
+    docs/notifiers/discord.md: v%.%.%
+    docs/notifiers/apprise.md: v%.%.%
+    docs/notifiers/slack.md: v%.%.%
+    docs/notifiers/mattermost.md: v%.%.%
+    docs/advanced/custom-templates.md: v%.%.%
+    docs/advanced/reduced-permissions.md: v%.%.%
+    lib/universal-http.ts: const UA_VERSION = "%.%.%";
+    main.ts: logger.info(`starting dolce container monitor v%.%.%`);

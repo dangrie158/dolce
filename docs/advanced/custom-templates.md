@@ -29,14 +29,14 @@ points (by default this will be `/var/dolce-custom-templates/`):
 
 ```yaml title="docker-compose.yml"
 services:
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./templates:/var/dolce-custom-templates # (1)!
-    environment:
-      ...
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./templates:/var/dolce-custom-templates # (1)!
+        environment:
+            ...
 ```
 
 1. change the target path if you set `DOLCE_CUSTOM_TEMPLATE_PATH` to any other value.

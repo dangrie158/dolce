@@ -54,20 +54,20 @@ The value of `DOLCE_SUPERVISION_PREFIX` and container names is in both cases irr
 
 ```yaml title="Example using DOLCE_SUPERVISION_MODE=TAGGED"
 services:
-  dolce:
-    image: dangrie158/dolce
-    ...
-    environment:
-      DOLCE_SUPERVISION_MODE: TAGGED
-      DOLCE_SUPERVISION_LABEL: monitor.enable
-  importantservice:
-    labels:
-      monitor.enable: true # (1)!
-  unimportantservice:
-    labels:
-      monitor.enable: false # (2)!
-  anotherunimportantservice:
-    ... # (3)!
+    dolce:
+        image: dangrie158/dolce
+            ...
+        environment:
+            DOLCE_SUPERVISION_MODE: TAGGED
+            DOLCE_SUPERVISION_LABEL: monitor.enable
+    importantservice:
+        labels:
+            monitor.enable: true # (1)!
+    unimportantservice:
+        labels:
+            monitor.enable: false # (2)!
+    anotherunimportantservice:
+        ... # (3)!
 ```
 
 1. will create notifications, the label is set to exactly "true"
@@ -94,17 +94,17 @@ For example:
 
 ```yaml title="Example using DOLCE_ACTOR_IDENTIFIER=image and a custom DOLCE_IDENTIFIER_LABEL"
 services:
-  dolce:
-    image: dangrie158/dolce
-    ...
-    environment:
-      DOLCE_ACTOR_IDENTIFIER: image
-      DOLCE_IDENTIFIER_LABEL: dolce.label # (1)!
-  importantservice:
-    labels:
-      dolce.label: "my_important_service_do_not_kill" # (2)!
-  anotherimportantservice:
-    ... # (3)!
+    dolce:
+        image: dangrie158/dolce
+            ...
+        environment:
+            DOLCE_ACTOR_IDENTIFIER: image
+            DOLCE_IDENTIFIER_LABEL: dolce.label # (1)!
+    importantservice:
+        labels:
+            dolce.label: "my_important_service_do_not_kill" # (2)!
+    anotherimportantservice:
+        ... # (3)!
 ```
 
 1. `dolce.identifier` by default
@@ -129,10 +129,10 @@ in `die` and `start` events you can set:
 
 ```yaml
 dolce:
-  image: dangrie158/dolce
-  ...
-  environment:
-    DOLCE_EVENTS: die,start
+    image: dangrie158/dolce
+        ...
+    environment:
+        DOLCE_EVENTS: die,start
 ```
 
 This is the list of all available events:
@@ -148,10 +148,10 @@ can specify multiple ranges by separating them with a comma.
 
 ```yaml
 dolce:
-  image: dangrie158/dolce
-  ...
-  environment:
-    DOLCE_BLACKOUT_WINDOWS: 02:00-04:00,22:00-23:59
+    image: dangrie158/dolce
+        ...
+    environment:
+        DOLCE_BLACKOUT_WINDOWS: 02:00-04:00,22:00-23:59
 ```
 
 If the blackout window ends, the status of all containers is compared to the last known state and notifications are sent

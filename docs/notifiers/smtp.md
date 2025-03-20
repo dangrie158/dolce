@@ -23,19 +23,19 @@ You can configure email notifications via SMTP using the following environment v
 
 ```yaml
 services:
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      SMTP_HOSTNAME: smtp.example.com
-      SMTP_USETLS: 1
-      # SMTP_PORT: 465 # (1)
-      SMTP_RECIPIENTS: incidents@example.com,ondutyguy@gmail.com
-      # SMTP_USERNAME: # (2)
-      # SMTP_PASSWORD:
-      SMTP_FROM: "Dolce Container Monitor <dolce@example.com>"
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            SMTP_HOSTNAME: smtp.example.com
+            SMTP_USETLS: 1
+            # SMTP_PORT: 465 # (1)
+            SMTP_RECIPIENTS: incidents@example.com,ondutyguy@gmail.com
+            # SMTP_USERNAME: # (2)
+            # SMTP_PASSWORD:
+            SMTP_FROM: "Dolce Container Monitor <dolce@example.com>"
 ```
 
 1. set automatically because of `SMTP_USETLS`

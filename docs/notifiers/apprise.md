@@ -30,19 +30,19 @@ You can configure chat notifications using the following environment variables
 
 ```yaml
 services:
-  apprise: # (1)!
-    image: caronc/apprise:latest
+    apprise: # (1)!
+        image: caronc/apprise:latest
 
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      APPRISE_HOST: apprise:8000 # (2)!
-      APPRISE_URLS: >- # (3)!
-        mmost://localhost:8065/yokkutpah3r3urc5h6i969yima
-        slack://xoxp-1234-1234-1234-4ddbc191d40ee098cbaae6f3523ada2d
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            APPRISE_HOST: apprise:8000 # (2)!
+            APPRISE_URLS: >- # (3)!
+                mmost://localhost:8065/yokkutpah3r3urc5h6i969yima
+                slack://xoxp-1234-1234-1234-4ddbc191d40ee098cbaae6f3523ada2d
 ```
 
 1. This is the simplest configuration to get the Apprise service running. See

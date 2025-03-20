@@ -46,26 +46,26 @@ easy fashion if you so desire:
 
 ```yaml title="docker-ompose.yml"
 services:
-  dolce:
-    image: dangrie158/dolce:v2.4.0 # (1)!
-    restart: unless-stopped # (2)!
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # (3)!
-    environment:
-        DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK> # (4)!
+    dolce:
+        image: dangrie158/dolce:v2.4.0 # (1)!
+        restart: unless-stopped # (2)!
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock # (3)!
+        environment:
+            DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK> # (4)!
 
-  importantservice: # (5)!
-    image: "ubuntu:latest"
-    command: "sleep 1; exit 0;"
-    restart: unless-stopped
+    importantservice: # (5)!
+        image: "ubuntu:latest"
+        command: "sleep 1; exit 0;"
+        restart: unless-stopped
 
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-        DISCORD_WEBHOOK: https://discord.com/api/webhooks/<YOUR_WEBHOOK>
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            DISCORD_WEBHOOK: https://discord.com/api/webhooks/<YOUR_WEBHOOK>
 ```
 
 1. You can use the `:latest` stable version or even `:master`

@@ -9,27 +9,27 @@ You can simply add dolce as an additional service to your :simple-docker: `docke
 
 ```yaml title="docker-compose.yml"
 services:
-  importantservice: # (1)!
-    image: "ubuntu:latest"
-    command: "sleep 1; exit 0;"
-    restart: unless-stopped
+    importantservice: # (1)!
+        image: "ubuntu:latest"
+        command: "sleep 1; exit 0;"
+        restart: unless-stopped
 
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # (2)!
-    environment: # (3)!
-        # get notified via email
-        SMTP_HOSTNAME: smtp.gmail.com # (4)!
-        SMTP_RECIPIENTS: incidents@example.com:personal@gmail.com
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock # (2)!
+        environment: # (3)!
+            # get notified via email
+            SMTP_HOSTNAME: smtp.gmail.com # (4)!
+            SMTP_RECIPIENTS: incidents@example.com:personal@gmail.com
 
-        # get notified via Discord
-        DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
+            # get notified via Discord
+            DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
 
-        # get notified via Telegram
-        TELEGRAM_HTTP_TOKEN: 123456789123456,AABBCCDDEEFFGGHHIIJJKKLLMM
-        TELEGRAM_RECIPIENT_IDS: 12345678912:456789123
-    restart: unless-stopped # (5)!
+            # get notified via Telegram
+            TELEGRAM_HTTP_TOKEN: 123456789123456,AABBCCDDEEFFGGHHIIJJKKLLMM
+            TELEGRAM_RECIPIENT_IDS: 12345678912:456789123
+        restart: unless-stopped # (5)!
 ```
 
 1. Just for demonstration to generate some _interesting_ events

@@ -113,7 +113,7 @@ class TemplateEngine extends Eta {
         super();
     }
 
-    public resolvePath = (template_name: string, options?: Partial<EtaOptions>): string => {
+    public override resolvePath = (template_name: string, options?: Partial<EtaOptions>): string => {
         const custom_template_folder = Configuration.custom_template_path;
 
         let resolved_path: string;
@@ -181,11 +181,11 @@ export class EMailTemplate<
     private html_content?: string;
     private frontmatter?: EMailFrontMatter;
 
-    constructor(protected template_name: TemplateName) {
+    constructor(override template_name: TemplateName) {
         super("email", template_name);
     }
 
-    async render(context: MessageContext<TemplateName>) {
+    override async render(context: MessageContext<TemplateName>) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
         const { attrs, body } = front_matter.extractJson<EMailFrontMatter>(template_contents);
@@ -249,7 +249,7 @@ export class AppriseTemplate<
         super("apprise", template_name);
     }
 
-    async render(context: MessageContext<TemplateName>) {
+    override async render(context: MessageContext<TemplateName>) {
         const template_path = this.path;
         const template_contents = await Deno.readTextFile(template_path);
         const { attrs, body } = front_matter.extractJson<AppriseFrontMatter>(template_contents);

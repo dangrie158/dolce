@@ -21,21 +21,21 @@ which you can also use to hook up other services. Here is a sample configuration
 
 ```yaml
 services:
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    environment:
-      DOCKER_HOST: docker-proxy:2375 # (1)!
-      DOCKER_TRANSPORT: tcp
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        environment:
+            DOCKER_HOST: docker-proxy:2375 # (1)!
+            DOCKER_TRANSPORT: tcp
 
-  docker-proxy:
-    image: tecnativa/docker-socket-proxy
-    environment:
-      INFO: 1 # (2)!
-    ports:
-      - 127.0.0.1:2375:2375
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    docker-proxy:
+        image: tecnativa/docker-socket-proxy
+        environment:
+            INFO: 1 # (2)!
+        ports:
+            - 127.0.0.1:2375:2375
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
 ```
 
 1. references the name of the `docker-socket-proxy` container below

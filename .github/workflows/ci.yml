@@ -1,98 +1,98 @@
 name: Build and Push Docker Image to Docker Hub
 on:
-  push:
-    branches:
-      - "master"
-    tags:
-      - "*"
+    push:
+        branches:
+            - "master"
+        tags:
+            - "*"
 
 env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY: docker.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+    # Use docker.io for Docker Hub if empty
+    REGISTRY: docker.io
+    # github.repository as <account>/<repo>
+    IMAGE_NAME: ${{ github.repository }}
 jobs:
-  build:
-    name: Build Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
+    build:
+        name: Build Image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the repo
+              uses: actions/checkout@v3
 
-      - name: Build the Docker image
-        run: docker build .
+            - name: Build the Docker image
+              run: docker build .
 
-  push_to_registry:
-    name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
+    push_to_registry:
+        name: Push Docker image to Docker Hub
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the repo
+              uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            - name: Extract metadata (tags, labels) for Docker
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: "{{defaultContext}}"
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: "{{defaultContext}}"
+                  push: true
+                  platforms: linux/amd64,linux/arm64
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Update Docker Hub Description
-        if: github.ref == 'refs/heads/master'
-        uses: peter-evans/dockerhub-description@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: dangrie158/dolce
+            - name: Update Docker Hub Description
+              if: github.ref == 'refs/heads/master'
+              uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_PASSWORD }}
+                  repository: dangrie158/dolce
 
-  build-docs:
-    name: Build the Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    build-docs:
+        name: Build the Documentation
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
+            - uses: actions/setup-python@v4
+              with:
+                  python-version: 3.x
 
-      - name: Get build ref
-        id: vars
-        run: echo "ref=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+            - name: Get build ref
+              id: vars
+              run: echo "ref=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
-      - name: Install dependencies
-        run: pip install mkdocs-material mike
+            - name: Install dependencies
+              run: pip install mkdocs-material mike
 
-      - name: Configure Git user
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+            - name: Configure Git user
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
 
-      - name: Fetch the gh-pages branch
-        run: git fetch origin gh-pages --depth=1
+            - name: Fetch the gh-pages branch
+              run: git fetch origin gh-pages --depth=1
 
-      - name: Push the new documentation version
-        run: mike deploy --push ${{ steps.vars.outputs.ref }}
+            - name: Push the new documentation version
+              run: mike deploy --push ${{ steps.vars.outputs.ref }}
 
-      - name: Set stable alias for new version
-        if: startsWith(github.event.ref, 'refs/tags/v')
-        run: mike alias --push --update-aliases ${{ steps.vars.outputs.ref }} stable
+            - name: Set stable alias for new version
+              if: startsWith(github.event.ref, 'refs/tags/v')
+              run: mike alias --push --update-aliases ${{ steps.vars.outputs.ref }} stable
 
-      - name: Set latest alias for new version
-        if: github.ref == 'refs/heads/master'
-        run: mike alias --push --update-aliases ${{ steps.vars.outputs.ref }} latest
+            - name: Set latest alias for new version
+              if: github.ref == 'refs/heads/master'
+              run: mike alias --push --update-aliases ${{ steps.vars.outputs.ref }} latest

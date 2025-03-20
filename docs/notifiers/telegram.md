@@ -18,14 +18,14 @@ You can configure chat notifications using the following environment variables
 
 ```yaml
 services:
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      TELEGRAM_HTTP_TOKEN: 123456789123456,AABBCCDDEEFFGGHHIIJJKKLLMM
-      TELEGRAM_RECIPIENT_IDS: 12345678912:456789123
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            TELEGRAM_HTTP_TOKEN: 123456789123456,AABBCCDDEEFFGGHHIIJJKKLLMM
+            TELEGRAM_RECIPIENT_IDS: 12345678912:456789123
 ```
 
 ## Step by Step:

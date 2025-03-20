@@ -29,16 +29,16 @@ versioned for [old versions](https://github.com/dangrie158/dolce/tags).
 
 ```yaml
 services:
-  importantservice:
-    image: "ubuntu:latest"
-    command: "sleep 1; exit 0;"
-    restart: unless-stopped
+    importantservice:
+        image: "ubuntu:latest"
+        command: "sleep 1; exit 0;"
+        restart: unless-stopped
 
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-        DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            DISCORD_WEBHOOK: https://ptb.discord.com/api/webhooks/<YOUR_WEBHOOK>
 ```

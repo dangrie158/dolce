@@ -12,17 +12,17 @@ An example configuration is:
 
 ```yaml
 services:
-  apprise: # (1)!
-    image: caronc/apprise:latest
+    apprise: # (1)!
+        image: caronc/apprise:latest
 
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      APPRISE_HOST: apprise:8000
-      APPRISE_URLS: slack://xoxp-1234-1234-1234-4ddbc191d40ee098cbaae6f3523ada2d # (2)!
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            APPRISE_HOST: apprise:8000
+            APPRISE_URLS: slack://xoxp-1234-1234-1234-4ddbc191d40ee098cbaae6f3523ada2d # (2)!
 ```
 
 1. Dolce relies on the external Apprise container to send notifications to Slack. This is only the simplest example.

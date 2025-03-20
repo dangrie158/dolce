@@ -15,15 +15,15 @@
         "lineWidth": 120
     },
     "imports": {
-        "@std/io": "jsr:@std/io@0.224.8",
-        "@std/log": "jsr:@std/log@0.224.7",
-        "@std/front-matter": "jsr:@std/front-matter@1.0.5",
-        "@std/path": "jsr:@std/path@1.0.6",
-        "@std/async": "jsr:@std/async@1.0.5",
-        "@std/streams": "jsr:@std/streams@1.0.5",
+        "@std/io": "jsr:@std/io@0.225.2",
+        "@std/log": "jsr:@std/log@0.224.14",
+        "@std/front-matter": "jsr:@std/front-matter@1.0.8",
+        "@std/path": "jsr:@std/path@1.0.8",
+        "@std/async": "jsr:@std/async@1.0.11",
+        "@std/streams": "jsr:@std/streams@1.0.9",
         "@std/ulid": "jsr:@std/ulid@1.0.0",
         "eta": "https://deno.land/x/eta@v3.5.0/src/index.ts",
         "eta/file-handling": "https://deno.land/x/eta@v3.5.0/src/file-handling.ts",
-        "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.48"
+        "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49"
     }
 }

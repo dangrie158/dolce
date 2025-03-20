@@ -12,17 +12,17 @@ An example configuration is:
 
 ```yaml
 services:
-  apprise: # (1)!
-    image: caronc/apprise:latest
+    apprise: # (1)!
+        image: caronc/apprise:latest
 
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      APPRISE_HOST: apprise:8000
-      APPRISE_URLS: mmosts://mattermost.server.local/3ccdd113474722377935511fc85d3dd4 # (2)!
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            APPRISE_HOST: apprise:8000
+            APPRISE_URLS: mmosts://mattermost.server.local/3ccdd113474722377935511fc85d3dd4 # (2)!
 ```
 
 1. Dolce relies on the external Apprise container to send notifications to Mattermost. This is only the simplest

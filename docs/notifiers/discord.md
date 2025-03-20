@@ -17,13 +17,13 @@ You can configure chat notifications via discord using the following environment
 
 ```yaml
 services:
-  dolce:
-    image: dangrie158/dolce:v3.3.0
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      DISCORD_WEBHOOK:  https://discord.com/api/webhooks/<YOUR_WEBHOOK>
+    dolce:
+        image: dangrie158/dolce:v3.3.0
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            DISCORD_WEBHOOK: https://discord.com/api/webhooks/<YOUR_WEBHOOK>
 ```
 
 ## Step by Step:
