@@ -131,7 +131,7 @@ export type DockerApiEventFilters = {
 export class DockerApi {
     // we use the oldest version of the API that supports all the features we want
     // to be compatible with most versions.
-    public static DEFAULT_VERSION = "v1.27";
+    public static DEFAULT_VERSION = "v1.45";
     public static DEFAULT_SOCKET_PATH = new URL("unix:///var/run/docker.sock");
     public static DEFAULT_HEADERS = {
         Accept: "application/json",
