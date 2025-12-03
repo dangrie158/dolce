@@ -19,7 +19,7 @@ You can configure chat notifications using the following environment variables
 ```yaml
 services:
     dolce:
-        image: dangrie158/dolce:v3.4.0
+        image: dangrie158/dolce:v4.0.0
         restart: unless-stopped
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
