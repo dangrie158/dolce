@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+### [v4.0.0](https://github.com/dangrie158/dolce/compare/v3.4.0...v4.0.0)
+
+> 3 December 2025
+
+- docker-api: update to v1.45 [`#32`](https://github.com/dangrie158/dolce/pull/32)
+
 #### [v3.4.0](https://github.com/dangrie158/dolce/compare/v3.3.0...v3.4.0)
 
 > 20 March 2025
