@@ -87,19 +87,11 @@ export class SmtpClient {
     }
 
     private async connect(connection: Deno.Conn, config: ConnectConfig) {
-        if (connection === null) {
-            throw new Error("connection not established");
-        }
-
         this.connection = connection;
         this.reader = this.connection.readable
             .pipeThrough(new TextDecoderStream())
             .pipeThrough(new TextLineStream())
             .getReader();
-
-        if (this.reader === null) {
-            throw new Error("failed to establish reader");
-        }
 
         this.assert_code(await this.read_command(), CommandCode.READY);
 
@@ -125,18 +117,10 @@ export class SmtpClient {
                 this.assert_code(await this.read_command(), CommandCode.READY);
                 this.reader.cancel();
                 this.connection = await Deno.startTls(this.connection as Deno.TcpConn, { hostname: config.hostname });
-                if (connection === null) {
-                    throw new Error("connection not established");
-                }
-
                 this.reader = this.connection.readable
                     .pipeThrough(new TextDecoderStream())
                     .pipeThrough(new TextLineStream())
                     .getReader();
-                        
-                if (this.reader === null) {
-                    throw new Error("failed to establish reader");
-                }
 
                 await this.write_command(`EHLO ${config.hostname}\r\n`);
                 
