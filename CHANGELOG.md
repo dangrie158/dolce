@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v4.0.1](https://github.com/dangrie158/dolce/compare/v4.0.0...v4.0.1)
+
+> 19 January 2026
+
+- Fix STARTTLS according to RFC 3207, 4954 [`#36`](https://github.com/dangrie158/dolce/pull/36)
+- Revert "Add guard clause"
+  [`347977e`](https://github.com/dangrie158/dolce/commit/347977e92154e175689dfaab2d224ab79f8e7a02)
+- Add guard clause [`c0236c3`](https://github.com/dangrie158/dolce/commit/c0236c3d7a5d271069d306391d66537c0e1e7326)
+- Comply with RFC 3207 [`f507cbe`](https://github.com/dangrie158/dolce/commit/f507cbeaa1831c87573fbc42bf1baa1cac03a8c7)
+
 ### [v4.0.0](https://github.com/dangrie158/dolce/compare/v3.4.0...v4.0.0)
 
 > 3 December 2025
