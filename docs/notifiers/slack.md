@@ -1,6 +1,6 @@
 ---
 title: Slack
-icon: simple/slack
+icon: material/slack
 ---
 
 # Slack Notifications
