@@ -121,6 +121,15 @@ export class SmtpClient {
                     .pipeThrough(new TextDecoderStream())
                     .pipeThrough(new TextLineStream())
                     .getReader();
+
+                await this.write_command(`EHLO ${config.hostname}\r\n`);
+                
+                while (true) {
+                    const command = await this.read_command();
+                    if (!command || !command.args.startsWith("-")) {
+                        break;
+                    }
+                }
             }
 
             await this.write_command(`AUTH LOGIN\r\n`);
