@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v4.0.2](https://github.com/dangrie158/dolce/compare/v4.0.1...v4.0.2)
+
+> 19 January 2026
+
 #### [v4.0.1](https://github.com/dangrie158/dolce/compare/v4.0.0...v4.0.1)
 
 > 19 January 2026
