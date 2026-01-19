@@ -17,7 +17,7 @@ import { time_until_end_of_window, timestamp_in_window, TimeWindow } from "./lib
 
 const startup_time = new Date();
 const logger = log.getLogger("main");
-logger.info(`starting dolce container monitor v4.0.1`);
+logger.info(`starting dolce container monitor v4.0.2`);
 
 if (!Configuration.is_valid) {
     logger.error(`invalid configuration found:`);
