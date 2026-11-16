@@ -29,7 +29,7 @@ CMD deno run \
     --allow-read="./templates,${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
     --allow-write="${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock}" \
     # for SmtpNotifier
-    --allow-net="discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost}$( [ x${DOCKER_TRANSPORT:-unix} != 'xunix' ] && echo ,$DOCKER_HOST )" \
+    --allow-net="unix:/var/run/docker.sock,discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost}$( [ x${DOCKER_TRANSPORT:-unix} != 'xunix' ] && echo ,$DOCKER_HOST )" \
     # for lib/env.ts, obviously
     --allow-env \
     # for Deno.kill in lib/lockfile.ts
