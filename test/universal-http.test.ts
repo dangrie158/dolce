@@ -48,6 +48,13 @@ import {
             assertObjectMatch(await response.json(), {});
         });
 
+        await test.step("does not write empty body to socket", async () => {
+            const response = await socket_client.fetch("http://localhost/empty/");
+            assertStrictEquals(response.status, 200);
+            const response_text = await response.text();
+            assertNotStrictEquals(response_text, null);
+        });
+
         await test.step("requests can have a `JSON` body", async () => {
             const response = await socket_client.fetch("http://localhost/echojson/", {
                 method: "POST",
