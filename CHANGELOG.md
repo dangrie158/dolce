@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v4.1.0](https://github.com/dangrie158/dolce/compare/v4.0.2...v4.1.0)
+
+> 16 November 2026
+
+- bump versions of dependencies
+  [`a5f5075`](https://github.com/dangrie158/dolce/commit/a5f50750517e664cbb3eed79c9db14d0b53dc082)
+
 #### [v4.0.2](https://github.com/dangrie158/dolce/compare/v4.0.1...v4.0.2)
 
 > 19 January 2026
