@@ -1,5 +1,5 @@
 import { time_until_end_of_window, timestamp_in_window } from "../lib/chrono.ts";
-import { assert } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { assert } from "@std/assert";
 
 Deno.test("timestamp_in_window", async (test) => {
     await test.step("`timestamp_in_window` works", () => {

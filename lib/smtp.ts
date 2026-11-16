@@ -123,7 +123,7 @@ export class SmtpClient {
                     .getReader();
 
                 await this.write_command(`EHLO ${config.hostname}\r\n`);
-                
+
                 while (true) {
                     const command = await this.read_command();
                     if (!command || !command.args.startsWith("-")) {

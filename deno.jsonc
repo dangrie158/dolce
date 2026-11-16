@@ -6,7 +6,7 @@
     "tasks": {
         "dev": "DOLCE_LOG_LEVEL=DEBUG DOLCE_DEBUG=true deno run --unstable-http --unstable-kv --unstable-cron --unstable-temporal --allow-read=/var/run/docker.sock,./templates,/var/run/dolce/ --allow-write=/var/run/docker.sock,/var/run/dolce/ --allow-env --allow-run --watch main.ts",
         "bmp": "deno run --allow-read=. --allow-write=. --allow-run=git https://deno.land/x/bmp@v0.2.0/cli.ts",
-        "test": "deno  test --unstable-http --unstable-temporal --allow-read test/ --allow-net=127.0.0.1 --allow-write $TMPDIR --allow-env",
+        "test": "deno  test --unstable-http --unstable-temporal --allow-read test/ --allow-net --allow-write $TMPDIR --allow-env",
         "changelog": "deno run --allow-read --allow-env --allow-run=git --allow-sys=uid --allow-write=CHANGELOG.md npm:auto-changelog --ignore-commit-pattern chore: --hide-credit && deno fmt",
         "docs": "mkdocs serve"
     },
@@ -15,15 +15,16 @@
         "lineWidth": 120
     },
     "imports": {
-        "@std/io": "jsr:@std/io@0.225.2",
+        "@std/assert": "jsr:@std/assert@^1.0.19",
+        "@std/io": "jsr:@std/io@0.225.3",
         "@std/log": "jsr:@std/log@0.224.14",
-        "@std/front-matter": "jsr:@std/front-matter@1.0.8",
-        "@std/path": "jsr:@std/path@1.0.8",
-        "@std/async": "jsr:@std/async@1.0.11",
-        "@std/streams": "jsr:@std/streams@1.0.9",
+        "@std/front-matter": "jsr:@std/front-matter@1.0.9",
+        "@std/path": "jsr:@std/path@1.1.6",
+        "@std/async": "jsr:@std/async@1.5.1",
+        "@std/streams": "jsr:@std/streams@1.2.0",
         "@std/ulid": "jsr:@std/ulid@1.0.0",
-        "eta": "https://deno.land/x/eta@v3.5.0/src/index.ts",
-        "eta/file-handling": "https://deno.land/x/eta@v3.5.0/src/file-handling.ts",
-        "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49"
+        "eta": "https://deno.land/x/eta@v4.6.0/src/index.ts",
+        "eta/file-handling": "https://deno.land/x/eta@v4.6.0/src/file-handling.ts",
+        "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.56"
     }
 }

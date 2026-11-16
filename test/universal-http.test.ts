@@ -2,11 +2,11 @@ import { HttpSocket } from "../lib/universal-http.ts";
 import {
     assert,
     assertInstanceOf,
-    assertNotEquals,
+    assertNotStrictEquals,
     assertObjectMatch,
     assertRejects,
     assertStrictEquals,
-} from "https://deno.land/std@0.204.0/assert/mod.ts";
+} from "@std/assert";
 
 ["tcp", "unix"].forEach((protocol) => {
     Deno.test(`fetch API with ${protocol} protocol`, async (test) => {
@@ -40,7 +40,7 @@ import {
 
         await test.step("response contains a body", async () => {
             const response = await socket_client.fetch("http://localhost/empty/");
-            assertNotEquals(await response.text(), null);
+            assertNotStrictEquals(await response.text(), null);
         });
 
         await test.step("response can be parsed as json", async () => {

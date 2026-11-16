@@ -1,4 +1,4 @@
-FROM denoland/deno:alpine-2.2.4
+FROM denoland/deno:alpine-2.9.8
 
 ENV DOLCE_CUSTOM_TEMPLATE_PATH=/var/dolce-custom-templates/
 

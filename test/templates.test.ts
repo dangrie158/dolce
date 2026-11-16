@@ -6,7 +6,7 @@ import {
     SimpleTemplate,
     TelegramTemplate,
 } from "../lib/templates.ts";
-import { assert, assertStrictEquals, assertThrows } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { assert, assertStrictEquals, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 
 const dummy_render_context: RestartMessageContext = {

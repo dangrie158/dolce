@@ -1,4 +1,4 @@
-import { assert } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { assert } from "@std/assert";
 import {
     add_event_for_delivery,
     clear_registry,
@@ -7,7 +7,7 @@ import {
     track_container_state_change,
 } from "../lib/event_registry.ts";
 import { ulid } from "@std/ulid/ulid";
-import { assertStrictEquals } from "https://deno.land/std@0.204.0/assert/assert_strict_equals.ts";
+import { assertStrictEquals } from "@std/assert";
 
 const test_event_start = {
     id: ulid(),
