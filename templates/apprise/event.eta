@@ -10,4 +10,5 @@ Time                    Action    Container
 <%= new Date(event.time * 1000).toLocaleString() %>: <%= event.Action %> <%= event.actor_name %><%= "\n" %>
 <% }); %>
 
+
 If something new happens, you won't be bothered again with updates until <%= it.earliest_next_update.toLocaleString() %>.
