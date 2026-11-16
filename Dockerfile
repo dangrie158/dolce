@@ -10,14 +10,15 @@ WORKDIR /dolce
 
 COPY . .
 
-RUN mkdir -p /var/run/dolce
-
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
 RUN deno cache main.ts lib/*.ts
 
 ENTRYPOINT []
 SHELL ["/bin/sh", "-c"]
-CMD deno run \
+CMD \
+    mkdir -p "${DOLCE_RUN_DIRECTORY:-/var/run/dolce/}" && \
+    resolved_run_directory="$(realpath "${DOLCE_RUN_DIRECTORY:-/var/run/dolce/}")" && \
+    exec deno run \
     # flag is needed for Deno.connect to a Unix Socket (lib/universal-http.ts)
     --unstable-http \
     # flag is needed for unstable KV storage
@@ -26,8 +27,8 @@ CMD deno run \
     --unstable-cron \
     # flag is needed for unstable Temporal API used in lib/chrono.ts and for blackout windows
     --unstable-temporal \
-    --allow-read="./templates,${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
-    --allow-write="${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock}" \
+    --allow-read="./templates,${resolved_run_directory},${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock},${DOLCE_CUSTOM_TEMPLATE_PATH}" \
+    --allow-write="${resolved_run_directory},${DOLCE_RUN_DIRECTORY:-/var/run/dolce/},${DOCKER_HOST:-/var/run/docker.sock}" \
     # for SmtpNotifier
     --allow-net="unix:/var/run/docker.sock,discord.com,api.telegram.org,${SMTP_HOSTNAME:-localhost},${APPRISE_HOST:-localhost}$( [ x${DOCKER_TRANSPORT:-unix} != 'xunix' ] && echo ,$DOCKER_HOST )" \
     # for lib/env.ts, obviously

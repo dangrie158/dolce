@@ -48,7 +48,8 @@ export async function register(
     delivery_callback: DeliveryCallback,
     backoff_settings: BackoffSettings,
 ): Promise<EventRegistry> {
-    const db_path = join_path(run_directory, "dolce.db");
+    const resolved_run_directory = await Deno.realPath(run_directory);
+    const db_path = join_path(resolved_run_directory, "dolce.db");
     const db = await Deno.openKv(db_path);
     const registry: EventRegistry = { db, backoff_settings };
 
