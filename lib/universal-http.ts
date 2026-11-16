@@ -90,8 +90,10 @@ export class HttpSocket {
         const connection = await this.get_connection();
         await connection.write(request_header);
         await connection.write(encoded_crlf);
-        await connection.write(request_body);
-        await connection.write(encoded_crlf);
+        if (request_body.length > 0) {
+            await connection.write(request_body);
+            await connection.write(encoded_crlf);
+        }
 
         const response = await this.read_response(connection);
         return response;
