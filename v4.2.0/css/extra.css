@@ -1,0 +1,65 @@
+:root {
+    --md-primary-fg-color: #f73a63;
+    --md-primary-fg-color--light: #fa89a1;
+    --md-primary-fg-color--dark: #ad2945;
+
+    --md-accent-fg-color: #ffc9ad;
+    --md-accent-fg-color--light: #ffc9ad;
+    --md-accent-fg-color--dark: #ffc9ad;
+}
+
+.md-header__button.md-logo {
+    height: 1.5rem;
+}
+
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+    height: 5rem;
+    margin-top: -0.5rem;
+}
+
+.md-main__inner {
+    margin-top: 2rem;
+}
+
+.md-typeset .hero-header {
+    text-align: center;
+    font-size: 2.5rem;
+}
+
+.md-typeset__table {
+    min-width: 100%;
+}
+
+.md-typeset table:not([class]) {
+    display: table;
+}
+
+.md-typeset .grid {
+    grid-gap: 0.4rem;
+    display: grid;
+    margin: 1em 0;
+}
+
+.two-column {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.single-column {
+    grid-template-columns: repeat(auto-fit, 1fr);
+}
+
+.md-typeset .grid.cards > ul {
+    display: contents;
+}
+
+.md-typeset .grid.cards > ol > li,
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid > .card {
+    border: 0.05rem solid var(--md-default-fg-color--lightest);
+    border-radius: 0.1rem;
+    display: block;
+    margin: 0;
+    padding: 0.8rem;
+    transition: border 0.25s, box-shadow 0.25s;
+}
