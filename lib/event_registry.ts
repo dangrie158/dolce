@@ -1,3 +1,4 @@
+import * as log from "@std/log";
 import { ulid } from "@std/ulid";
 import { join as join_path } from "@std/path";
 import { DockerApiContainerEvent } from "./docker-api.ts";
@@ -39,6 +40,8 @@ const CONTAINER_LAST_NOTIFIED_EVENT_PREFIX = "last_event_notified";
 const CONTAINER_LAST_OBSERVED_EVENT_PREFIX = "last_event_observed";
 const NEXT_DELIVERY_KEY = ["next_delivery"];
 
+const logger = log.getLogger("registry");
+
 function exponential_backoff(iteration: number, options: BackoffSettings) {
     return Math.floor(Math.min(options.max_timeout, options.min_timeout * options.multiplier ** iteration));
 }
@@ -48,7 +51,11 @@ export async function register(
     delivery_callback: DeliveryCallback,
     backoff_settings: BackoffSettings,
 ): Promise<EventRegistry> {
-    const db_path = join_path(run_directory, "dolce.db");
+    const resolved_run_directory = await Deno.realPath(run_directory);
+    if (resolved_run_directory !== run_directory) {
+        logger.info(`resolved ${run_directory} to ${resolved_run_directory}`);
+    }
+    const db_path = join_path(resolved_run_directory, "dolce.db");
     const db = await Deno.openKv(db_path);
     const registry: EventRegistry = { db, backoff_settings };
 

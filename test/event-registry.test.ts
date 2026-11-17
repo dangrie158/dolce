@@ -87,6 +87,29 @@ Deno.test("event registry", async (test) => {
         await clear_registry(event_registry);
     });
 
+    await test.step("symlinks are resolved to real paths", async () => {
+        const tmp_dir = Deno.makeTempDirSync();
+        const real_dir = Deno.makeTempDirSync({ dir: tmp_dir });
+        const symlink_path = `${tmp_dir}/symlink_to_real`;
+
+        // Create a symlink pointing to the real directory
+        Deno.symlinkSync(real_dir, symlink_path);
+
+        // Register using the symlink path
+        await register(symlink_path, (_events, _earliest_next_update) => {
+            assert(false, "event registry callback was called");
+        }, {
+            min_timeout: 10,
+            max_timeout: 100,
+            multiplier: 2,
+        });
+
+        // Verify the database file is created at the real path
+        const real_db_path = `${real_dir}/dolce.db`;
+        const stat = Deno.statSync(real_db_path);
+        assert(stat.isFile, "Database file exists at real path");
+    });
+
     event_registry.db.close();
     Deno.removeSync(tmp_dir, { recursive: true });
 });

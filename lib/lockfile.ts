@@ -47,7 +47,7 @@ export class LockFile {
         }
 
         //create the lockfile
-        Deno.mkdir(path.dirname(this.lock_file_path), { recursive: true });
+        await Deno.mkdir(path.dirname(this.lock_file_path), { recursive: true });
         const lock_file_information = await this.update();
 
         // delete the lockfile if this process stops gracefully

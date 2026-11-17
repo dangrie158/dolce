@@ -100,5 +100,6 @@ log.setup({
         main: { level: Configuration.loglevel, handlers: ["default"] },
         notifier: { level: Configuration.loglevel, handlers: ["default"] },
         lockfile: { level: Configuration.loglevel, handlers: ["default"] },
+        registry: { level: Configuration.loglevel, handlers: ["default"] },
     },
 });
