@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v4.2.0](https://github.com/dangrie158/dolce/compare/v4.1.0...v4.2.0)
+
+> 17 November 2026
+
+- fix: resolve symlinks for sqlite directory paths [`#44`](https://github.com/dangrie158/dolce/pull/44)
+- fix: line breaks in apprise [`#37`](https://github.com/dangrie158/dolce/pull/37)
+- fix: avoid writing empty request body in HTTP socket [`#42`](https://github.com/dangrie158/dolce/pull/42)
+- fix: allow net access for docker socket [`#43`](https://github.com/dangrie158/dolce/pull/43)
+- feat: add logging for directory path resolution in event registry
+  [`dc511ee`](https://github.com/dangrie158/dolce/commit/dc511ee79635af76fcfa250f2f8f4ff7f6b222e5)
+- Update event.eta [`2235130`](https://github.com/dangrie158/dolce/commit/2235130a1f260622c946b179dcafc7b5e1d1bc53)
+- Update event.eta [`446cb79`](https://github.com/dangrie158/dolce/commit/446cb79ea6ab1fc4c1b3a3f202e3e14e0ff94c12)
+
 #### [v4.1.0](https://github.com/dangrie158/dolce/compare/v4.0.2...v4.1.0)
 
 > 16 November 2026
